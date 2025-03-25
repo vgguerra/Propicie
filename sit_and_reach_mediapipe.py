@@ -9,7 +9,7 @@ kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
-pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+pose = mp_pose.Pose()
 mp_drawing = mp.solutions.drawing_utils
 
 # Function to calculate Euclidean distance in 2D (x, y only)
@@ -34,7 +34,7 @@ def calculate_angle(a, b, c):
         
     return angle
 
-# Function to calculate flexibility score with increased threshold and adjusted weights 
+# Function to calculate flexibility score with increased threshold and adjusted weights
 def calculate_flexibility_score(distance, knee_angle, hip_angle, elbow_angle, max_distance=0.7):  # Increased distance threshold
     # Normalize the distance score (0 to 1)
     normalized_distance = (max_distance - distance) / max_distance
@@ -125,179 +125,156 @@ def average_distance(distances):
     return sum(distances) / len(distances)
 
 # Variables to store distances for averaging
+distances = []
+average_over = 5
+final_distance = None
+pose_correct_start_time = None
+pose_held_duration = 8  # seconds, increased for more time before the exercise ends
+
+# Main loop to capture and display frames
 while True:
-    distances = []
-    average_over = 5
-    final_distance = None
-    pose_correct_start_time = None
-    pose_held_duration = 8  # seconds, increased for more time before the exercise ends
+    if kinect.has_new_color_frame():
+        frame = kinect.get_last_color_frame()
+        frame = frame.reshape((1080, 1920, 4))  # Kinect BGRA frame dimensions
+        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)  # Correct BGRA to BGR conversion
+        
+        # Convert the frame to RGB
+        rgb_frame = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB)
+        rgb_frame.flags.writeable = False
+        
+        # Process the frame with MediaPipe Pose
+        results = pose.process(rgb_frame)
+        
+        # Recolor back to BGR for rendering
+        rgb_frame.flags.writeable = True
+        frame = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR)
+        
+        # Initialize variables
+        distance = -1
+        knee_angle = -1
+        hip_angle = -1
+        elbow_angle = -1
+        pose_correct = "Incorrect"
+        progress = 0
+        flexibility_score = 0  # Initialize flexibility_score to avoid undefined reference
 
-    # Main loop to capture and display frames
-    while True:
-        if kinect.has_new_color_frame():
-            frame = kinect.get_last_color_frame()
-            frame = frame.reshape((1080, 1920, 4))  # Kinect BGRA frame dimensions
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)  # Correct BGRA to BGR conversion
-            
-            # Convert the frame to RGB
-            rgb_frame = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB)
-            rgb_frame.flags.writeable = False
-            
-            # Process the frame with MediaPipe Pose
-            results = pose.process(rgb_frame)
-            
-            # Recolor back to BGR for rendering
-            rgb_frame.flags.writeable = True
-            frame = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR)
-            
-            # Initialize variables
-            distance = -1
-            knee_angle = -1
-            hip_angle = -1
-            elbow_angle = -1
-            pose_correct = "Incorrect"
-            progress = 0
-            flexibility_score = 0  # Initialize flexibility_score to avoid undefined reference
+        # Check if pose landmarks are detected
+        if results.pose_landmarks:
+            landmarks = results.pose_landmarks.landmark
 
-            # Check if pose landmarks are detected
-            if results.pose_landmarks:
-                landmarks = results.pose_landmarks.landmark
+            # Check if all required landmarks are detected
+            required_landmarks = [
+                mp_pose.PoseLandmark.RIGHT_WRIST,
+                mp_pose.PoseLandmark.RIGHT_INDEX,
+                mp_pose.PoseLandmark.RIGHT_FOOT_INDEX,
+                mp_pose.PoseLandmark.RIGHT_HIP,
+                mp_pose.PoseLandmark.RIGHT_KNEE,
+                mp_pose.PoseLandmark.RIGHT_ANKLE,
+                mp_pose.PoseLandmark.RIGHT_SHOULDER,
+                mp_pose.PoseLandmark.RIGHT_ELBOW
+            ]
+            
+            if all(landmarks[lm.value].visibility > 0.5 for lm in required_landmarks):
+                # Extract the necessary landmarks for distance calculation
+                right_wrist = landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value]
+                right_index = landmarks[mp_pose.PoseLandmark.RIGHT_INDEX.value]
+                right_foot = landmarks[mp_pose.PoseLandmark.RIGHT_FOOT_INDEX.value]
 
-                # Check if all required landmarks are detected
-                required_landmarks = [
-                    mp_pose.PoseLandmark.RIGHT_WRIST,
-                    mp_pose.PoseLandmark.RIGHT_INDEX,
-                    mp_pose.PoseLandmark.RIGHT_FOOT_INDEX,
-                    mp_pose.PoseLandmark.RIGHT_HIP,
-                    mp_pose.PoseLandmark.RIGHT_KNEE,
-                    mp_pose.PoseLandmark.RIGHT_ANKLE,
-                    mp_pose.PoseLandmark.RIGHT_SHOULDER,
-                    mp_pose.PoseLandmark.RIGHT_ELBOW
-                ]
+                # Adjust the right index position to simulate fingertip
+                right_fingertip = adjust_fingertip_position(right_index)
                 
+                # Calculate the distance between right fingertip and right foot (2D)
+                right_foot_position = np.array([right_foot.x, right_foot.y])
+                distance = calculate_distance_2d(right_fingertip, right_foot_position)
                 
-                if all(landmarks[lm.value].visibility > 0.7 for lm in required_landmarks):
-                    # Extract the necessary landmarks for distance calculation
-                    right_wrist = landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value]
-                    right_index = landmarks[mp_pose.PoseLandmark.RIGHT_INDEX.value]
-                    right_foot = landmarks[mp_pose.PoseLandmark.RIGHT_FOOT_INDEX.value]
-
-                    # Adjust the right index position to simulate fingertip
-                    right_fingertip = adjust_fingertip_position(right_index)
-                    
-                    # Calculate the distance between right fingertip and right foot (2D)
-                    right_foot_position = np.array([right_foot.x, right_foot.y])
-                    distance = calculate_distance_2d(right_fingertip, right_foot_position)
-                    
-                    # Append distance to list and calculate average
-                    distances.append(distance)
-                    if len(distances) > average_over:
-                        distances.pop(0)
-                    distance = average_distance(distances)
-                    
-                    # Extract the necessary landmarks for angle calculation
-                    right_hip = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y])
-                    right_knee = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y])
-                    right_ankle = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y])
-                    right_shoulder = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y])
-                    right_elbow = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y])
-                    right_wrist = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y])
-                    
-                    # Calculate the angles of the right knee, hip, and elbow
-                    knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
-                    hip_angle = calculate_angle(right_shoulder, right_hip, right_knee)
-                    elbow_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
-                    
-                    # Calculate flexibility score based on distance and angles
-                    flexibility_score = calculate_flexibility_score(distance, knee_angle, hip_angle, elbow_angle)
-                    
-                    # Revert pose correctness thresholds to original and add elbow angle check
-                    if 120 < knee_angle < 180 and 160 < hip_angle < 180 and 160 < elbow_angle < 180:  # Added elbow check
-                        pose_correct = "Correct"
-                        if pose_correct_start_time is None:
-                            pose_correct_start_time = time.time()
-                        progress = (time.time() - pose_correct_start_time) / pose_held_duration
-                        if progress >= 1.0:
-                            progress = 1.0
-                            final_distance = distance
-                            break
-                    else:
-                        pose_correct_start_time = None
-                        progress = 0.0
-                    
-                    # Render detections with highlighted joints
-                    for landmark in [mp_pose.PoseLandmark.RIGHT_WRIST, mp_pose.PoseLandmark.RIGHT_INDEX, mp_pose.PoseLandmark.RIGHT_FOOT_INDEX]:
-                        cv2.circle(frame, (int(landmarks[landmark.value].x * frame.shape[1]), int(landmarks[landmark.value].y * frame.shape[0])), 10, (0, 255, 255), -1)  # Yellow color for feedback
-                    
-                    mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-                                            mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
-                                            mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
-                    
-                    # Visualize the distance
-                    cv2.putText(frame, f'Distance: {distance:.2f} m', (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                    
-                    # Visualize the knee angle with dynamic filled parabola
-                    shoulder_coords = tuple(np.multiply(right_shoulder[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    knee_coords = tuple(np.multiply(right_knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    hip_coords = tuple(np.multiply(right_hip[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    ankle_coords = tuple(np.multiply(right_ankle[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    elbow_coords = tuple(np.multiply(right_elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    wrist_coords = tuple(np.multiply(right_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-
-                    # Desenhar os arcos para os ângulos do joelho, quadril e cotovelo
-
-                    draw_dynamic_angle_arc(frame, hip_coords, knee_coords, ankle_coords, knee_angle)
-                    # draw_dynamic_angle_arc(frame, shoulder_coords, hip_coords, knee_coords, hip_angle)
-                    # draw_dynamic_angle_arc(frame, shoulder_coords, elbow_coords, wrist_coords, elbow_angle)
-
-                    # Exibir os valores dos ângulos na tela
-                    
-                    cv2.putText(frame, f'Knee Angle: {knee_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                    # cv2.putText(frame, f'Hip Angle: {hip_angle:.2f}', hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                    # cv2.putText(frame, f'Elbow Angle: {elbow_angle:.2f}', elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                    
-                    # Visualize if the pose is correct
-                    cv2.putText(frame, f'Pose: {pose_correct}', (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            
-            # Display the progress bar
-            draw_progress_bar(frame, progress, position=(10, 200))
-            
-            # Display the flexibility bar based on the flexibility score
-            draw_flexibility_bar(frame, flexibility_score, position=(50, 400), size=(300, 50))
-            
-            # Display the frame
-            cv2.imshow('Chair Sit and Reach Exercise', frame)
-
-        # Close the first window with 'q'
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            exit()
-
-    # Final result visualization
-    if final_distance is not None:
-        final_frame = np.zeros((500, 800, 3), dtype=np.uint8)  # Black screen for final results
-        flexibility_result = classify_flexibility_score(flexibility_score)
+                # Append distance to list and calculate average
+                distances.append(distance)
+                if len(distances) > average_over:
+                    distances.pop(0)
+                distance = average_distance(distances)
+                
+                # Extract the necessary landmarks for angle calculation
+                right_hip = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y])
+                right_knee = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y])
+                right_ankle = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y])
+                right_shoulder = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y])
+                right_elbow = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y])
+                right_wrist = np.array([landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y])
+                
+                # Calculate the angles of the right knee, hip, and elbow
+                knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
+                hip_angle = calculate_angle(right_shoulder, right_hip, right_knee)
+                elbow_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
+                
+                # Calculate flexibility score based on distance and angles
+                flexibility_score = calculate_flexibility_score(distance, knee_angle, hip_angle, elbow_angle)
+                
+                # Revert pose correctness thresholds to original and add elbow angle check
+                if 150 < knee_angle < 180 and 60 < hip_angle < 130 and 160 < elbow_angle < 180:  # Added elbow check
+                    pose_correct = "Correct"
+                    if pose_correct_start_time is None:
+                        pose_correct_start_time = time.time()
+                    progress = (time.time() - pose_correct_start_time) / pose_held_duration
+                    if progress >= 1.0:
+                        progress = 1.0
+                        final_distance = distance
+                        break
+                else:
+                    pose_correct_start_time = None
+                    progress = 0.0
+                
+                # Render detections with highlighted joints
+                for landmark in [mp_pose.PoseLandmark.RIGHT_WRIST, mp_pose.PoseLandmark.RIGHT_INDEX, mp_pose.PoseLandmark.RIGHT_FOOT_INDEX]:
+                    cv2.circle(frame, (int(landmarks[landmark.value].x * frame.shape[1]), int(landmarks[landmark.value].y * frame.shape[0])), 10, (0, 255, 255), -1)  # Yellow color for feedback
+                
+                mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                          mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
+                                          mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
+                
+                # Visualize the distance
+                cv2.putText(frame, f'Distance: {distance:.2f} m', (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                
+                # Visualize the knee angle with dynamic filled parabola
+                knee_coords = tuple(np.multiply(right_knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                hip_coords = tuple(np.multiply(right_hip[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                ankle_coords = tuple(np.multiply(right_ankle[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                draw_dynamic_angle_arc(frame, hip_coords, knee_coords, ankle_coords, knee_angle)
+                cv2.putText(frame, f'Knee Angle: {knee_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                
+                # Visualize if the pose is correct
+                cv2.putText(frame, f'Pose: {pose_correct}', (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         
-        cv2.putText(final_frame, f'Exercise Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-        cv2.putText(final_frame, f'Final Distance: {final_distance:.2f} meters', (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(final_frame, f'Flexibility Bar Result: {flexibility_score:.2f} ({flexibility_result})', (100, 300), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(final_frame,f'Press "r" to restart or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
+        # Display the progress bar
+        draw_progress_bar(frame, progress, position=(10, 200))
         
-        cv2.imshow('Final Results', final_frame)
+        # Display the flexibility bar based on the flexibility score
+        draw_flexibility_bar(frame, flexibility_score, position=(50, 400), size=(300, 50))
         
-        # Allow the user to close the final result window with 'q'
-        while True:
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('r'):  # Pressione 'r' para reiniciar o exercício
-                cv2.destroyWindow('Final Results')
-                break
-            elif key == ord('q'):  # Pressione 'q' para sair
-                exit()
+        # Display the frame
+        cv2.imshow('Chair Sit and Reach Exercise', frame)
 
-
-    else:
-        print("Exercise not performed correctly")
+    # Close the first window with 'q'
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
+# Final result visualization
+if final_distance is not None:
+    final_frame = np.zeros((500, 800, 3), dtype=np.uint8)  # Black screen for final results
+    flexibility_result = classify_flexibility_score(flexibility_score)
+    
+    cv2.putText(final_frame, f'Exercise Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+    cv2.putText(final_frame, f'Final Distance: {final_distance:.2f} meters', (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_frame, f'Flexibility Bar Result: {flexibility_score:.2f} ({flexibility_result})', (100, 300), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    
+    cv2.imshow('Final Results', final_frame)
+    
+    # Allow the user to close the final result window with 'q'
+    while True:
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+else:
+    print("Exercise not performed correctly")
 
 kinect.close()
 cv2.destroyAllWindows()
