@@ -81,7 +81,8 @@ pose_correct_start_time = None
 pose_held_duration = 8  # seconds, increased for more time before the exercise ends
 
 while True: 
-    numero = int(input("Digite um número inteiro: "))        
+    # numero = int(input("Digite um número inteiro: ")) 
+    numero = 1       
     while True:
         if kinect.has_new_color_frame():  
             frame = kinect.get_last_color_frame()
