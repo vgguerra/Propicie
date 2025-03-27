@@ -101,6 +101,34 @@ def calculate_angle(a, b, c):
 
     return angulo_graus
 
+#Function to show the final display
+def final_visualization():
+    final_frame = np.zeros((500, 800, 3), dtype=np.uint8) 
+    
+    cv2.putText(final_frame, f'Exercise Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+    cv2.putText(final_frame, f'Final Distance: {final_distance :.2f} centimeters', (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_frame,f'Press "r" to restart or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
+    
+    cv2.imshow('Final Results', final_frame)
+
+    # real_value = float(input("Qual o valor real?"))
+    # distance = float(distance)
+
+    # erro = np.abs(real_value - distance)
+    # nova_linha = [real_value, distance, erro]
+    # sheet.append(nova_linha)
+    # planilha.save(arquivo)
+
+    print(distances)
+    
+    # Allow the user to close the final result window with 'q'
+    while True:
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('r'):  # Press 'r' to restart the exercise
+            cv2.destroyWindow('Final Results')
+            break
+        elif key == ord('q'):  # Press 'q' to exit
+            finish_program() 
 
 # Load existing spreadsheet
 arquivo = "dados.xlsx"
@@ -109,7 +137,7 @@ sheet = planilha.active
 
 progress_calibration1 = 0
 
-repeats = 2
+repeats = 0
 
 while True:
 
@@ -140,9 +168,6 @@ while True:
 
             # variable initialization
             distance = -1
-            rigth_knee_angle = -1
-            right_hip_angle = -1
-            right_elbow_angle = -1
             pose_correct = "Incorrect"
             progress = 0
             progress_calibration1 = 0
@@ -392,33 +417,7 @@ while True:
             
     # Final result visualization
     if final_distance is not None:
-        final_frame = np.zeros((500, 800, 3), dtype=np.uint8) 
-        
-        cv2.putText(final_frame, f'Exercise Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-        cv2.putText(final_frame, f'Final Distance: {final_distance :.2f} centimeters', (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(final_frame,f'Press "r" to restart or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
-        
-        cv2.imshow('Final Results', final_frame)
-
-        # real_value = float(input("Qual o valor real?"))
-        # distance = float(distance)
-
-        # erro = np.abs(real_value - distance)
-        # nova_linha = [real_value, distance, erro]
-        # sheet.append(nova_linha)
-        # planilha.save(arquivo)
-
-        print(distances)
-        
-        # Allow the user to close the final result window with 'q'
-        while True:
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('r'):  # Press 'r' to restart the exercise
-                cv2.destroyWindow('Final Results')
-                break
-            elif key == ord('q'):  # Press 'q' to exit
-                finish_program()
-
+        final_visualization()
 
     else:
         print("Exercise not performed correctly")
