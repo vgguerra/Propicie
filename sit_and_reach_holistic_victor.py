@@ -9,7 +9,6 @@ import cv2
 # Approximate ratio of pixels to cm at 1 meter distance
 PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm at 1m distance
 
-
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
 
@@ -205,8 +204,8 @@ while True:
                     draw_dynamic_angle_arc(image, right_shoulder_coords, right_hip_coords, right_knee_coords, right_hip_angle)
                     cv2.putText(image, f'Hip Angle: {right_hip_angle:.2f}', right_hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
-                    draw_dynamic_angle_arc(image, right_shoulder_coords, right_elbow_coords, right_wrist_coords, right_elbow_angle)
-                    cv2.putText(image, f'Elbow Angle: {right_elbow_angle:.2f}', right_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    # draw_dynamic_angle_arc(image, right_shoulder_coords, right_elbow_coords, right_wrist_coords, right_elbow_angle)
+                    # cv2.putText(image, f'Elbow Angle: {right_elbow_angle:.2f}', right_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
                 
                     if 150 < rigth_knee_angle < 180 and 120 < right_hip_angle < 150 and 90 < left_knee_angle < 120 and progress_calibration != 1.0:
                         calibration = "Right Position"
@@ -216,11 +215,11 @@ while True:
                         if progress_calibration1 >= 1.0:
                             progress_calibration = 1.0
                             foot_landmark = pose_landmarks[32]
-                            foot = int(foot_landmark.x * 640), int((foot_landmark.y * 480) - 2) 
+                            foot = int(foot_landmark.x * 640), int(foot_landmark.y * 480) 
                             calibration = "Ok"
                     else:
                         calibration_time = None
-                        progress2 = 0.0
+                        progress_calibration1 = 0.0
 
                     if calibration == "Ok":
                         # Capture hand position
@@ -236,14 +235,14 @@ while True:
                             distances.pop(0)
                             distance = average_distance(distances)
 
-                        if 170 < right_elbow_angle < 180 and 100 < right_hip_angle < 140 and 150 < rigth_knee_angle < 180 and 110 < left_knee_angle < 140:
+                        if 170 < right_elbow_angle < 180 and 70 < right_hip_angle < 140 and 90 < left_knee_angle < 140: # and 150 < rigth_knee_angle < 180: 
                             pose_correct = "Correct"
                             if pose_correct_start_time is None:
                                 pose_correct_start_time = time.time()
                             progress = (time.time() - pose_correct_start_time) / pose_held_duration
                             if progress >= 1.0:
                                 progress = 1.0
-                                final_distance = distance - 3.974
+                                final_distance = distance - 6.192
                                 break
                         else:
                             pose_correct_start_time = None
@@ -255,11 +254,11 @@ while True:
                         draw_dynamic_angle_arc(image,right_hip_coords, right_knee_coords, right_ankle_coords, rigth_knee_angle)
                         cv2.putText(image, f'Knee Angle: {rigth_knee_angle:.2f}', right_knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-                        draw_dynamic_angle_arc(image, right_shoulder_coords, right_hip_coords, right_knee_coords, right_hip_angle)
-                        cv2.putText(image, f'Hip Angle: {right_hip_angle:.2f}', right_hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        # draw_dynamic_angle_arc(image, right_shoulder_coords, right_hip_coords, right_knee_coords, right_hip_angle)
+                        # cv2.putText(image, f'Hip Angle: {right_hip_angle:.2f}', right_hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-                        draw_dynamic_angle_arc(image, right_shoulder_coords, right_elbow_coords, right_wrist_coords, right_elbow_angle)
-                        cv2.putText(image, f'Elbow Angle: {right_elbow_angle:.2f}', right_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        # draw_dynamic_angle_arc(image, right_shoulder_coords, right_elbow_coords, right_wrist_coords, right_elbow_angle)
+                        # cv2.putText(image, f'Elbow Angle: {right_elbow_angle:.2f}', right_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
                         
                         cv2.putText(image, f"Dist: {distance:.2f} cm", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
@@ -281,8 +280,6 @@ while True:
         cv2.putText(final_frame,f'Press "r" to restart or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
         
         cv2.imshow('Final Results', final_frame)
-
-        # time.sleep(2)
 
         # real_value = float(input("Qual o valor real?"))
         # distance = float(distance)
