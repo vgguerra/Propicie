@@ -101,12 +101,15 @@ def calculate_angle(a, b, c):
 
     return angulo_graus
 
+
 # Load existing spreadsheet
 arquivo = "dados.xlsx"
 planilha = load_workbook(arquivo)
 sheet = planilha.active
 
 progress_calibration1 = 0
+
+repeats = 2
 
 while True:
 
@@ -147,123 +150,239 @@ while True:
             if calibration != "Ok":
                 calibration = "Wrong Position"
 
-            # Draw the pose and right hand landmarks
-            if results.pose_landmarks and results.right_hand_landmarks:
-                pose_landmarks = results.pose_landmarks.landmark
-                hand_landmarks = results.right_hand_landmarks.landmark
+            if repeats == 0 or repeats == 1:
 
-                required_pose_landmarks = [
-                    pose_landmarks[16], pose_landmarks[20], pose_landmarks[30],
-                    pose_landmarks[24], pose_landmarks[26], pose_landmarks[28],
-                    pose_landmarks[12], pose_landmarks[14],pose_landmarks[25]
-                ]
-                
-                if all(lm.visibility > 0.0 for lm in required_pose_landmarks):
-   
-                    # Draws the body landmarks
-                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS, 
-                                            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+                # Draw the pose and right hand landmarks
+                if results.pose_landmarks and results.right_hand_landmarks:
+                    pose_landmarks = results.pose_landmarks.landmark
+                    hand_landmarks = results.right_hand_landmarks.landmark
 
-                
-                    # Draws the hand landmarks
-                    mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
-                                            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+                    required_pose_landmarks = [
+                        pose_landmarks[16], pose_landmarks[20], pose_landmarks[30],
+                        pose_landmarks[24], pose_landmarks[26], pose_landmarks[28],
+                        pose_landmarks[12], pose_landmarks[14],pose_landmarks[25]
+                    ]
                     
-                    right_hip = np.array([pose_landmarks[24].x, pose_landmarks[24].y])
-                    right_knee = np.array([pose_landmarks[26].x, pose_landmarks[26].y])
-                    right_ankle = np.array([pose_landmarks[28].x, pose_landmarks[28].y])
-                    right_shoulder = np.array([pose_landmarks[12].x, pose_landmarks[12].y])
-                    right_elbow = np.array([pose_landmarks[14].x, pose_landmarks[14].y])
-                    right_wrist = np.array([pose_landmarks[16].x, pose_landmarks[16].y])
+                    if all(lm.visibility > 0.0 for lm in required_pose_landmarks):
+    
+                        # Draws the body landmarks
+                        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS, 
+                                                landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
-                    left_hip = np.array([pose_landmarks[23].x,pose_landmarks[23].y])
-                    left_knee = np.array([pose_landmarks[25].x,pose_landmarks[25].y])
-                    left_ankle = np.array([pose_landmarks[27].x,pose_landmarks[27].y])
+                    
+                        # Draws the hand landmarks
+                        mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
+                                                landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+                        
+                        right_hip = np.array([pose_landmarks[24].x, pose_landmarks[24].y])
+                        right_knee = np.array([pose_landmarks[26].x, pose_landmarks[26].y])
+                        right_ankle = np.array([pose_landmarks[28].x, pose_landmarks[28].y])
+                        right_shoulder = np.array([pose_landmarks[12].x, pose_landmarks[12].y])
+                        right_elbow = np.array([pose_landmarks[14].x, pose_landmarks[14].y])
+                        right_wrist = np.array([pose_landmarks[16].x, pose_landmarks[16].y])
 
-                    rigth_knee_angle = calculate_angle(right_hip,right_knee,right_ankle)
-                    left_knee_angle = calculate_angle(left_hip,left_knee,left_ankle)
-                    right_hip_angle = calculate_angle(right_shoulder,right_hip,right_knee)
-                    right_elbow_angle = calculate_angle(right_shoulder,right_elbow,right_wrist)
+                        left_hip = np.array([pose_landmarks[23].x,pose_landmarks[23].y])
+                        left_knee = np.array([pose_landmarks[25].x,pose_landmarks[25].y])
+                        left_ankle = np.array([pose_landmarks[27].x,pose_landmarks[27].y])
 
-                    right_shoulder_coords = tuple(np.multiply(right_shoulder[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    right_knee_coords = tuple(np.multiply(right_knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    right_hip_coords = tuple(np.multiply(right_hip[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    right_ankle_coords = tuple(np.multiply(right_ankle[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    right_elbow_coords = tuple(np.multiply(right_elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    right_wrist_coords = tuple(np.multiply(right_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        rigth_knee_angle = calculate_angle(right_hip,right_knee,right_ankle)
+                        left_knee_angle = calculate_angle(left_hip,left_knee,left_ankle)
+                        right_hip_angle = calculate_angle(right_shoulder,right_hip,right_knee)
+                        right_elbow_angle = calculate_angle(right_shoulder,right_elbow,right_wrist)
 
-                    left_knee_coords = tuple(np.multiply(left_knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    left_hip_coords = tuple(np.multiply(left_hip[:2], [frame.shape[1], frame.shape[0]]).astype(int))
-                    left_ankle_coords = tuple(np.multiply(left_ankle[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        right_shoulder_coords = tuple(np.multiply(right_shoulder[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        right_knee_coords = tuple(np.multiply(right_knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        right_hip_coords = tuple(np.multiply(right_hip[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        right_ankle_coords = tuple(np.multiply(right_ankle[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        right_elbow_coords = tuple(np.multiply(right_elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        right_wrist_coords = tuple(np.multiply(right_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
 
-                    cv2.putText(image, f'Left Knee Angle: {left_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                        left_knee_coords = tuple(np.multiply(left_knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        left_hip_coords = tuple(np.multiply(left_hip[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        left_ankle_coords = tuple(np.multiply(left_ankle[:2], [frame.shape[1], frame.shape[0]]).astype(int))
 
-                    draw_dynamic_angle_arc(image,right_hip_coords, right_knee_coords, right_ankle_coords, rigth_knee_angle)
-                    cv2.putText(image, f'Knee Angle: {rigth_knee_angle:.2f}', right_knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
-
-                    draw_dynamic_angle_arc(image, right_shoulder_coords, right_hip_coords, right_knee_coords, right_hip_angle)
-                    cv2.putText(image, f'Hip Angle: {right_hip_angle:.2f}', right_hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-
-                    # draw_dynamic_angle_arc(image, right_shoulder_coords, right_elbow_coords, right_wrist_coords, right_elbow_angle)
-                    # cv2.putText(image, f'Elbow Angle: {right_elbow_angle:.2f}', right_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                
-                    if 150 < rigth_knee_angle < 180 and 120 < right_hip_angle < 150 and 90 < left_knee_angle < 120 and progress_calibration != 1.0:
-                        calibration = "Right Position"
-                        if calibration_time is None:
-                            calibration_time = time.time()
-                        progress_calibration1 = (time.time() - calibration_time) / calibration_held_duration
-                        if progress_calibration1 >= 1.0:
-                            progress_calibration = 1.0
-                            foot_landmark = pose_landmarks[32]
-                            foot = int(foot_landmark.x * 640), int(foot_landmark.y * 480) 
-                            calibration = "Ok"
-                    else:
-                        calibration_time = None
-                        progress_calibration1 = 0.0
-
-                    if calibration == "Ok":
-                        # Capture hand position
-                        hand_landmark = hand_landmarks[12]  
-                        hand = int(hand_landmark.x * 640), int(hand_landmark.y * 480)
-
-                        # Calculate distance
-                        dist_pixels = calculate_distance_2d(hand, foot)
-                        distance = dist_pixels * PIXEL_TO_CM_RATIO  
-
-                        distances.append(distance)
-                        if len(distances) > average_over:
-                            distances.pop(0)
-                            distance = average_distance(distances)
-
-                        if 170 < right_elbow_angle < 180 and 70 < right_hip_angle < 140 and 90 < left_knee_angle < 140: # and 150 < rigth_knee_angle < 180: 
-                            pose_correct = "Correct"
-                            if pose_correct_start_time is None:
-                                pose_correct_start_time = time.time()
-                            progress = (time.time() - pose_correct_start_time) / pose_held_duration
-                            if progress >= 1.0:
-                                progress = 1.0
-                                final_distance = distance - 6.192
-                                break
-                        else:
-                            pose_correct_start_time = None
-                            progress = 0.0
-
-                        # draw_dynamic_angle_arc(image,left_hip_coords,left_knee_coords,left_ankle_coords,left_knee_angle)
-                        cv2.putText(image, f'Left Knee Angle: {left_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        cv2.putText(image, f'Left Knee Angle: {left_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
                         draw_dynamic_angle_arc(image,right_hip_coords, right_knee_coords, right_ankle_coords, rigth_knee_angle)
-                        cv2.putText(image, f'Knee Angle: {rigth_knee_angle:.2f}', right_knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        cv2.putText(image, f'Knee Angle: {rigth_knee_angle:.2f}', right_knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
 
-                        # draw_dynamic_angle_arc(image, right_shoulder_coords, right_hip_coords, right_knee_coords, right_hip_angle)
-                        # cv2.putText(image, f'Hip Angle: {right_hip_angle:.2f}', right_hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        draw_dynamic_angle_arc(image, right_shoulder_coords, right_hip_coords, right_knee_coords, right_hip_angle)
+                        cv2.putText(image, f'Hip Angle: {right_hip_angle:.2f}', right_hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
                         # draw_dynamic_angle_arc(image, right_shoulder_coords, right_elbow_coords, right_wrist_coords, right_elbow_angle)
-                        # cv2.putText(image, f'Elbow Angle: {right_elbow_angle:.2f}', right_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        # cv2.putText(image, f'Elbow Angle: {right_elbow_angle:.2f}', right_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    
+                        if 150 < rigth_knee_angle < 180 and 120 < right_hip_angle < 150 and 90 < left_knee_angle < 120 and progress_calibration != 1.0:
+                            calibration = "Right Position"
+                            if calibration_time is None:
+                                calibration_time = time.time()
+                            progress_calibration1 = (time.time() - calibration_time) / calibration_held_duration
+                            if progress_calibration1 >= 1.0:
+                                progress_calibration = 1.0
+                                foot_landmark = pose_landmarks[32]
+                                foot = int(foot_landmark.x * 640), int(foot_landmark.y * 480) 
+                                calibration = "Ok"
+                        else:
+                            calibration_time = None
+                            progress_calibration1 = 0.0
 
+                        if calibration == "Ok":
+                            # Capture hand position
+                            hand_landmark = hand_landmarks[12]  
+                            hand = int(hand_landmark.x * 640), int(hand_landmark.y * 480)
+
+                            # Calculate distance
+                            dist_pixels = calculate_distance_2d(hand, foot)
+                            distance = dist_pixels * PIXEL_TO_CM_RATIO  
+
+                            distances.append(distance)
+                            if len(distances) > average_over:
+                                distances.pop(0)
+                                distance = average_distance(distances)
+
+                            if 170 < right_elbow_angle < 180 and 70 < right_hip_angle < 140 and 90 < left_knee_angle < 140: # and 150 < rigth_knee_angle < 180: 
+                                pose_correct = "Correct"
+                                if pose_correct_start_time is None:
+                                    pose_correct_start_time = time.time()
+                                progress = (time.time() - pose_correct_start_time) / pose_held_duration
+                                if progress >= 1.0:
+                                    progress = 1.0
+                                    final_distance = distance - 6.192
+                                    break
+                            else:
+                                pose_correct_start_time = None
+                                progress = 0.0
+
+                            # draw_dynamic_angle_arc(image,left_hip_coords,left_knee_coords,left_ankle_coords,left_knee_angle)
+                            cv2.putText(image, f'Left Knee Angle: {left_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+                            draw_dynamic_angle_arc(image,right_hip_coords, right_knee_coords, right_ankle_coords, rigth_knee_angle)
+                            cv2.putText(image, f'Knee Angle: {rigth_knee_angle:.2f}', right_knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+                            # draw_dynamic_angle_arc(image, right_shoulder_coords, right_hip_coords, right_knee_coords, right_hip_angle)
+                            # cv2.putText(image, f'Hip Angle: {right_hip_angle:.2f}', right_hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+                            # draw_dynamic_angle_arc(image, right_shoulder_coords, right_elbow_coords, right_wrist_coords, right_elbow_angle)
+                            # cv2.putText(image, f'Elbow Angle: {right_elbow_angle:.2f}', right_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+                            cv2.putText(image, f"Dist: {distance:.2f} cm", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+                            cv2.putText(image, f'Pose: {pose_correct}', (5, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+            if repeats == 2 or repeats == 3:    
+
+                # Draw the pose and right hand landmarks
+                if results.pose_landmarks and results.left_hand_landmarks:
+                    pose_landmarks = results.pose_landmarks.landmark
+                    hand_landmarks = results.left_hand_landmarks.landmark
+
+                    required_pose_landmarks = [
+                        pose_landmarks[15], pose_landmarks[19], pose_landmarks[29],
+                        pose_landmarks[23], pose_landmarks[25], pose_landmarks[27],
+                        pose_landmarks[11], pose_landmarks[13],pose_landmarks[26]
+                    ]
+                    
+                    if all(lm.visibility > 0.0 for lm in required_pose_landmarks):
+    
+                        # Draws the body landmarks
+                        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS, 
+                                                landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+
+                    
+                        # Draws the hand landmarks
+                        mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
+                                                landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
                         
-                        cv2.putText(image, f"Dist: {distance:.2f} cm", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
-                        cv2.putText(image, f'Pose: {pose_correct}', (5, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        left_hip = np.array([pose_landmarks[23].x, pose_landmarks[23].y])
+                        left_knee = np.array([pose_landmarks[25].x, pose_landmarks[25].y])
+                        left_ankle = np.array([pose_landmarks[27].x, pose_landmarks[27].y])
+                        left_shoulder = np.array([pose_landmarks[11].x, pose_landmarks[11].y])
+                        left_elbow = np.array([pose_landmarks[13].x, pose_landmarks[13].y])
+                        left_wrist = np.array([pose_landmarks[15].x, pose_landmarks[15].y])
 
+                        right_hip = np.array([pose_landmarks[24].x,pose_landmarks[24].y])
+                        right_knee = np.array([pose_landmarks[26].x,pose_landmarks[26].y])
+                        right_ankle = np.array([pose_landmarks[28].x,pose_landmarks[28].y])
+
+                        left_knee_angle = calculate_angle(left_hip,left_knee,left_ankle)
+                        right_knee_angle = calculate_angle(right_hip,right_knee,right_ankle)
+                        left_hip_angle = calculate_angle(left_shoulder,left_hip,left_knee)
+                        left_elbow_angle = calculate_angle(left_shoulder,left_elbow,left_wrist)
+
+                        left_shoulder_coords = tuple(np.multiply(left_shoulder[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        left_knee_coords = tuple(np.multiply(left_knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        left_hip_coords = tuple(np.multiply(left_hip[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        left_ankle_coords = tuple(np.multiply(left_ankle[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        left_elbow_coords = tuple(np.multiply(left_elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        left_wrist_coords = tuple(np.multiply(left_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+
+                        right_knee_coords = tuple(np.multiply(right_knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        right_hip_coords = tuple(np.multiply(right_hip[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+                        right_ankle_coords = tuple(np.multiply(right_ankle[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+
+                        cv2.putText(image, f'Left Knee Angle: {right_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+
+                        draw_dynamic_angle_arc(image,left_hip_coords, left_knee_coords, left_ankle_coords, left_knee_angle)
+                        cv2.putText(image, f'Knee Angle: {left_knee_angle:.2f}', left_knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
+
+                        draw_dynamic_angle_arc(image, left_shoulder_coords, left_hip_coords, left_knee_coords, left_hip_angle)
+                        cv2.putText(image, f'Hip Angle: {left_hip_angle:.2f}', left_hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+
+                        if 150 < left_knee_angle < 180 and 120 < left_hip_angle < 150 and 90 < right_knee_angle < 120 and progress_calibration != 1.0:
+                            calibration = "Right Position"
+                            if calibration_time is None:
+                                calibration_time = time.time()
+                            progress_calibration1 = (time.time() - calibration_time) / calibration_held_duration
+                            if progress_calibration1 >= 1.0:
+                                progress_calibration = 1.0
+                                foot_landmark = pose_landmarks[31]
+                                foot = int(foot_landmark.x * 640), int(foot_landmark.y * 480) 
+                                calibration = "Ok"
+                        else:
+                            calibration_time = None
+                            progress_calibration1 = 0.0
+
+                        if calibration == "Ok":
+                            # Capture hand position
+                            hand_landmark = hand_landmarks[12]  
+                            hand = int(hand_landmark.x * 640), int(hand_landmark.y * 480)
+
+                            # Calculate distance
+                            dist_pixels = calculate_distance_2d(hand, foot)
+                            distance = dist_pixels * PIXEL_TO_CM_RATIO  
+
+                            distances.append(distance)
+                            if len(distances) > average_over:
+                                distances.pop(0)
+                                distance = average_distance(distances)
+
+                            if 170 < left_elbow_angle < 180 and 70 < left_hip_angle < 140 and 90 < right_knee_angle < 140: # and 150 < left_knee_angle < 180: 
+                                pose_correct = "Correct"
+                                if pose_correct_start_time is None:
+                                    pose_correct_start_time = time.time()
+                                progress = (time.time() - pose_correct_start_time) / pose_held_duration
+                                if progress >= 1.0:
+                                    progress = 1.0
+                                    final_distance = distance - 6.192
+                                    break
+                            else:
+                                pose_correct_start_time = None
+                                progress = 0.0
+
+                            # draw_dynamic_angle_arc(image,left_hip_coords,left_knee_coords,left_ankle_coords,left_knee_angle)
+                            cv2.putText(image, f'Left Knee Angle: {right_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+                            draw_dynamic_angle_arc(image,left_hip_coords, left_knee_coords, left_ankle_coords, left_knee_angle)
+                            cv2.putText(image, f'Knee Angle: {left_knee_angle:.2f}', left_knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+                            # draw_dynamic_angle_arc(image, left_shoulder_coords, left_hip_coords, left_knee_coords, left_hip_angle)
+                            # cv2.putText(image, f'Hip Angle: {left_hip_angle:.2f}', left_hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+                            # draw_dynamic_angle_arc(image, left_shoulder_coords, left_elbow_coords, left_wrist_coords, left_elbow_angle)
+                            # cv2.putText(image, f'Elbow Angle: {left_elbow_angle:.2f}', left_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+                            cv2.putText(image, f"Dist: {distance:.2f} cm", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+                            cv2.putText(image, f'Pose: {pose_correct}', (5, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        
             cv2.putText(image, f'Calibration: {calibration}', (1000, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.imshow('MediaPipe Holistic', image)
 
