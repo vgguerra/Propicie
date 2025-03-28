@@ -7,7 +7,7 @@ import math
 import cv2
 
 # Approximate ratio of pixels to cm at 1 meter distance
-PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm at 1m distance
+PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm
 
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
