@@ -167,49 +167,46 @@ def check_posture(pose_correct_start_time, knee_angle, opposite_knee_angle, hip_
 # Function to calculate all the angles needed to perform the exercise
 def calculate_angles(repeats, pose_landmarks):
 
-    if repeats in [0,1]:
-        shoulder = np.array([pose_landmarks[12].x, pose_landmarks[12].y])
-        elbow = np.array([pose_landmarks[14].x, pose_landmarks[14].y])
-        wrist = np.array([pose_landmarks[16].x, pose_landmarks[16].y])
-        hip = np.array([pose_landmarks[24].x, pose_landmarks[24].y])
-        knee = np.array([pose_landmarks[26].x, pose_landmarks[26].y])
-        ankle = np.array([pose_landmarks[28].x, pose_landmarks[28].y])
+    side = "right" if repeats in [0,1] else "left"
 
-        opposite_hip = np.array([pose_landmarks[23].x,pose_landmarks[23].y])
-        opposite_knee = np.array([pose_landmarks[25].x,pose_landmarks[25].y])
-        opposite_ankle = np.array([pose_landmarks[27].x,pose_landmarks[27].y])
+    pose_indices = {
+        "right": [12,14,16,24,26,28,23,25,27],
+        "left": [11,13,15,23,25,27,24,26,28]
+    }
 
-    else:
-        shoulder = np.array([pose_landmarks[11].x, pose_landmarks[11].y])
-        elbow = np.array([pose_landmarks[13].x, pose_landmarks[13].y])
-        wrist = np.array([pose_landmarks[15].x, pose_landmarks[15].y])
-        hip = np.array([pose_landmarks[23].x, pose_landmarks[23].y])
-        knee = np.array([pose_landmarks[25].x, pose_landmarks[25].y])
-        ankle = np.array([pose_landmarks[27].x, pose_landmarks[27].y])
-
-        opposite_hip = np.array([pose_landmarks[24].x,pose_landmarks[24].y])
-        opposite_knee = np.array([pose_landmarks[26].x,pose_landmarks[26].y])        
-        opposite_ankle = np.array([pose_landmarks[28].x,pose_landmarks[28].y])
+    indices = pose_indices[side]
+    
+    shoulder = np.array([pose_landmarks[indices[0]].x, pose_landmarks[indices[0]].y])
+    elbow = np.array([pose_landmarks[indices[1]].x, pose_landmarks[indices[1]].y])
+    wrist = np.array([pose_landmarks[indices[2]].x, pose_landmarks[indices[2]].y])
+    hip = np.array([pose_landmarks[indices[3]].x, pose_landmarks[indices[3]].y])
+    knee = np.array([pose_landmarks[indices[4]].x, pose_landmarks[indices[4]].y])
+    ankle = np.array([pose_landmarks[indices[5]].x, pose_landmarks[indices[5]].y])
+    
+    opposite_hip = np.array([pose_landmarks[indices[6]].x, pose_landmarks[indices[6]].y])
+    opposite_knee = np.array([pose_landmarks[indices[7]].x, pose_landmarks[indices[7]].y])
+    opposite_ankle = np.array([pose_landmarks[indices[8]].x, pose_landmarks[indices[8]].y])
 
     return calculate_angle(hip,knee,ankle),calculate_angle(opposite_hip,opposite_knee,opposite_ankle),calculate_angle(shoulder,hip,knee), calculate_angle(shoulder,elbow,wrist)
 
 # Function to draw all the arcs needed to analyze whether the program is working during the testing phase
 def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_angle, pose_landmarks, image ,frame):
-    if repeats in [0,1]:
-        shoulder = np.array([pose_landmarks[12].x, pose_landmarks[12].y])
-        elbow = np.array([pose_landmarks[14].x, pose_landmarks[14].y])
-        wrist = np.array([pose_landmarks[16].x, pose_landmarks[16].y])
-        hip = np.array([pose_landmarks[24].x,pose_landmarks[24].y])
-        knee = np.array([pose_landmarks[26].x,pose_landmarks[26].y])
-        ankle = np.array([pose_landmarks[28].x,pose_landmarks[28].y])
 
-    else:
-        shoulder = np.array([pose_landmarks[11].x, pose_landmarks[11].y])
-        elbow = np.array([pose_landmarks[13].x, pose_landmarks[13].y])
-        wrist = np.array([pose_landmarks[15].x, pose_landmarks[15].y])
-        hip = np.array([pose_landmarks[23].x,pose_landmarks[23].y])
-        knee = np.array([pose_landmarks[25].x,pose_landmarks[25].y])
-        ankle = np.array([pose_landmarks[27].x,pose_landmarks[27].y])
+    side = "right" if repeats in [0,1] else "left"
+
+    pose_indices = {
+        "right": [12,14,16,24,26,28],
+        "left": [11,13,15,23,25,27]
+    }
+
+    indices = pose_indices[side]
+
+    shoulder = np.array([pose_landmarks[indices[0]].x, pose_landmarks[indices[0]].y])
+    elbow = np.array([pose_landmarks[indices[1]].x, pose_landmarks[indices[1]].y])
+    wrist = np.array([pose_landmarks[indices[2]].x, pose_landmarks[indices[2]].y])
+    hip = np.array([pose_landmarks[indices[3]].x, pose_landmarks[indices[3]].y])
+    knee = np.array([pose_landmarks[indices[4]].x, pose_landmarks[indices[4]].y])
+    ankle = np.array([pose_landmarks[indices[5]].x, pose_landmarks[indices[5]].y])
 
     shoulder_coords = tuple(np.multiply(shoulder[:2], [frame.shape[1], frame.shape[0]]).astype(int))
     knee_coords = tuple(np.multiply(knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
@@ -259,7 +256,7 @@ def draw_landmarks(image, results, repeats):
                                   landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
 # Function to process the exercise Sit and Reach
-def process_exercise():
+def process_exercise(repeats):
     
     # variable initialization
     calibration_held_duration = 5
@@ -331,7 +328,7 @@ sheet = planilha.active
 repeats = 0
 
 while repeats < 4:
-    final_distance = process_exercise()
+    final_distance = process_exercise(repeats)
     # Final result visualization
     if final_distance is not None:
         final_visualization(final_distance)
