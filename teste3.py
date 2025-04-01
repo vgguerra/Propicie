@@ -18,7 +18,7 @@ print("Arquivo Excel criado com sucesso!")'''
 
 
 # Ler da tabela
-
+"""
 arquivo = "dados.xlsx"
 df = pd.read_excel(arquivo)
 
@@ -30,5 +30,12 @@ for col in coluna:
     soma += col 
 
 
-print(f"O erro aproximado é de {soma/tamanho:.3f}")
+print(f"O erro aproximado é de {soma/tamanho:.3f}")"""
+
+teste = [12,45]
+
+opa = max(teste)
+
+print(opa)
+
 

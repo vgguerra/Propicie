@@ -75,14 +75,29 @@ def calculate_angle(a, b, c):
     return angulo_graus
 
 # Function to show the final display
-def final_visualization(final_distance):
-    final_frame = np.zeros((500, 800, 3), dtype=np.uint8) 
+def final_visualization(left,right):
+    final_frame = np.zeros((500,800,3),dtype=np.uint8)
+    cv2.putText(final_frame,f'Exercise completed',(200,100),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+    cv2.putText(final_frame, f'Minimum distance of the right leg: {left :.2f} cm', (40, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_frame, f'Minimum distance of the left leg: {right :.2f} cm', (40, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_frame,f'Press "q" to finish the exercise',(200,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
+
+    cv2.imshow("Final results",final_frame)
+
+    while True:
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):  # Press 'q' to exit
+            finish_program() 
+
+# Function to show the performance screen for that attempt
+def final_repetition_visualization(final_distance):
+    final_repetition_frame = np.zeros((500, 800, 3), dtype=np.uint8) 
     
-    cv2.putText(final_frame, f'Exercise Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(final_frame, f'Final Distance: {final_distance :.2f} centimeters', (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(final_frame,f'Press "r" to restart or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
+    cv2.putText(final_repetition_frame, f'Repetition Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+    cv2.putText(final_repetition_frame, f'Final Distance: {final_distance :.2f} centimeters', (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_repetition_frame,f'Press "c" to continue or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
     
-    cv2.imshow('Final Results', final_frame)
+    cv2.imshow('Final Repetition Results', final_repetition_frame)
 
     # real_value = float(input("Qual o valor real?"))
     # distance = float(distance)
@@ -91,12 +106,11 @@ def final_visualization(final_distance):
     # nova_linha = [real_value, distance, erro]
     # sheet.append(nova_linha)
     # planilha.save(arquivo)
-    
-    # Allow the user to close the final result window with 'q'
+
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('r'):  # Press 'r' to restart the exercise
-            cv2.destroyWindow('Final Results')
+        if key == ord('c'):  # Press 'r' to continue the exercise
+            cv2.destroyWindow('Final Repetition Results')
             break
         elif key == ord('q'):  # Press 'q' to exit
             finish_program() 
@@ -154,7 +168,7 @@ def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee
 # Function to check if the posture is right
 def check_posture(pose_correct_start_time, knee_angle, opposite_knee_angle, hip_angle, elbow_angle, pose_held_duration, progress, distance):
     
-    if 170 < elbow_angle < 180 and 70 < hip_angle < 140 and 90 < opposite_knee_angle < 140:
+    if 160 < elbow_angle < 180 and 70 < hip_angle < 140 and 90 < opposite_knee_angle < 140:
         if pose_correct_start_time is None:
             pose_correct_start_time = time.time()
         progress = (time.time() - pose_correct_start_time) / pose_held_duration
@@ -327,15 +341,26 @@ sheet = planilha.active
 
 repeats = 0
 
+distances_right = []
+distances_left = []
+
 while repeats < 4:
     final_distance = process_exercise(repeats)
-    # Final result visualization
+
     if final_distance is not None:
-        final_visualization(final_distance)
+        if repeats in [0,1]: distances_right.append(final_distance) 
+        else: distances_left.append(final_distance)
+
+        final_repetition_visualization(final_distance)
+
         repeats += 1
 
     else:
         print("Exercise not performed correctly")
         finish_program()
+
+min_left,min_right = min(distances_left), min(distances_right)
+
+final_visualization(min_left,min_right)
 
 finish_program()
