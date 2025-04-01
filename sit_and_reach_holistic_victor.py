@@ -9,6 +9,25 @@ import cv2
 # Approximate ratio of pixels to cm at 1 meter distance
 PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm
 
+# Values min's and max's of angles
+MIN_ELBOW_ANGLE = 160
+MAX_ELBOW_ANGLE = 180
+
+MIN_KNEE_ANGLE = 150
+MAX_KNEE_ANGLE = 180
+
+MIN_CALIBRATION_HIP_ANGLE = 120
+MAX_CALIBRATION_HIP_ANGLE = 150
+
+MIN_OPPOSITE_KNEE_ANGLE = 90
+MAX_OPPOSITE_KNEE_ANGLE = 130
+
+MIN_POSTURE_HIP_ANGLE = 90
+MAX_POSTURE_HIP_ANGLE = 130
+
+# Average error
+ERROR = 6.192
+
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
 
@@ -152,7 +171,7 @@ def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee
     else: 
         foot_index = 31
 
-    if 150 < knee_angle < 180 and 120 < hip_angle < 150 and 90 < opposite_knee_angle < 120 and progress_calibration1 == 0.0:
+    if MIN_KNEE_ANGLE < knee_angle < MAX_KNEE_ANGLE and MIN_CALIBRATION_HIP_ANGLE < hip_angle < MAX_CALIBRATION_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE and progress_calibration1 == 0.0:
         if calibration_time is None:
             calibration_time = time.time()
         progress_calibration = (time.time() - calibration_time) / calibration_held_duration
@@ -168,12 +187,12 @@ def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee
 # Function to check if the posture is right
 def check_posture(pose_correct_start_time, knee_angle, opposite_knee_angle, hip_angle, elbow_angle, pose_held_duration, progress, distance):
     
-    if 160 < elbow_angle < 180 and 70 < hip_angle < 140 and 90 < opposite_knee_angle < 140:
+    if MIN_ELBOW_ANGLE < elbow_angle < MAX_ELBOW_ANGLE and MIN_POSTURE_HIP_ANGLE < hip_angle < MAX_POSTURE_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE:
         if pose_correct_start_time is None:
             pose_correct_start_time = time.time()
         progress = (time.time() - pose_correct_start_time) / pose_held_duration
         if progress >= 1.0:
-            final_distance = distance - 6.192
+            final_distance = distance - ERROR
             return "Correct", min(progress, 1.0), pose_correct_start_time,final_distance
         return "Correct", min(progress, 1.0), pose_correct_start_time, None
     return "Incorrect", 0.0, None, None
