@@ -13,6 +13,9 @@ PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm
 MIN_ELBOW_ANGLE = 160
 MAX_ELBOW_ANGLE = 180
 
+MIN_OPPOSITE_ELBOW_ANGLE = 160
+MAX_OPPOSITE_ELBOW_ANGLE = 180
+
 MIN_KNEE_ANGLE = 150
 MAX_KNEE_ANGLE = 180
 
@@ -185,9 +188,9 @@ def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee
     return "Ok", 1.0, calibration_time, foot, 1.0
 
 # Function to check if the posture is right
-def check_posture(pose_correct_start_time, knee_angle, opposite_knee_angle, hip_angle, elbow_angle, pose_held_duration, progress, distance):
+def check_posture(pose_correct_start_time, knee_angle, opposite_knee_angle, hip_angle, elbow_angle,opposite_elbow_angle, pose_held_duration, progress, distance):
     
-    if MIN_ELBOW_ANGLE < elbow_angle < MAX_ELBOW_ANGLE and MIN_POSTURE_HIP_ANGLE < hip_angle < MAX_POSTURE_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE:
+    if MIN_ELBOW_ANGLE < elbow_angle < MAX_ELBOW_ANGLE and MIN_OPPOSITE_ELBOW_ANGLE < opposite_elbow_angle < MAX_OPPOSITE_ELBOW_ANGLE and MIN_POSTURE_HIP_ANGLE < hip_angle < MAX_POSTURE_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE:
         if pose_correct_start_time is None:
             pose_correct_start_time = time.time()
         progress = (time.time() - pose_correct_start_time) / pose_held_duration
@@ -203,8 +206,8 @@ def calculate_angles(repeats, pose_landmarks):
     side = "right" if repeats in [0,1] else "left"
 
     pose_indices = {
-        "right": [12,14,16,24,26,28,23,25,27],
-        "left": [11,13,15,23,25,27,24,26,28]
+        "right": [12,14,16,24,26,28,23,25,27,11,13,15],
+        "left": [11,13,15,23,25,27,24,26,28,12,14,16]
     }
 
     indices = pose_indices[side]
@@ -215,15 +218,19 @@ def calculate_angles(repeats, pose_landmarks):
     hip = np.array([pose_landmarks[indices[3]].x, pose_landmarks[indices[3]].y])
     knee = np.array([pose_landmarks[indices[4]].x, pose_landmarks[indices[4]].y])
     ankle = np.array([pose_landmarks[indices[5]].x, pose_landmarks[indices[5]].y])
+
+    opposite_shoulder = np.array([pose_landmarks[indices[9]].x, pose_landmarks[indices[9]].y])
+    opposite_elbow = np.array([pose_landmarks[indices[10]].x, pose_landmarks[indices[10]].y])
+    opposite_wrist = np.array([pose_landmarks[indices[11]].x, pose_landmarks[indices[11]].y])
     
     opposite_hip = np.array([pose_landmarks[indices[6]].x, pose_landmarks[indices[6]].y])
     opposite_knee = np.array([pose_landmarks[indices[7]].x, pose_landmarks[indices[7]].y])
     opposite_ankle = np.array([pose_landmarks[indices[8]].x, pose_landmarks[indices[8]].y])
 
-    return calculate_angle(hip,knee,ankle),calculate_angle(opposite_hip,opposite_knee,opposite_ankle),calculate_angle(shoulder,hip,knee), calculate_angle(shoulder,elbow,wrist)
+    return calculate_angle(hip,knee,ankle),calculate_angle(opposite_hip,opposite_knee,opposite_ankle),calculate_angle(shoulder,hip,knee), calculate_angle(shoulder,elbow,wrist),calculate_angle(opposite_shoulder,opposite_elbow,opposite_wrist)
 
 # Function to draw all the arcs needed to analyze whether the program is working during the testing phase
-def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_angle, pose_landmarks, image ,frame):
+def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_angle, opposite_elbow_angle, pose_landmarks, image ,frame):
 
     side = "right" if repeats in [0,1] else "left"
 
