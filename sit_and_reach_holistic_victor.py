@@ -1,5 +1,5 @@
 from pykinect2 import PyKinectRuntime, PyKinectV2
-from openpyxl import load_workbook
+# from openpyxl import load_workbook
 import mediapipe as mp
 import numpy as np
 import time
@@ -355,15 +355,15 @@ def process_exercise(repeats):
             cv2.putText(image, f'Calibration: {calibration}', (1000, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.imshow('MediaPipe Holistic', image)
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q') or cv2.waitKey(1) &0xFF == ord('Q'):
                 finish_program()
 
     return final_distance
 
 # Load existing spreadsheet
-arquivo = "dados.xlsx"
-planilha = load_workbook(arquivo)
-sheet = planilha.active
+# arquivo = "dados.xlsx"
+# planilha = load_workbook(arquivo)
+# sheet = planilha.active
 
 repeats = 0
 
