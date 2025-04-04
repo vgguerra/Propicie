@@ -349,7 +349,7 @@ def process_exercise(repeats):
                     if final_distance != None:
                         break
 
-                    cv2.putText(image, f"Dist: {distance:.2f} cm", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+                    cv2.putText(image, f"Dist: {distance - ERROR:.2f} cm", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
                     cv2.putText(image, f'Pose: {pose_correct}', (5, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                         
             cv2.putText(image, f'Calibration: {calibration}', (1000, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
