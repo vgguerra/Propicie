@@ -1,5 +1,4 @@
 from pykinect2 import PyKinectRuntime, PyKinectV2
-# from openpyxl import load_workbook
 import mediapipe as mp
 import numpy as np
 import time
@@ -359,11 +358,6 @@ def process_exercise(repeats):
                 finish_program()
 
     return final_distance
-
-# Load existing spreadsheet
-# arquivo = "dados.xlsx"
-# planilha = load_workbook(arquivo)
-# sheet = planilha.active
 
 repeats = 0
 
