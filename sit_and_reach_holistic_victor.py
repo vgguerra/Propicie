@@ -30,6 +30,11 @@ MAX_POSTURE_HIP_ANGLE = 130
 # Average error
 ERROR = 6.192
 
+# variable initialization
+CALIBRATION_HELD_DURATION = 5
+POSE_HELD_DURATION = 5 
+AVERAGE_OVER = 6
+
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
 
@@ -234,8 +239,8 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     side = "right" if repeats in [0,1] else "left"
 
     pose_indices = {
-        "right": [12,14,16,24,26,28],
-        "left": [11,13,15,23,25,27]
+        "right": [12,14,16,24,26,28,11,13,15],
+        "left": [11,13,15,23,25,27,12,14,16]
     }
 
     indices = pose_indices[side]
@@ -247,6 +252,7 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     knee = np.array([pose_landmarks[indices[4]].x, pose_landmarks[indices[4]].y])
     ankle = np.array([pose_landmarks[indices[5]].x, pose_landmarks[indices[5]].y])
 
+
     shoulder_coords = tuple(np.multiply(shoulder[:2], [frame.shape[1], frame.shape[0]]).astype(int))
     knee_coords = tuple(np.multiply(knee[:2], [frame.shape[1], frame.shape[0]]).astype(int))
     hip_coords = tuple(np.multiply(hip[:2], [frame.shape[1], frame.shape[0]]).astype(int))
@@ -254,7 +260,18 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     elbow_coords = tuple(np.multiply(elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
     wrist_coords = tuple(np.multiply(wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
 
+    opposite_shoulder = np.array([pose_landmarks[indices[6]].x,pose_landmarks[indices[6]].y])
+    opposite_elbow = np.array([pose_landmarks[indices[7]].x,pose_landmarks[indices[7]].y])
+    opposite_wrist = np.array([pose_landmarks[indices[8]].x,pose_landmarks[indices[8]].y])
+
+    opposite_shoulder_coords = tuple(np.multiply(opposite_shoulder[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+    opposite_elbow_coords = tuple(np.multiply(opposite_elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+    opposite_wrist_coords = tuple(np.multiply(opposite_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
+
     cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+
+    draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
 
     draw_dynamic_angle_arc(image,hip_coords, knee_coords, ankle_coords, knee_angle)
     cv2.putText(image, f'Knee Angle: {knee_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
@@ -296,18 +313,14 @@ def draw_landmarks(image, results, repeats):
 
 # Function to process the exercise Sit and Reach
 def process_exercise(repeats):
-    
-    # variable initialization
-    calibration_held_duration = 5
+
+    pose_correct_start_time = None
+    calibration = "Wrong Position"
     progress_calibration1 = 0
     progress_calibration = 0
-    calibration = "Wrong Position"
-    distances = []
-    average_over = 6
-    final_distance = None
-    pose_correct_start_time = None
     calibration_time = None
-    pose_held_duration = 8  
+    final_distance = None
+    distances = []
     foot = None
 
     while True:
@@ -326,7 +339,7 @@ def process_exercise(repeats):
                 angles = calculate_angles(repeats,pose_landmarks)
                 draw_angles_arcs(repeats, *angles, pose_landmarks, image, frame)
             
-                calibration,progress_calibration,calibration_time,foot,progress_calibration1 = check_calibration(calibration_time, foot, repeats, *angles[:3],progress_calibration,progress_calibration1, calibration_held_duration, pose_landmarks)
+                calibration,progress_calibration,calibration_time,foot,progress_calibration1 = check_calibration(calibration_time, foot, repeats, *angles[:3],progress_calibration,progress_calibration1, CALIBRATION_HELD_DURATION, pose_landmarks)
 
                 if calibration == "Ok":
                     # Capture hand position
@@ -339,11 +352,11 @@ def process_exercise(repeats):
 
                     # Calculate average distance
                     distances.append(distance)
-                    if len(distances) > average_over:
+                    if len(distances) > AVERAGE_OVER:
                         distances.pop(0)
                         distance = average_distance(distances)
 
-                    pose_correct, progress, pose_correct_start_time,final_distance = check_posture(pose_correct_start_time,*angles, pose_held_duration, progress, distance)
+                    pose_correct, progress, pose_correct_start_time,final_distance = check_posture(pose_correct_start_time,*angles, POSE_HELD_DURATION, progress, distance)
 
                     if final_distance != None:
                         break
