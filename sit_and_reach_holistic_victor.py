@@ -9,7 +9,7 @@ import cv2
 PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm
 
 # Values min's and max's of angles
-MIN_ELBOW_ANGLE = 160
+MIN_ELBOW_ANGLE = 165
 MAX_ELBOW_ANGLE = 180
 
 MIN_OPPOSITE_ELBOW_ANGLE = 160
@@ -24,7 +24,7 @@ MAX_CALIBRATION_HIP_ANGLE = 150
 MIN_OPPOSITE_KNEE_ANGLE = 90
 MAX_OPPOSITE_KNEE_ANGLE = 130
 
-MIN_POSTURE_HIP_ANGLE = 90
+MIN_POSTURE_HIP_ANGLE = 70
 MAX_POSTURE_HIP_ANGLE = 130
 
 # Average error for positive values
@@ -353,8 +353,8 @@ def process_exercise(repeats):
                     distance = dist_pixels * PIXEL_TO_CM_RATIO  
 
 
-                    cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                    cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    # cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    # cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
                     # Calculate average distance
                     distances.append(distance)
@@ -384,10 +384,10 @@ def process_exercise(repeats):
 
     return final_distance
 
-repeats = 0
-
 distances_right = []
 distances_left = []
+
+repeats = 0
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
