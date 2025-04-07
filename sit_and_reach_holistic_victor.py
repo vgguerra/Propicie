@@ -4,6 +4,9 @@ import numpy as np
 import time
 import math
 import cv2
+import pandas as pd
+
+caminho_arquivo = "./tabelas/dados.xlsx"
 
 # Approximate ratio of pixels to cm at 1 meter distance
 PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm
@@ -28,7 +31,7 @@ MIN_POSTURE_HIP_ANGLE = 90
 MAX_POSTURE_HIP_ANGLE = 130
 
 # Average error
-ERROR = 6.192
+ERROR    = 0
 
 # variable initialization
 CALIBRATION_HELD_DURATION = 5
@@ -199,7 +202,7 @@ def check_posture(pose_correct_start_time, knee_angle, opposite_knee_angle, hip_
             pose_correct_start_time = time.time()
         progress = (time.time() - pose_correct_start_time) / pose_held_duration
         if progress >= 1.0:
-            final_distance = distance - ERROR
+            final_distance = -distance 
             return "Correct", min(progress, 1.0), pose_correct_start_time,final_distance
         return "Correct", min(progress, 1.0), pose_correct_start_time, None
     return "Incorrect", 0.0, None, None
@@ -268,7 +271,7 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     opposite_elbow_coords = tuple(np.multiply(opposite_elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
     opposite_wrist_coords = tuple(np.multiply(opposite_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
 
-    cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    # cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
     cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
     draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
@@ -344,11 +347,19 @@ def process_exercise(repeats):
                 if calibration == "Ok":
                     # Capture hand position
                     hand_landmark = hand_landmarks[12]  
-                    hand = int(hand_landmark.x * 640), int(hand_landmark.y * 480)
-
+                    if repeats in [0,1]:
+                        hand = int(hand_landmark.x * 640), int((hand_landmark.y * 480) + 8)
+                    else:
+                        hand = int(hand_landmark.x * 640), int((hand_landmark.y * 480) + 12)
                     # Calculate distance
                     dist_pixels = calculate_distance_2d(hand, foot)
                     distance = dist_pixels * PIXEL_TO_CM_RATIO  
+
+                    
+
+                    cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+
 
                     # Calculate average distance
                     distances.append(distance)
@@ -359,6 +370,24 @@ def process_exercise(repeats):
                     pose_correct, progress, pose_correct_start_time,final_distance = check_posture(pose_correct_start_time,*angles, POSE_HELD_DURATION, progress, distance)
 
                     if final_distance != None:
+                        # caminho_arquivo = "./tabelas/dados.xlsx"
+                        # df = pd.read_excel(caminho_arquivo, engine="openpyxl")
+                        
+                        # real = input("Qual a distância real: ")
+                        # erro = np.abs(float(real) - float(final_distance))
+                        # nova_linha = {
+                        #             "Distância real": real,
+                        #             "Distância calculada": final_distance,
+                        #             "Erro": erro
+                        #         }
+                        # df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
+                        # df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
+                        if repeats in [0,1]:
+                            if hand[1] >= foot[1]:
+                                final_distance = -final_distance
+                        else:
+                            if hand[0] >= foot[0]:
+                                final_distance = -final_distance
                         break
 
                     cv2.putText(image, f"Dist: {distance - ERROR:.2f} cm", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)

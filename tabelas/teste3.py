@@ -1,25 +1,23 @@
+import os
 import pandas as pd
-
 
 
 # Criar tabela
 
-'''
-colunas = ["Distância real", "Distância calculada", "Erro"]
+os.makedirs("./tabelas", exist_ok=True)
 
+colunas = ["Distância real", "Distância calculada", "Erro"]
 df = pd.DataFrame(columns=colunas)
 
-df.to_excel("dados.xlsx", index=False, engine="openpyxl")
+df.to_excel("./tabelas/dados.xlsx", index=False, engine="openpyxl")
 
-print("Arquivo Excel criado com sucesso!")'''
-
-
+print("Arquivo Excel criado com sucesso!")
 
 
 
 # Ler da tabela
-"""
-arquivo = "dados.xlsx"
+
+"""arquivo = "./tabelas/dados.xlsx"
 df = pd.read_excel(arquivo)
 
 coluna = df["Erro"].values
@@ -31,11 +29,5 @@ for col in coluna:
 
 
 print(f"O erro aproximado é de {soma/tamanho:.3f}")"""
-
-teste = [12,45]
-
-opa = max(teste)
-
-print(opa)
 
 
