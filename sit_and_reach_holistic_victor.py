@@ -2,6 +2,7 @@ from pykinect2 import PyKinectRuntime, PyKinectV2
 import mediapipe as mp
 import numpy as np
 import time
+import pandas as pd
 import math
 import cv2
 
@@ -12,7 +13,7 @@ PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm
 MIN_ELBOW_ANGLE = 165
 MAX_ELBOW_ANGLE = 180
 
-MIN_OPPOSITE_ELBOW_ANGLE = 160
+MIN_OPPOSITE_ELBOW_ANGLE = 165
 MAX_OPPOSITE_ELBOW_ANGLE = 180
 
 MIN_KNEE_ANGLE = 150
@@ -365,6 +366,7 @@ def process_exercise(repeats):
                     pose_correct, progress, pose_correct_start_time,final_distance = check_posture(pose_correct_start_time,*angles, POSE_HELD_DURATION, progress, distance)
 
                     if final_distance != None:
+
                         if repeats in [0,1]:
                             if hand[1] >= foot[1] and distance > 1:
                                 final_distance = -(final_distance + ERROR)
@@ -389,10 +391,32 @@ distances_left = []
 
 repeats = 0
 
+idade = input("Qual a idade do utente? ")
+altura = input("Qual a altura do utente? ")
+peso = input("Qual o peso do utente? ")
+genero = input("Qual o gênero do utente? ")
+
 while repeats < 4:
     final_distance = process_exercise(repeats)
 
     if final_distance is not None:
+
+        
+        caminho_arquivo = "./tabelas/dados.xlsx"
+        df = pd.read_excel(caminho_arquivo, engine="openpyxl")
+        
+        real = input("Qual a distância real: ")
+        nova_linha = {
+            "Idade": idade,
+            "Altura": altura,
+            "Peso": peso,
+            "Gênero": genero,
+            "Distância real": real,
+            "Distância calculada": final_distance,
+        }
+        df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
+        df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
+
         if repeats in [0,1]: distances_right.append(final_distance) 
         else: distances_left.append(final_distance)
 

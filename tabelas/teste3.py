@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pandas as pd
 
 
@@ -6,12 +7,14 @@ import pandas as pd
 
 os.makedirs("./tabelas", exist_ok=True)
 
-colunas = ["Distância real", "Distância calculada", "Erro"]
+colunas = ["Idade","Altura","Peso","Gênero","Distância real", "Distância calculada"]
 df = pd.DataFrame(columns=colunas)
 
 df.to_excel("./tabelas/dados.xlsx", index=False, engine="openpyxl")
 
 print("Arquivo Excel criado com sucesso!")
+
+
 
 
                         # caminho_arquivo = "./tabelas/dados.xlsx"
