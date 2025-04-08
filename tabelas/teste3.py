@@ -2,7 +2,6 @@ import os
 import numpy as np
 import pandas as pd
 
-
 # Criar tabela
 
 os.makedirs("./tabelas", exist_ok=True)

@@ -5,15 +5,17 @@ import time
 import pandas as pd
 import math
 import cv2
+from datetime import datetime
+
 
 # Approximate ratio of pixels to cm at 1 meter distance
 PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm
 
 # Values min's and max's of angles
-MIN_ELBOW_ANGLE = 165
+MIN_ELBOW_ANGLE = 155
 MAX_ELBOW_ANGLE = 180
 
-MIN_OPPOSITE_ELBOW_ANGLE = 165
+MIN_OPPOSITE_ELBOW_ANGLE = 155
 MAX_OPPOSITE_ELBOW_ANGLE = 180
 
 MIN_KNEE_ANGLE = 150
@@ -22,11 +24,11 @@ MAX_KNEE_ANGLE = 180
 MIN_CALIBRATION_HIP_ANGLE = 120
 MAX_CALIBRATION_HIP_ANGLE = 150
 
-MIN_OPPOSITE_KNEE_ANGLE = 90
-MAX_OPPOSITE_KNEE_ANGLE = 130
+MIN_OPPOSITE_KNEE_ANGLE = 100
+MAX_OPPOSITE_KNEE_ANGLE = 150
 
 MIN_POSTURE_HIP_ANGLE = 70
-MAX_POSTURE_HIP_ANGLE = 130
+MAX_POSTURE_HIP_ANGLE = 150         
 
 # Average error for positive values
 ERROR = 3.045
@@ -401,7 +403,6 @@ while repeats < 4:
 
     if final_distance is not None:
 
-        
         caminho_arquivo = "./tabelas/dados.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
         
@@ -417,8 +418,19 @@ while repeats < 4:
         df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
         df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
-        if repeats in [0,1]: distances_right.append(final_distance) 
-        else: distances_left.append(final_distance)
+        dt = datetime.now()
+
+
+        if repeats in [0,1]: 
+            distances_right.append(final_distance)
+            side = "left"
+        else: 
+            distances_left.append(final_distance)
+            side = "right"
+
+
+        with open("logs_sit_and_reach","a") as arquivo:
+            arquivo.write(f"{dt}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
 
         final_repetition_visualization(final_distance)
 
