@@ -391,10 +391,58 @@ distances_left = []
 
 repeats = 0
 
-idade = input("Qual a idade do utente? ")
-altura = input("Qual a altura do utente? ")
-peso = input("Qual o peso do utente? ")
-genero = input("Qual o gênero do utente? ")
+# Campos e variáveis
+campos = ["Idade", "Altura (cm)", "Peso (kg)", "Gênero (M/F)"]
+valores = ["", "", "", ""]
+campo_ativo = -1  # Nenhum campo selecionado
+
+# Posição de cada campo (x1, y1, x2, y2)
+posicoes = [(50, 50 + i * 80, 550, 100 + i * 80) for i in range(len(campos))]
+
+def mouse_callback(event, x, y, flags, param):
+    global campo_ativo
+    if event == cv2.EVENT_LBUTTONDOWN:
+        campo_ativo = -1  # Reinicia
+        for i, (x1, y1, x2, y2) in enumerate(posicoes):
+            if x1 <= x <= x2 and y1 <= y <= y2:
+                campo_ativo = i
+                break
+
+cv2.namedWindow("Cadastro")
+cv2.setMouseCallback("Cadastro", mouse_callback)
+
+while True:
+    img = 255 * np.ones((400, 600, 3), dtype=np.uint8)
+
+    for i, (x1, y1, x2, y2) in enumerate(posicoes):
+        # Fundo do campo
+        cor_fundo = (230, 230, 230)
+        cv2.rectangle(img, (x1, y1), (x2, y2), cor_fundo, -1)
+        # Borda verde se estiver ativo
+        cor_borda = (0, 255, 0) if i == campo_ativo else (0, 0, 0)
+        cv2.rectangle(img, (x1, y1), (x2, y2), cor_borda, 2)
+        # Nome do campo
+        cv2.putText(img, f"{campos[i]}:", (x1 + 10, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 2)
+        # Valor digitado
+        cv2.putText(img, valores[i], (x1 + 10, y2 - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+
+    cv2.putText(img, "Aperte Enter para finalizar", (50, 380), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100,100,100), 1)
+
+    cv2.imshow("Cadastro", img)
+    key = cv2.waitKey(10) & 0xFF
+
+    if key == 27:  # ESC
+        finish_program()
+    elif key == 13 or key == 10:  # Enter
+        if all(valores):  # Só aceita se tudo estiver preenchido
+            break
+    elif campo_ativo != -1:
+        if key == 8:  # Backspace
+            valores[campo_ativo] = valores[campo_ativo][:-1]
+        elif 32 <= key <= 126:  # Caracteres imprimíveis
+            valores[campo_ativo] += chr(key)
+
+cv2.destroyAllWindows()
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
@@ -407,10 +455,10 @@ while repeats < 4:
         
         real = input("Qual a distância real: ")
         nova_linha = {
-            "Idade": idade,
-            "Altura": altura,
-            "Peso": peso,
-            "Gênero": genero,
+            "Idade": valores[0],
+            "Altura": valores[1],
+            "Peso": valores[2],
+            "Gênero": valores[3],
             "Distância real": real,
             "Distância calculada": final_distance,
         }
