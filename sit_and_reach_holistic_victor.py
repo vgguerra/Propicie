@@ -38,6 +38,7 @@ CALIBRATION_HELD_DURATION = 5
 POSE_HELD_DURATION = 5 
 AVERAGE_OVER = 6
 
+
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
 
@@ -388,63 +389,92 @@ def process_exercise(repeats):
 
     return final_distance
 
+# Function to show the register screen
+def register():
+    fields = ["Idade", "Altura (cm)", "Peso (kg)", "Genero (Masculino/Feminino)"]
+    values = ["", "", "", ""]
+    active_field = -1  
+
+    positions = [(50, 50 + i * 80, 550, 100 + i * 80) for i in range(len(fields))]
+
+    def mouse_callback(event, x, y, flags, param):
+        nonlocal active_field
+        if event == cv2.EVENT_LBUTTONDOWN:
+            active_field = -1  
+            for i, (x1, y1, x2, y2) in enumerate(positions):
+                if x1 <= x <= x2 and y1 <= y <= y2:
+                    active_field = i
+                    break
+
+    cv2.namedWindow("Cadastro")
+    cv2.setMouseCallback("Cadastro", mouse_callback)
+
+    while True:
+        img = 255 * np.ones((400, 600, 3), dtype=np.uint8)
+
+        for i, (x1, y1, x2, y2) in enumerate(positions):
+            background_color = (230, 230, 230)
+            cv2.rectangle(img, (x1, y1), (x2, y2), background_color, -1)
+            border_color = (0, 255, 0) if i == active_field else (0, 0, 0)
+            cv2.rectangle(img, (x1, y1), (x2, y2), border_color, 2)
+            cv2.putText(img, f"{fields[i]}:", (x1 + 10, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 2)
+            cv2.putText(img, values[i], (x1 + 10, y2 - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+
+        cv2.putText(img, "Aperte Enter para finalizar", (50, 380), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100,100,100), 1)
+
+        cv2.imshow("Cadastro", img)
+        key = cv2.waitKey(10) & 0xFF
+
+        if key == 27:  
+            finish_program()
+        elif key == 13 or key == 10:  
+            cv2.destroyAllWindows()
+            return values
+        elif key == 9:  # Tecla Tab
+            active_field = (active_field + 1) % len(fields)
+        elif active_field != -1:
+            if key == 8:  
+                values[active_field] = values[active_field][:-1]
+            elif 32 <= key <= 126:  
+                values[active_field] += chr(key)
+
+def real_distance():
+    distancia = ""
+    windown_width, windown_heigth = 600, 200
+
+    cv2.namedWindow("Real Distance")
+
+    while True:
+        img = np.ones((windown_heigth, windown_width, 3), dtype=np.uint8) * 255
+
+        cv2.rectangle(img, (50, 60), (550, 120), (230, 230, 230), -1)
+        cv2.rectangle(img, (50, 60), (550, 120), (0, 0, 0), 2)
+
+        cv2.putText(img, "Digite a Distância medida (cm):", (50, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+        cv2.putText(img, distancia, (60, 105), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
+        cv2.putText(img, "Pressione Enter para confirmar", (50, 170), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 1)
+
+        cv2.imshow("Real Distance", img)
+        key = cv2.waitKey(10) & 0xFF
+
+        if key == 27: 
+            cv2.destroyAllWindows()
+            finish_program()
+        elif key == 13 or key == 10:  
+            if distancia:
+                cv2.destroyAllWindows()
+                return float(distancia.replace(",", ".")) 
+        elif key == 8:  
+            distancia = distancia[:-1]
+        elif (key >= 48 and key <= 57) or key in [44, 46]:  
+            distancia += chr(key)
+
 distances_right = []
 distances_left = []
 
 repeats = 0
 
-# Campos e variáveis
-campos = ["Idade", "Altura (cm)", "Peso (kg)", "Gênero (M/F)"]
-valores = ["", "", "", ""]
-campo_ativo = -1  # Nenhum campo selecionado
-
-# Posição de cada campo (x1, y1, x2, y2)
-posicoes = [(50, 50 + i * 80, 550, 100 + i * 80) for i in range(len(campos))]
-
-def mouse_callback(event, x, y, flags, param):
-    global campo_ativo
-    if event == cv2.EVENT_LBUTTONDOWN:
-        campo_ativo = -1  # Reinicia
-        for i, (x1, y1, x2, y2) in enumerate(posicoes):
-            if x1 <= x <= x2 and y1 <= y <= y2:
-                campo_ativo = i
-                break
-
-cv2.namedWindow("Cadastro")
-cv2.setMouseCallback("Cadastro", mouse_callback)
-
-while True:
-    img = 255 * np.ones((400, 600, 3), dtype=np.uint8)
-
-    for i, (x1, y1, x2, y2) in enumerate(posicoes):
-        # Fundo do campo
-        cor_fundo = (230, 230, 230)
-        cv2.rectangle(img, (x1, y1), (x2, y2), cor_fundo, -1)
-        # Borda verde se estiver ativo
-        cor_borda = (0, 255, 0) if i == campo_ativo else (0, 0, 0)
-        cv2.rectangle(img, (x1, y1), (x2, y2), cor_borda, 2)
-        # Nome do campo
-        cv2.putText(img, f"{campos[i]}:", (x1 + 10, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 2)
-        # Valor digitado
-        cv2.putText(img, valores[i], (x1 + 10, y2 - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
-
-    cv2.putText(img, "Aperte Enter para finalizar", (50, 380), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100,100,100), 1)
-
-    cv2.imshow("Cadastro", img)
-    key = cv2.waitKey(10) & 0xFF
-
-    if key == 27:  # ESC
-        finish_program()
-    elif key == 13 or key == 10:  # Enter
-        if all(valores):  # Só aceita se tudo estiver preenchido
-            break
-    elif campo_ativo != -1:
-        if key == 8:  # Backspace
-            valores[campo_ativo] = valores[campo_ativo][:-1]
-        elif 32 <= key <= 126:  # Caracteres imprimíveis
-            valores[campo_ativo] += chr(key)
-
-cv2.destroyAllWindows()
+idade,altura,peso,genero = register()
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
@@ -453,21 +483,20 @@ while repeats < 4:
 
         caminho_arquivo = "./tabelas/dados.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
-        
-        real = input("Qual a distância real: ")
+        real = real_distance()
+
         nova_linha = {
-            "Idade": valores[0],
-            "Altura": valores[1],
-            "Peso": valores[2],
-            "Gênero": valores[3],
+            "Idade": idade,
+            "Altura": altura,
+            "Peso": peso,
+            "Gênero": genero,
             "Distância real": real,
-            "Distância calculada": final_distance,
+            "Distância calculada": np.absolute(final_distance),
         }
         df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
         df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
         dt = datetime.now()
-
 
         if repeats in [0,1]: 
             distances_right.append(final_distance)
@@ -478,7 +507,7 @@ while repeats < 4:
 
 
         with open("logs_sit_and_reach","a") as arquivo:
-            arquivo.write(f"{dt}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
+            arquivo.write(f"{dt}, {idade}, {altura}, {peso}, {genero}, {real}, {np.absolute(final_distance)},{side}\n")
 
         final_repetition_visualization(final_distance)
 
