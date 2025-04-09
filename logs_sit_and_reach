@@ -19,4 +19,4 @@ Timestamp,Idade,Altura,Peso,Gênero,Distância real, Distância calculada, Perna
 2025-04-09 18:26:10.432072, 19, 1.75, 83, Masculino, -1.0, -2.09,left
 2025-04-09 19:56:42.268183, 19, 1.74, 83, Masculino, 0.0, -2.48,left
 2025-04-09 19:57:23.951060, 19, 1.74, 83, Masculino, 0.0, -1.35,left
-2025-04-09 19:58:24.711849, 19, 1.74, 83, Masculino, 2.8, -3.07,right
+2025-04-09 19:58:24.711849, 19, 1.74, 83, Masculino, -2.8, -3.07,right
