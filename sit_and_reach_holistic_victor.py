@@ -127,7 +127,7 @@ def final_repetition_visualization(final_distance):
     final_repetition_frame = np.zeros((500, 800, 3), dtype=np.uint8) 
     
     cv2.putText(final_repetition_frame, f'Repetition Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(final_repetition_frame, f'Final Distance: {final_distance :.2f} centimeters', (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_repetition_frame, f'Final Distance: {final_distance} centimeters', (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     cv2.putText(final_repetition_frame,f'Press "c" to continue or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
     
     cv2.imshow('Final Repetition Results', final_repetition_frame)
@@ -247,11 +247,11 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
 
     draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
 
-    # draw_dynamic_angle_arc(image,hip_coords, knee_coords, ankle_coords, knee_angle)
-    # cv2.putText(image, f'Knee Angle: {knee_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
+    draw_dynamic_angle_arc(image,hip_coords, knee_coords, ankle_coords, knee_angle)
+    cv2.putText(image, f'Knee Angle: {knee_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
 
     draw_dynamic_angle_arc(image, shoulder_coords, hip_coords, knee_coords, hip_angle)
-    cv2.putText(image, f'Hip Angle: {hip_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f'Hip Angle: {hip_angle:.2f}', hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
     draw_dynamic_angle_arc(image, shoulder_coords, elbow_coords, wrist_coords, elbow_angle)
     cv2.putText(image, f'Elbow Angle: {elbow_angle:.2f}', elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
@@ -298,7 +298,7 @@ def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee
         progress_calibration = (time.time() - calibration_time) / calibration_held_duration
         if progress_calibration >= 1.0:
             foot_landmark = pose_landmarks[foot_index]
-            foot = int(foot_landmark.x * 640), int(foot_landmark.y * 480)
+            foot = int(foot_landmark.x * 640), int((foot_landmark.y * 480))
             return "Ok", 1.0, calibration_time, foot, 1.0
         return "Right Position", progress_calibration, calibration_time, None, 0.0
     if progress_calibration1 == 0.0:
@@ -352,7 +352,7 @@ def process_exercise(repeats):
                     # Capture hand position
                     hand_landmark = hand_landmarks[12]  
                     if repeats in [0,1]:
-                        hand = int((hand_landmark.x * 640) ), int((hand_landmark.y * 480) + 12)
+                        hand = int((hand_landmark.x * 640) ), int((hand_landmark.y * 480) + 13)
                     else:
                         hand = int((hand_landmark.x * 640) - 2), int((hand_landmark.y * 480) + 12)
                     # Calculate distance
@@ -360,8 +360,8 @@ def process_exercise(repeats):
                     distance = dist_pixels * PIXEL_TO_CM_RATIO  
 
 
-                    cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                    cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    # cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    # cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
                     # Calculate average distance
                     distances.append(distance)
@@ -390,7 +390,7 @@ def process_exercise(repeats):
             if cv2.waitKey(1) & 0xFF == ord('q') or cv2.waitKey(1) &0xFF == ord('Q'):
                 finish_program()
 
-    return final_distance
+    return f'{final_distance:.2f}'
 
 # Function to show the register screen
 def register():
@@ -441,6 +441,7 @@ def register():
             elif 32 <= key <= 126:  
                 values[active_field] += chr(key)
 
+# Function to show the real distance input screen
 def real_distance():
     distancia = ""
     windown_width, windown_heigth = 600, 200
@@ -508,7 +509,7 @@ while repeats < 4:
 
 
         with open("logs_sit_and_reach","a") as arquivo:
-            arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance:.2f},{side}\n")
+            arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
 
         final_repetition_visualization(final_distance)
 
