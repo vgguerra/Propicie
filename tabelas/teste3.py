@@ -1,11 +1,8 @@
 import os
-import numpy as np
-# import pandas as pd
-
-print(np.abs(-96))
+import pandas as pd
 
 # Criar tabela
-"""
+
 os.makedirs("./tabelas", exist_ok=True)
 
 colunas = ["Idade","Altura","Peso","Gênero","Distância real", "Distância calculada"]
@@ -14,7 +11,7 @@ df = pd.DataFrame(columns=colunas)
 df.to_excel("./tabelas/dados.xlsx", index=False, engine="openpyxl")
 
 print("Arquivo Excel criado com sucesso!")
-"""
+
 
 
 
