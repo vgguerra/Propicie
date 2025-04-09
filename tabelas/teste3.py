@@ -4,6 +4,8 @@ import pandas as pd
 
 # Criar tabela
 
+import datetime as dt
+print(dt.datetime.now())
 os.makedirs("./tabelas", exist_ok=True)
 
 colunas = ["Idade","Altura","Peso","Gênero","Distância real", "Distância calculada"]

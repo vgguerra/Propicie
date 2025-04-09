@@ -5,15 +5,18 @@ import time
 import pandas as pd
 import math
 import cv2
-from datetime import datetime
+import datetime as dt
 
 
 # Approximate ratio of pixels to cm at 1 meter distance
 PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm
 
 # Values min's and max's of angles
-MIN_ELBOW_ANGLE = 155
-MAX_ELBOW_ANGLE = 180
+MIN_POSTURE_ELBOW_ANGLE = 155
+MAX_POSTURE_ELBOW_ANGLE = 180
+
+MIN_CALIBRATION_ELBOW_ANGLE = 20
+MAX_CALIBRATION_ELBOW_ANGLE = 80
 
 MIN_OPPOSITE_ELBOW_ANGLE = 155
 MAX_OPPOSITE_ELBOW_ANGLE = 180
@@ -22,13 +25,13 @@ MIN_KNEE_ANGLE = 150
 MAX_KNEE_ANGLE = 180
 
 MIN_CALIBRATION_HIP_ANGLE = 120
-MAX_CALIBRATION_HIP_ANGLE = 150
+MAX_CALIBRATION_HIP_ANGLE = 160
 
-MIN_OPPOSITE_KNEE_ANGLE = 100
+MIN_OPPOSITE_KNEE_ANGLE = 80
 MAX_OPPOSITE_KNEE_ANGLE = 150
 
-MIN_POSTURE_HIP_ANGLE = 70
-MAX_POSTURE_HIP_ANGLE = 150         
+MIN_POSTURE_HIP_ANGLE = 60
+MAX_POSTURE_HIP_ANGLE = 150     
 
 # Average error for positive values
 ERROR = 3.045
@@ -239,16 +242,16 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     opposite_elbow_coords = tuple(np.multiply(opposite_elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
     opposite_wrist_coords = tuple(np.multiply(opposite_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
 
-    cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
     cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
     draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
 
-    draw_dynamic_angle_arc(image,hip_coords, knee_coords, ankle_coords, knee_angle)
-    cv2.putText(image, f'Knee Angle: {knee_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
+    # draw_dynamic_angle_arc(image,hip_coords, knee_coords, ankle_coords, knee_angle)
+    # cv2.putText(image, f'Knee Angle: {knee_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
 
     draw_dynamic_angle_arc(image, shoulder_coords, hip_coords, knee_coords, hip_angle)
-    cv2.putText(image, f'Hip Angle: {hip_angle:.2f}', hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f'Hip Angle: {hip_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
     draw_dynamic_angle_arc(image, shoulder_coords, elbow_coords, wrist_coords, elbow_angle)
     cv2.putText(image, f'Elbow Angle: {elbow_angle:.2f}', elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
@@ -280,16 +283,16 @@ def calculate_angles(repeats, pose_landmarks):
     opposite_knee = np.array([pose_landmarks[indices[7]].x, pose_landmarks[indices[7]].y])
     opposite_ankle = np.array([pose_landmarks[indices[8]].x, pose_landmarks[indices[8]].y])
 
-    return calculate_angle(hip,knee,ankle),calculate_angle(opposite_hip,opposite_knee,opposite_ankle),calculate_angle(shoulder,hip,knee), calculate_angle(shoulder,elbow,wrist),calculate_angle(opposite_shoulder,opposite_elbow,opposite_wrist)
+    return calculate_angle(hip,knee,ankle),calculate_angle(opposite_hip,opposite_knee,opposite_ankle),calculate_angle(shoulder,hip,knee), calculate_angle(shoulder,elbow,wrist), calculate_angle(opposite_shoulder,opposite_elbow,opposite_wrist)
 
 # Function to check if the calibration is right
-def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee_angle, hip_angle, progress_calibration, progress_calibration1, calibration_held_duration,pose_landmarks):
+def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee_angle, hip_angle,elbow_angle, progress_calibration, progress_calibration1, calibration_held_duration,pose_landmarks):
     if repeats in [0, 1]: 
         foot_index = 32
     else: 
         foot_index = 31
 
-    if MIN_KNEE_ANGLE < knee_angle < MAX_KNEE_ANGLE and MIN_CALIBRATION_HIP_ANGLE < hip_angle < MAX_CALIBRATION_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE and progress_calibration1 == 0.0:
+    if MIN_KNEE_ANGLE < knee_angle < MAX_KNEE_ANGLE and MIN_CALIBRATION_HIP_ANGLE < hip_angle < MAX_CALIBRATION_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE and MIN_CALIBRATION_ELBOW_ANGLE < elbow_angle < MAX_CALIBRATION_ELBOW_ANGLE and progress_calibration1 == 0.0:
         if calibration_time is None:
             calibration_time = time.time()
         progress_calibration = (time.time() - calibration_time) / calibration_held_duration
@@ -305,7 +308,7 @@ def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee
 # Function to check if the posture is right
 def check_posture(pose_correct_start_time, knee_angle, opposite_knee_angle, hip_angle, elbow_angle,opposite_elbow_angle, pose_held_duration, progress, distance):
     
-    if MIN_ELBOW_ANGLE < elbow_angle < MAX_ELBOW_ANGLE and MIN_OPPOSITE_ELBOW_ANGLE < opposite_elbow_angle < MAX_OPPOSITE_ELBOW_ANGLE and MIN_POSTURE_HIP_ANGLE < hip_angle < MAX_POSTURE_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE:
+    if MIN_POSTURE_ELBOW_ANGLE < elbow_angle < MAX_POSTURE_ELBOW_ANGLE and MIN_OPPOSITE_ELBOW_ANGLE < opposite_elbow_angle < MAX_OPPOSITE_ELBOW_ANGLE and MIN_POSTURE_HIP_ANGLE < hip_angle < MAX_POSTURE_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE:
         if pose_correct_start_time is None:
             pose_correct_start_time = time.time()
         progress = (time.time() - pose_correct_start_time) / pose_held_duration
@@ -343,22 +346,22 @@ def process_exercise(repeats):
                 angles = calculate_angles(repeats,pose_landmarks)
                 draw_angles_arcs(repeats, *angles, pose_landmarks, image, frame)
             
-                calibration,progress_calibration,calibration_time,foot,progress_calibration1 = check_calibration(calibration_time, foot, repeats, *angles[:3],progress_calibration,progress_calibration1, CALIBRATION_HELD_DURATION, pose_landmarks)
+                calibration,progress_calibration,calibration_time,foot,progress_calibration1 = check_calibration(calibration_time, foot, repeats, *angles[:4],progress_calibration,progress_calibration1, CALIBRATION_HELD_DURATION, pose_landmarks)
 
                 if calibration == "Ok":
                     # Capture hand position
                     hand_landmark = hand_landmarks[12]  
                     if repeats in [0,1]:
-                        hand = int((hand_landmark.x * 640) + 2), int((hand_landmark.y * 480) + 8)
+                        hand = int((hand_landmark.x * 640) ), int((hand_landmark.y * 480) + 12)
                     else:
-                        hand = int(hand_landmark.x * 640), int((hand_landmark.y * 480) + 12)
+                        hand = int((hand_landmark.x * 640) - 2), int((hand_landmark.y * 480) + 12)
                     # Calculate distance
                     dist_pixels = calculate_distance_2d(hand, foot)
                     distance = dist_pixels * PIXEL_TO_CM_RATIO  
 
 
-                    # cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                    # cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
                     # Calculate average distance
                     distances.append(distance)
@@ -371,10 +374,10 @@ def process_exercise(repeats):
                     if final_distance != None:
 
                         if repeats in [0,1]:
-                            if hand[1] >= foot[1] and distance > 1:
+                            if hand[0] < foot[0]  and distance > 1.2:
                                 final_distance = -(final_distance + ERROR)
                         else:
-                            if hand[0] >= foot[0] and distance > 1:
+                            if hand[0] > foot[0] and distance > 1.2:
                                 final_distance = -(final_distance + ERROR)
                         break
 
@@ -491,12 +494,10 @@ while repeats < 4:
             "Peso": peso,
             "Gênero": genero,
             "Distância real": real,
-            "Distância calculada": np.absolute(final_distance),
+            "Distância calculada": final_distance,
         }
         df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
         df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
-
-        dt = datetime.now()
 
         if repeats in [0,1]: 
             distances_right.append(final_distance)
@@ -507,7 +508,7 @@ while repeats < 4:
 
 
         with open("logs_sit_and_reach","a") as arquivo:
-            arquivo.write(f"{dt}, {idade}, {altura}, {peso}, {genero}, {real}, {np.absolute(final_distance)},{side}\n")
+            arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance:.2f},{side}\n")
 
         final_repetition_visualization(final_distance)
 
