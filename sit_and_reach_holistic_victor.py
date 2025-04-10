@@ -111,8 +111,8 @@ def calculate_angle(a, b, c):
 def final_visualization(left,right):
     final_frame = np.zeros((500,800,3),dtype=np.uint8)
     cv2.putText(final_frame,f'Exercise completed',(200,100),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(final_frame, f'Better result of the right leg: {left :.2f} cm', (40, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(final_frame, f'Better result of the left leg: {right :.2f} cm', (40, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_frame, f'Better result of the right leg: {left} cm', (40, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_frame, f'Better result of the left leg: {right} cm', (40, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     cv2.putText(final_frame,f'Press "q" to finish the exercise',(200,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
 
     cv2.imshow("Final results",final_frame)
@@ -243,18 +243,18 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     opposite_wrist_coords = tuple(np.multiply(opposite_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
 
     cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-    cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    # cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
-    draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
+    # draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
 
     draw_dynamic_angle_arc(image,hip_coords, knee_coords, ankle_coords, knee_angle)
     cv2.putText(image, f'Knee Angle: {knee_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
 
-    draw_dynamic_angle_arc(image, shoulder_coords, hip_coords, knee_coords, hip_angle)
-    cv2.putText(image, f'Hip Angle: {hip_angle:.2f}', hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    # draw_dynamic_angle_arc(image, shoulder_coords, hip_coords, knee_coords, hip_angle)
+    # cv2.putText(image, f'Hip Angle: {hip_angle:.2f}', hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
-    draw_dynamic_angle_arc(image, shoulder_coords, elbow_coords, wrist_coords, elbow_angle)
-    cv2.putText(image, f'Elbow Angle: {elbow_angle:.2f}', elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    # draw_dynamic_angle_arc(image, shoulder_coords, elbow_coords, wrist_coords, elbow_angle)
+    # cv2.putText(image, f'Elbow Angle: {elbow_angle:.2f}', elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
 # Function to calculate all the angles needed to perform the exercise
 def calculate_angles(repeats, pose_landmarks):
@@ -360,8 +360,8 @@ def process_exercise(repeats):
                     distance = dist_pixels * PIXEL_TO_CM_RATIO  
 
 
-                    # cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                    # cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
                     # Calculate average distance
                     distances.append(distance)
@@ -470,7 +470,7 @@ def real_distance():
                 return float(distancia.replace(",", ".")) 
         elif key == 8:  
             distancia = distancia[:-1]
-        elif (key >= 48 and key <= 57) or key in [44, 46]:  
+        elif (key >= 48 and key <= 57) or key in [44, 46, 43, 45]:  
             distancia += chr(key)
 
 distances_right = []
