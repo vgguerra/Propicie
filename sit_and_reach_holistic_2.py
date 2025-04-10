@@ -16,12 +16,12 @@ MIN_POSTURE_ELBOW_ANGLE = 155
 MAX_POSTURE_ELBOW_ANGLE = 180
 
 MIN_CALIBRATION_ELBOW_ANGLE = 20
-MAX_CALIBRATION_ELBOW_ANGLE = 80
+MAX_CALIBRATION_ELBOW_ANGLE = 120
 
 MIN_OPPOSITE_ELBOW_ANGLE = 155
 MAX_OPPOSITE_ELBOW_ANGLE = 180
 
-MIN_KNEE_ANGLE = 150
+MIN_KNEE_ANGLE = 140
 MAX_KNEE_ANGLE = 180
 
 MIN_CALIBRATION_HIP_ANGLE = 120
@@ -34,7 +34,7 @@ MIN_POSTURE_HIP_ANGLE = 60
 MAX_POSTURE_HIP_ANGLE = 150     
 
 # Average error for positive values
-ERROR = 3.045
+ERROR = 1.035
 
 # variable initialization
 CALIBRATION_HELD_DURATION = 5
@@ -111,8 +111,8 @@ def calculate_angle(a, b, c):
 def final_visualization(left,right):
     final_frame = np.zeros((500,800,3),dtype=np.uint8)
     cv2.putText(final_frame,f'Exercise completed',(200,100),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(final_frame, f'Better result of the right leg: {left} cm', (40, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(final_frame, f'Better result of the left leg: {right} cm', (40, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_frame, f'Better result of the right leg: {right} cm', (40, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_frame, f'Better result of the left leg: {left} cm', (40, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     cv2.putText(final_frame,f'Press "q" to finish the exercise',(200,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
 
     cv2.imshow("Final results",final_frame)
@@ -131,14 +131,6 @@ def final_repetition_visualization(final_distance):
     cv2.putText(final_repetition_frame,f'Press "c" to continue or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
     
     cv2.imshow('Final Repetition Results', final_repetition_frame)
-
-    # real_value = float(input("Qual o valor real?"))
-    # distance = float(distance)
-
-    # erro = np.abs(real_value - distance)
-    # nova_linha = [real_value, distance, erro]
-    # sheet.append(nova_linha)
-    # planilha.save(arquivo)
 
     while True:
         key = cv2.waitKey(1) & 0xFF
@@ -169,8 +161,8 @@ def process_landmarks(results, repeats):
     
     side = "right" if repeats in [0,1] else "left"
     pose_indices = {
-        "right": [16, 20, 30, 24, 26, 28, 12, 14, 25],
-        "left": [15, 19, 29, 23, 25, 27, 11, 13, 26]
+        "right": [15, 19, 29, 23, 25, 27, 11, 13, 26],
+        "left": [16, 20, 30, 24, 26, 28, 12, 14, 25]
     }
     required_pose_landmarks = [pose_landmarks[i] for i in pose_indices[side]]
     
@@ -184,22 +176,22 @@ def draw_landmarks(image, results, repeats):
                               landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
     
     if repeats in [0,1]:
-        mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
+        mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
                                   landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
     else:
-        mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
+        mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
                                   landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
 # Function to get the landmarks
 def get_landmarks(results,repeats): 
     if repeats in [0,1]:
-        if not results.pose_landmarks or not results.right_hand_landmarks:
-            return None, None 
-        verification_hand, hand_landmarks = results.right_hand_landmarks, results.right_hand_landmarks.landmark
-    else:
         if not results.pose_landmarks or not results.left_hand_landmarks:
             return None, None 
         verification_hand, hand_landmarks = results.left_hand_landmarks, results.left_hand_landmarks.landmark
+    else:
+        if not results.pose_landmarks or not results.right_hand_landmarks:
+            return None, None 
+        verification_hand, hand_landmarks = results.right_hand_landmarks, results.right_hand_landmarks.landmark
     
     pose_landmarks = results.pose_landmarks.landmark
 
@@ -213,8 +205,8 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     side = "right" if repeats in [0,1] else "left"
 
     pose_indices = {
-        "right": [12,14,16,24,26,28,11,13,15],
-        "left": [11,13,15,23,25,27,12,14,16]
+        "right": [11,13,15,23,25,27,12,14,16],
+        "left": [12,14,16,24,26,28,11,13,15]
     }
 
     indices = pose_indices[side]
@@ -242,19 +234,19 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     opposite_elbow_coords = tuple(np.multiply(opposite_elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
     opposite_wrist_coords = tuple(np.multiply(opposite_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
 
-    cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-    # cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    # cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
-    # draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
+    draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
 
     draw_dynamic_angle_arc(image,hip_coords, knee_coords, ankle_coords, knee_angle)
     cv2.putText(image, f'Knee Angle: {knee_angle:.2f}', knee_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
 
-    # draw_dynamic_angle_arc(image, shoulder_coords, hip_coords, knee_coords, hip_angle)
-    # cv2.putText(image, f'Hip Angle: {hip_angle:.2f}', hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    draw_dynamic_angle_arc(image, shoulder_coords, hip_coords, knee_coords, hip_angle)
+    cv2.putText(image, f'Hip Angle: {hip_angle:.2f}', hip_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
-    # draw_dynamic_angle_arc(image, shoulder_coords, elbow_coords, wrist_coords, elbow_angle)
-    # cv2.putText(image, f'Elbow Angle: {elbow_angle:.2f}', elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    draw_dynamic_angle_arc(image, shoulder_coords, elbow_coords, wrist_coords, elbow_angle)
+    cv2.putText(image, f'Elbow Angle: {elbow_angle:.2f}', elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
 # Function to calculate all the angles needed to perform the exercise
 def calculate_angles(repeats, pose_landmarks):
@@ -262,8 +254,8 @@ def calculate_angles(repeats, pose_landmarks):
     side = "right" if repeats in [0,1] else "left"
 
     pose_indices = {
-        "right": [12,14,16,24,26,28,23,25,27,11,13,15],
-        "left": [11,13,15,23,25,27,24,26,28,12,14,16]
+        "right": [11,13,15,23,25,27,24,26,28,12,14,16],
+        "left": [12,14,16,24,26,28,23,25,27,11,13,15]
     }
 
     indices = pose_indices[side]
@@ -288,11 +280,11 @@ def calculate_angles(repeats, pose_landmarks):
 # Function to check if the calibration is right
 def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee_angle, hip_angle,elbow_angle, progress_calibration, progress_calibration1, calibration_held_duration,pose_landmarks):
     if repeats in [0, 1]: 
-        foot_index = 32
-    else: 
         foot_index = 31
+    else: 
+        foot_index = 32
 
-    if MIN_KNEE_ANGLE < knee_angle < MAX_KNEE_ANGLE and MIN_CALIBRATION_HIP_ANGLE < hip_angle < MAX_CALIBRATION_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE and MIN_CALIBRATION_ELBOW_ANGLE < elbow_angle < MAX_CALIBRATION_ELBOW_ANGLE and progress_calibration1 == 0.0:
+    if MIN_KNEE_ANGLE < knee_angle < MAX_KNEE_ANGLE and MIN_CALIBRATION_HIP_ANGLE < hip_angle < MAX_CALIBRATION_HIP_ANGLE and MIN_CALIBRATION_ELBOW_ANGLE < elbow_angle < MAX_CALIBRATION_ELBOW_ANGLE and progress_calibration1 == 0.0:
         if calibration_time is None:
             calibration_time = time.time()
         progress_calibration = (time.time() - calibration_time) / calibration_held_duration
@@ -308,7 +300,7 @@ def check_calibration(calibration_time, foot, repeats, knee_angle, opposite_knee
 # Function to check if the posture is right
 def check_posture(pose_correct_start_time, knee_angle, opposite_knee_angle, hip_angle, elbow_angle,opposite_elbow_angle, pose_held_duration, progress, distance):
     
-    if MIN_POSTURE_ELBOW_ANGLE < elbow_angle < MAX_POSTURE_ELBOW_ANGLE and MIN_OPPOSITE_ELBOW_ANGLE < opposite_elbow_angle < MAX_OPPOSITE_ELBOW_ANGLE and MIN_POSTURE_HIP_ANGLE < hip_angle < MAX_POSTURE_HIP_ANGLE and MIN_OPPOSITE_KNEE_ANGLE < opposite_knee_angle < MAX_OPPOSITE_KNEE_ANGLE:
+    if MIN_POSTURE_ELBOW_ANGLE < elbow_angle < MAX_POSTURE_ELBOW_ANGLE and MIN_OPPOSITE_ELBOW_ANGLE < opposite_elbow_angle < MAX_OPPOSITE_ELBOW_ANGLE and MIN_POSTURE_HIP_ANGLE < hip_angle < MAX_POSTURE_HIP_ANGLE and MIN_KNEE_ANGLE < knee_angle < MAX_KNEE_ANGLE:
         if pose_correct_start_time is None:
             pose_correct_start_time = time.time()
         progress = (time.time() - pose_correct_start_time) / pose_held_duration
@@ -352,7 +344,7 @@ def process_exercise(repeats):
                     # Capture hand position
                     hand_landmark = hand_landmarks[12]  
                     if repeats in [0,1]:
-                        hand = int((hand_landmark.x * 640) ), int((hand_landmark.y * 480) + 13)
+                        hand = int((hand_landmark.x * 640) + 5 ), int((hand_landmark.y * 480) + 10)
                     else:
                         hand = int((hand_landmark.x * 640) - 2), int((hand_landmark.y * 480) + 12)
                     # Calculate distance
@@ -476,7 +468,7 @@ def real_distance():
 distances_right = []
 distances_left = []
 
-repeats = 0
+repeats = 2
 
 idade,altura,peso,genero = register()
 
@@ -502,10 +494,10 @@ while repeats < 4:
 
         if repeats in [0,1]: 
             distances_right.append(final_distance)
-            side = "left"
+            side = "right"
         else: 
             distances_left.append(final_distance)
-            side = "right"
+            side = "left"
 
 
         with open("logs_sit_and_reach","a") as arquivo:
@@ -513,7 +505,7 @@ while repeats < 4:
 
         final_repetition_visualization(final_distance)
 
-        repeats += 1
+        repeats += 1 
 
     else:
         print("Exercise not performed correctly")
