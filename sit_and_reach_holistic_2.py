@@ -134,7 +134,7 @@ def final_repetition_visualization(final_distance):
 
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('c'):  # Press 'r' to continue the exercise
+        if key == ord('c'):  # Press 'c' to continue the exercise
             cv2.destroyWindow('Final Repetition Results')
             break
         elif key == ord('q'):  # Press 'q' to exit

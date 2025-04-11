@@ -132,17 +132,9 @@ def final_repetition_visualization(final_distance):
     
     cv2.imshow('Final Repetition Results', final_repetition_frame)
 
-    # real_value = float(input("Qual o valor real?"))
-    # distance = float(distance)
-
-    # erro = np.abs(real_value - distance)
-    # nova_linha = [real_value, distance, erro]
-    # sheet.append(nova_linha)
-    # planilha.save(arquivo)
-
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('c'):  # Press 'r' to continue the exercise
+        if key == ord('c'):  # Press 'c' to continue the exercise
             cv2.destroyWindow('Final Repetition Results')
             break
         elif key == ord('q'):  # Press 'q' to exit
