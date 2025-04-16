@@ -8,7 +8,7 @@ os.makedirs("./tabelas", exist_ok=True)
 colunas = ["Idade","Altura","Peso","Gênero","Distância real", "Distância calculada"]
 df = pd.DataFrame(columns=colunas)
 
-df.to_excel("./tabelas/dados.xlsx", index=False, engine="openpyxl")
+df.to_excel("./tabelas/dados2.xlsx", index=False, engine="openpyxl")
 
 print("Arquivo Excel criado com sucesso!")
 

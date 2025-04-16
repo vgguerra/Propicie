@@ -29,7 +29,7 @@ MAX_CALIBRATION_HIP_ANGLE = 160
 MIN_OPPOSITE_KNEE_ANGLE = 80
 MAX_OPPOSITE_KNEE_ANGLE = 150
 
-MIN_POSTURE_HIP_ANGLE = 60
+MIN_POSTURE_HIP_ANGLE = 55
 MAX_POSTURE_HIP_ANGLE = 150     
 
 # Average error for positive values
@@ -234,7 +234,7 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     opposite_wrist_coords = tuple(np.multiply(opposite_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
 
     # cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-    cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    # cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
     draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
 
@@ -469,27 +469,27 @@ distances_left = []
 
 repeats = 0
 
-idade,altura,peso,genero = register()
+# idade,altura,peso,genero = register()
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
 
     if final_distance is not None:
 
-        caminho_arquivo = "./tabelas/dados.xlsx"
-        df = pd.read_excel(caminho_arquivo, engine="openpyxl")
         real = real_distance()
+        # caminho_arquivo = "./tabelas/dados2.xlsx"
+        # df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
-        nova_linha = {
-            "Idade": idade,
-            "Altura": altura,
-            "Peso": peso,
-            "Gênero": genero,
-            "Distância real": real,
-            "Distância calculada": final_distance,
-        }
-        df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
-        df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
+        # nova_linha = {
+        #     "Idade": idade,
+        #     "Altura": altura,
+        #     "Peso": peso,
+        #     "Gênero": genero,
+        #     "Distância real": real,
+        #     "Distância calculada": final_distance,
+        # }
+        # # df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
+        # df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
         if repeats in [0,1]: 
             distances_right.append(final_distance)
