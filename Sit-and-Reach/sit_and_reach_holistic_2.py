@@ -469,14 +469,14 @@ distances_left = []
 
 repeats = 0
 
-idade,altura,peso,genero = register()
+# idade,altura,peso,genero = register()q
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
 
     if final_distance is not None:
 
-        real = real_distance()
+        # real = real_distance()
         # caminho_arquivo = "./tabelas/dados2.xlsx"
         # df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
@@ -499,8 +499,8 @@ while repeats < 4:
             side = "left"
 
 
-        with open("./logs/logs_sit_and_reach2","a") as arquivo:
-            arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
+        # with open("./logs/logs_sit_and_reach2","a") as arquivo:
+        #     arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
 
         final_repetition_visualization(final_distance)
 
