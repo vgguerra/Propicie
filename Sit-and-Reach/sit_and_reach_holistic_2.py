@@ -469,7 +469,7 @@ distances_left = []
 
 repeats = 0
 
-# idade,altura,peso,genero = register()
+idade,altura,peso,genero = register()
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
