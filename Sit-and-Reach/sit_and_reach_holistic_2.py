@@ -152,6 +152,23 @@ def process_frame(kinect):
     rgb_frame.flags.writeable = True
     return cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR),holistic.process(rgb_frame),frame
 
+# Function to get the landmarks
+def get_landmarks(results,repeats): 
+    if repeats in [0,1]:
+        if not results.pose_landmarks or not results.left_hand_landmarks:
+            return None, None 
+        verification_hand, hand_landmarks = results.left_hand_landmarks, results.left_hand_landmarks.landmark
+    else:
+        if not results.pose_landmarks or not results.right_hand_landmarks:
+            return None, None 
+        verification_hand, hand_landmarks = results.right_hand_landmarks, results.right_hand_landmarks.landmark
+    
+    pose_landmarks = results.pose_landmarks.landmark
+
+    if results.pose_landmarks and verification_hand:
+        return pose_landmarks, hand_landmarks
+    return None, None
+
 # Function to process all required landmarks
 def process_landmarks(results, repeats):
     pose_landmarks, hand_landmarks = get_landmarks(results, repeats)
@@ -181,22 +198,6 @@ def draw_landmarks(image, results, repeats):
         mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
                                   landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
-# Function to get the landmarks
-def get_landmarks(results,repeats): 
-    if repeats in [0,1]:
-        if not results.pose_landmarks or not results.left_hand_landmarks:
-            return None, None 
-        verification_hand, hand_landmarks = results.left_hand_landmarks, results.left_hand_landmarks.landmark
-    else:
-        if not results.pose_landmarks or not results.right_hand_landmarks:
-            return None, None 
-        verification_hand, hand_landmarks = results.right_hand_landmarks, results.right_hand_landmarks.landmark
-    
-    pose_landmarks = results.pose_landmarks.landmark
-
-    if results.pose_landmarks and verification_hand:
-        return pose_landmarks, hand_landmarks
-    return None, None
 
 # Function to draw all the arcs needed to analyze whether the program is working during the testing phase
 def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_angle, opposite_elbow_angle, pose_landmarks, image ,frame):
@@ -233,8 +234,8 @@ def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_a
     opposite_elbow_coords = tuple(np.multiply(opposite_elbow[:2], [frame.shape[1], frame.shape[0]]).astype(int))
     opposite_wrist_coords = tuple(np.multiply(opposite_wrist[:2], [frame.shape[1], frame.shape[0]]).astype(int))
 
-    # cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-    # cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f'Opposite Knee Angle: {opposite_knee_angle:.2f}',(1000,400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f'Opposite Elbow Angle: {opposite_elbow_angle:.2f}', opposite_elbow_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
     draw_dynamic_angle_arc(image,opposite_shoulder_coords,opposite_elbow_coords,opposite_wrist_coords,opposite_elbow_angle)
 
@@ -351,8 +352,8 @@ def process_exercise(repeats):
                     distance = dist_pixels * PIXEL_TO_CM_RATIO  
 
 
-                    cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                    cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    # cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    # cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
                     # Calculate average distance
                     distances.append(distance)
@@ -469,27 +470,27 @@ distances_left = []
 
 repeats = 0
 
-# idade,altura,peso,genero = register()q
+idade,altura,peso,genero = register()
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
 
     if final_distance is not None:
 
-        # real = real_distance()
-        # caminho_arquivo = "./tabelas/dados2.xlsx"
-        # df = pd.read_excel(caminho_arquivo, engine="openpyxl")
+        real = real_distance()
+        caminho_arquivo = "./tabelas/dados2.xlsx"
+        df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
-        # nova_linha = {
-        #     "Idade": idade,
-        #     "Altura": altura,
-        #     "Peso": peso,
-        #     "Gênero": genero,
-        #     "Distância real": real,
-        #     "Distância calculada": final_distance,
-        # }
-        # # df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
-        # df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
+        nova_linha = {
+            "Idade": idade,
+            "Altura": altura,
+            "Peso": peso,
+            "Gênero": genero,
+            "Distância real": real,
+            "Distância calculada": final_distance,
+        }
+        df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
+        df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
         if repeats in [0,1]: 
             distances_right.append(final_distance)
@@ -499,8 +500,8 @@ while repeats < 4:
             side = "left"
 
 
-        # with open("./logs/logs_sit_and_reach2","a") as arquivo:
-        #     arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
+        with open("./logs/logs_sit_and_reach2","a") as arquivo:
+            arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
 
         final_repetition_visualization(final_distance)
 
