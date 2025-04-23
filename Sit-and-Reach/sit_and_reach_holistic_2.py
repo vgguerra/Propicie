@@ -468,7 +468,7 @@ def real_distance():
 distances_right = []
 distances_left = []
 
-repeats = 0
+repeats = 2
 
 idade,altura,peso,genero = register()
 
