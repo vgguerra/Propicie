@@ -20,7 +20,7 @@ MAX_CALIBRATION_ELBOW_ANGLE = 120
 MIN_OPPOSITE_ELBOW_ANGLE = 155
 MAX_OPPOSITE_ELBOW_ANGLE = 180
 
-MIN_KNEE_ANGLE = 140
+MIN_KNEE_ANGLE = 0
 MAX_KNEE_ANGLE = 180
 
 MIN_CALIBRATION_HIP_ANGLE = 120
@@ -343,9 +343,9 @@ def process_exercise(repeats):
                     # Capture hand position
                     hand_landmark = hand_landmarks[12]  
                     if repeats in [0,1]:
-                        hand = int((hand_landmark.x * 640) + 2 ), int((hand_landmark.y * 480) + 1)
+                        hand = int((hand_landmark.x * 640) + 4), int((hand_landmark.y * 480) + 2)
                     else:
-                        hand = int((hand_landmark.x * 640) - 5), int((hand_landmark.y * 480) + 9)
+                        hand = int((hand_landmark.x * 640) - 5), int((hand_landmark.y * 480) + 15)
                     # Calculate distance
                     dist_pixels = calculate_distance_2d(hand, foot)
                     distance = dist_pixels * PIXEL_TO_CM_RATIO  
@@ -510,8 +510,7 @@ while repeats < 4:
         print("Exercise not performed correctly")
         finish_program()
 
-better_left,better_right = max(distances_left), max(distances_right)
-
+better_left,better_right = max(distances_left, key=float), max(distances_right, key=float)
 final_visualization(better_left,better_right)
 
 finish_program()
