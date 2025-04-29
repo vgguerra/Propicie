@@ -198,7 +198,6 @@ def draw_landmarks(image, results, repeats):
         mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
                                   landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
-
 # Function to draw all the arcs needed to analyze whether the program is working during the testing phase
 def draw_angles_arcs(repeats,knee_angle, opposite_knee_angle, hip_angle, elbow_angle, opposite_elbow_angle, pose_landmarks, image ,frame):
 
