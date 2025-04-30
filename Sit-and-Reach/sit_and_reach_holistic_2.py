@@ -343,16 +343,16 @@ def process_exercise(repeats):
                     # Capture hand position
                     hand_landmark = hand_landmarks[12]  
                     if repeats in [0,1]:
-                        hand = int((hand_landmark.x * 640) + 4), int((hand_landmark.y * 480) + 2)
+                        hand = int((hand_landmark.x * 640) + 10), int((hand_landmark.y * 480) + 9 )
                     else:
-                        hand = int((hand_landmark.x * 640) - 5), int((hand_landmark.y * 480) + 15)
+                        hand = int((hand_landmark.x * 640) - 3), int((hand_landmark.y * 480) + 13)
                     # Calculate distance
                     dist_pixels = calculate_distance_2d(hand, foot)
                     distance = dist_pixels * PIXEL_TO_CM_RATIO  
 
 
-                    # cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                    # cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    cv2.putText(image, f'Postion X and Y of foot: {foot[0]}, {foot[1]}',(1000,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                    cv2.putText(image, f'Position X and Y of hand: {hand[0]}, {hand[1]}',(1000,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
                     # Calculate average distance
                     distances.append(distance)

@@ -105,7 +105,7 @@ while True:
                 distance_pixel = calculate_distance_2d(hand1, hand2)
                 distance = (distance_pixel * PIXEL_TO_CM_RATIO) - .5
                 cv2.putText(image, f"Dist: {distance:.2f} cm", (50, 50),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2) 
 
             cv2.imshow('Left Hand Tracking with Kinect and Holistic', image)
 
