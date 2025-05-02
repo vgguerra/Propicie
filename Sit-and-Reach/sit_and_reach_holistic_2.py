@@ -499,8 +499,8 @@ while repeats < 4:
             side = "left"
 
 
-        # with open("./logs/logs_sit_and_reach2","a") as arquivo:
-        #     arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
+        with open("./logs/logs_sit_and_reach2","a") as arquivo:
+            arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
 
         final_repetition_visualization(final_distance)
 
