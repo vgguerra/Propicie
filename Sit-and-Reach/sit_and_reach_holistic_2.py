@@ -343,7 +343,7 @@ def process_exercise(repeats):
                     # Capture hand position
                     hand_landmark = hand_landmarks[12]  
                     if repeats in [0,1]:
-                        hand = int((hand_landmark.x * 640) + 10), int((hand_landmark.y * 480) + 9 )
+                        hand = int((hand_landmark.x * 640) + 5), int((hand_landmark.y * 480) + 8 )
                     else:
                         hand = int((hand_landmark.x * 640) - 3), int((hand_landmark.y * 480) + 13)
                     # Calculate distance
@@ -499,8 +499,8 @@ while repeats < 4:
             side = "left"
 
 
-        with open("./logs/logs_sit_and_reach2","a") as arquivo:
-            arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
+        # with open("./logs/logs_sit_and_reach2","a") as arquivo:
+        #     arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
 
         final_repetition_visualization(final_distance)
 
