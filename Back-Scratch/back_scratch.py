@@ -1,8 +1,10 @@
 from pykinect2 import PyKinectRuntime, PyKinectV2
 import mediapipe as mp
+import datetime as dt
+import pandas as pd
 import numpy as np
-import cv2
 import time
+import cv2
 
 # Approximate ratio of pixels to cm at 1 meter distance
 PIXEL_TO_CM_RATIO = 0.625
@@ -115,6 +117,7 @@ def check_distance(distance,start_time):
         elapsed_time = 0
     return elapsed_time, start_time
 
+# Function to process the exercise Sit and Reach
 def process_exercise(repeats):
     distances = []
     elapsed_time = None
@@ -161,29 +164,135 @@ def process_exercise(repeats):
                             
                     return f'{distance:.2f}'
                 
-            else:
-                start_time = None  
+            # else:
+            #     start_time = None  
 
             cv2.imshow('Left Hand Tracking with Kinect and Holistic', image)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 finish_program()
-    
+
+# Function to show the register screen
+def register():
+    fields = ["Idade", "Altura (cm)", "Peso (kg)", "Genero (M/F)"]
+    values = ["", "", "", ""]
+    active_field = -1  
+
+    positions = [(50, 50 + i * 80, 550, 100 + i * 80) for i in range(len(fields))]
+
+    def mouse_callback(event, x, y, flags, param):
+        nonlocal active_field
+        if event == cv2.EVENT_LBUTTONDOWN:
+            active_field = -1  
+            for i, (x1, y1, x2, y2) in enumerate(positions):
+                if x1 <= x <= x2 and y1 <= y <= y2:
+                    active_field = i
+                    break
+
+    cv2.namedWindow("Cadastro")
+    cv2.setMouseCallback("Cadastro", mouse_callback)
+
+    while True:
+        img = 255 * np.ones((400, 600, 3), dtype=np.uint8)
+
+        for i, (x1, y1, x2, y2) in enumerate(positions):
+            background_color = (230, 230, 230)
+            cv2.rectangle(img, (x1, y1), (x2, y2), background_color, -1)
+            border_color = (0, 255, 0) if i == active_field else (0, 0, 0)
+            cv2.rectangle(img, (x1, y1), (x2, y2), border_color, 2)
+            cv2.putText(img, f"{fields[i]}:", (x1 + 10, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 2)
+            cv2.putText(img, values[i], (x1 + 10, y2 - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+
+        cv2.putText(img, "Aperte Enter para finalizar", (50, 380), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100,100,100), 1)
+
+        cv2.imshow("Cadastro", img)
+        key = cv2.waitKey(10) & 0xFF
+
+        if key == 27:  
+            finish_program()
+        elif key == 13 or key == 10:  
+            cv2.destroyAllWindows()
+            return values
+        elif key == 9:  # Tecla Tab
+            active_field = (active_field + 1) % len(fields)
+        elif active_field != -1:
+            if key == 8:  
+                values[active_field] = values[active_field][:-1]
+            elif 32 <= key <= 126:  
+                values[active_field] += chr(key)
+
+# Function to show the real distance input screen
+def real_distance():
+    distancia = ""
+    windown_width, windown_heigth = 600, 200
+
+    cv2.namedWindow("Real Distance")
+
+    while True:
+        img = np.ones((windown_heigth, windown_width, 3), dtype=np.uint8) * 255
+
+        cv2.rectangle(img, (50, 60), (550, 120), (230, 230, 230), -1)
+        cv2.rectangle(img, (50, 60), (550, 120), (0, 0, 0), 2)
+
+        cv2.putText(img, "Digite a Distância medida (cm):", (50, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+        cv2.putText(img, distancia, (60, 105), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
+        cv2.putText(img, "Pressione Enter para confirmar", (50, 170), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 1)
+
+        cv2.imshow("Real Distance", img)
+        key = cv2.waitKey(10) & 0xFF
+
+        if key == 27: 
+            cv2.destroyAllWindows()
+            finish_program()
+        elif key == 13 or key == 10:  
+            if distancia:
+                cv2.destroyAllWindows()
+                return float(distancia.replace(",", ".")) 
+        elif key == 8:  
+            distancia = distancia[:-1]
+        elif (key >= 48 and key <= 57) or key in [44, 46, 43, 45]:  
+            distancia += chr(key)
+
 repeats = 0
 
 distances_right = []
 distances_left = []
 
+# age,height,weight,gender = register()
+
+# gender = "Feminine" if gender == "F" else "Male"
+
 while repeats < 4:
     final_distance = process_exercise(repeats)
 
     if final_distance is not None:
-        if repeats in [0,1]: 
-            distances_right.append(final_distance)
-            side = "right"
-        else: 
-            distances_left.append(final_distance)
-            side = "left"
+        
+        # real = real_distance()
+
+        # caminho_arquivo = "./tabelas/back_scratch.xlsx"
+        # df = pd.read_excel(caminho_arquivo, engine="openpyxl")
+
+        # new_line = {
+        #     "Age": age,
+        #     "Height": height,
+        #     "Weight": weight,
+        #     "Gender": gender,
+        #     "Real distance": real,
+        #     "Calculated distance": final_distance,
+        # }
+
+        # df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
+        # df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
+
+        # if repeats in [0,1]: 
+        #     distances_right.append(final_distance)
+        #     side = "right"
+        # else: 
+        #     distances_left.append(final_distance)
+        #     side = "left"
+
+        # with open("./logs/logs_back_scratch","a") as arquivo:
+        #     arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
         repeats += 1
 
@@ -192,7 +301,7 @@ while repeats < 4:
         print("Exercise not performed correctly")
         finish_program()
 
-better_left,better_right = max(distances_left, key=float), max(distances_right, key=float)
-final_visualization(better_left,better_right)
+best_left,best_right = max(distances_left, key=float), max(distances_right, key=float)
+final_visualization(best_left,best_right)
 
 finish_program()

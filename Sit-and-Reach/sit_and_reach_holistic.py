@@ -470,26 +470,29 @@ distances_left = []
 
 repeats = 0
 
-idade,altura,peso,genero = register()
+age,height,weight,gender = register()
+
+gender = "Feminine" if gender == "F" else "Male"
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
 
     if final_distance is not None:
 
-        caminho_arquivo = "./tabelas/dados.xlsx"
+        caminho_arquivo = "./tabelas/sit_and_reach1.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
         real = real_distance()
 
-        nova_linha = {
-            "Idade": idade,
-            "Altura": altura,
-            "Peso": peso,
-            "Gênero": genero,
-            "Distância real": real,
-            "Distância calculada": final_distance,
+        new_line = {
+            "Age": age,
+            "Height": height,
+            "Weight": weight,
+            "Gender": gender,
+            "Real distance": real,
+            "Calculated distance": final_distance,
         }
-        df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
+
+        df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
         df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
         if repeats in [0,1]: 
@@ -501,7 +504,7 @@ while repeats < 4:
 
 
         with open("./logs/logs_sit_and_reach","a") as arquivo:
-            arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
+            arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
         final_repetition_visualization(final_distance)
 
@@ -511,8 +514,7 @@ while repeats < 4:
         print("Exercise not performed correctly")
         finish_program()
 
-better_left,better_right = max(distances_left), max(distances_right)
-
-final_visualization(better_left,better_right)
+best_left,best_right = max(distances_left, key=float), max(distances_right, key=float)
+final_visualization(best_left,best_right)
 
 finish_program()

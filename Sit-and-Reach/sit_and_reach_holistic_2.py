@@ -385,7 +385,7 @@ def process_exercise(repeats):
 
 # Function to show the register screen
 def register():
-    fields = ["Idade", "Altura (cm)", "Peso (kg)", "Genero (Masculino/Feminino)"]
+    fields = ["Idade", "Altura (cm)", "Peso (kg)", "Genero (M/F)"]
     values = ["", "", "", ""]
     active_field = -1  
 
@@ -434,7 +434,7 @@ def register():
 
 # Function to show the real distance input screen
 def real_distance():
-    distancia = ""
+    distance = ""
     windown_width, windown_heigth = 600, 200
 
     cv2.namedWindow("Real Distance")
@@ -446,7 +446,7 @@ def real_distance():
         cv2.rectangle(img, (50, 60), (550, 120), (0, 0, 0), 2)
 
         cv2.putText(img, "Digite a Distância medida (cm):", (50, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-        cv2.putText(img, distancia, (60, 105), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
+        cv2.putText(img, distance, (60, 105), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
         cv2.putText(img, "Pressione Enter para confirmar", (50, 170), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 1)
 
         cv2.imshow("Real Distance", img)
@@ -456,20 +456,22 @@ def real_distance():
             cv2.destroyAllWindows()
             finish_program()
         elif key == 13 or key == 10:  
-            if distancia:
+            if distance:
                 cv2.destroyAllWindows()
-                return float(distancia.replace(",", ".")) 
+                return float(distance.replace(",", ".")) 
         elif key == 8:  
-            distancia = distancia[:-1]
+            distance = distance[:-1]
         elif (key >= 48 and key <= 57) or key in [44, 46, 43, 45]:  
-            distancia += chr(key)
+            distance += chr(key)
 
 distances_right = []
 distances_left = []
 
-repeats = 0
+repeats = 2
 
-idade,altura,peso,genero = register()
+age,height,weight,gender = register()
+
+gender = "Feminine" if gender == "F" else "Male"
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
@@ -477,18 +479,19 @@ while repeats < 4:
     if final_distance is not None:
 
         real = real_distance()
-        caminho_arquivo = "./tabelas/dados2.xlsx"
+        caminho_arquivo = "./tabelas/sit_and_reach2.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
-        nova_linha = {
-            "Idade": idade,
-            "Altura": altura,
-            "Peso": peso,
-            "Gênero": genero,
-            "Distância real": real,
-            "Distância calculada": final_distance,
+        new_line = {
+            "Age": age,
+            "Height": height,
+            "Weight": weight,
+            "Gender": gender,
+            "Real distance": real,
+            "Calculated distance": final_distance,
         }
-        df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
+
+        df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
         df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
         if repeats in [0,1]: 
@@ -498,9 +501,8 @@ while repeats < 4:
             distances_left.append(final_distance)
             side = "left"
 
-
         with open("./logs/logs_sit_and_reach2","a") as arquivo:
-            arquivo.write(f"{dt.datetime.now()}, {idade}, {altura}, {peso}, {genero}, {real}, {final_distance},{side}\n")
+            arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
         final_repetition_visualization(final_distance)
 
@@ -510,7 +512,7 @@ while repeats < 4:
         print("Exercise not performed correctly")
         finish_program()
 
-better_left,better_right = max(distances_left, key=float), max(distances_right, key=float)
-final_visualization(better_left,better_right)
+best_left,best_right = max(distances_left, key=float), max(distances_right, key=float)
+final_visualization(best_left,best_right)
 
 finish_program()
