@@ -20,7 +20,7 @@ MAX_CALIBRATION_ELBOW_ANGLE = 120
 MIN_OPPOSITE_ELBOW_ANGLE = 155
 MAX_OPPOSITE_ELBOW_ANGLE = 180
 
-MIN_KNEE_ANGLE = 140
+MIN_KNEE_ANGLE = 130
 MAX_KNEE_ANGLE = 180
 
 MIN_CALIBRATION_HIP_ANGLE = 120
@@ -467,7 +467,7 @@ def real_distance():
 distances_right = []
 distances_left = []
 
-repeats = 2
+repeats = 0
 
 age,height,weight,gender = register()
 
