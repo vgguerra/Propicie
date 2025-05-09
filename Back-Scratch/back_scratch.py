@@ -156,10 +156,10 @@ def process_exercise(repeats):
 
                 if elapsed_time >= 4:
                     if repeats in [0,1]:
-                        if left_hand[1] >= right_hand[1]:
+                        if left_hand[1] <= right_hand[1]:
                             distance = -distance
                     else:
-                        if left_hand[1] <= right_hand[1]:
+                        if left_hand[1] >= right_hand[1]:
                             distance = -distance    
                             
                     return f'{distance:.2f}'
@@ -284,12 +284,12 @@ while repeats < 4:
         # df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
         # df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
-        # if repeats in [0,1]: 
-        #     distances_right.append(final_distance)
-        #     side = "right"
-        # else: 
-        #     distances_left.append(final_distance)
-        #     side = "left"
+        if repeats in [0,1]: 
+            distances_right.append(final_distance)
+            side = "right"
+        else: 
+            distances_left.append(final_distance)
+            side = "left"
 
         # with open("./logs/logs_back_scratch","a") as arquivo:
         #     arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
