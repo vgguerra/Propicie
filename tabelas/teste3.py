@@ -8,7 +8,7 @@ os.makedirs("./tabelas", exist_ok=True)
 colunas = ["Age","Height","Weigth","Gender","Real distance", "Calculated distance"]
 df = pd.DataFrame(columns=colunas)
 
-df.to_excel("./tabelas/sit_and_reach2.xlsx", index=False, engine="openpyxl")
+df.to_excel("./tabelas/back_scratch.xlsx", index=False, engine="openpyxl")
 
 print("Arquivo Excel criado com sucesso!")
 

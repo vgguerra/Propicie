@@ -1,11 +1,11 @@
 from pykinect2 import PyKinectRuntime, PyKinectV2
 import mediapipe as mp
+import datetime as dt
+import pandas as pd
 import numpy as np
 import time
-import pandas as pd
 import math
 import cv2
-import datetime as dt
 
 # Approximate ratio of pixels to cm at 1 meter distance
 PIXEL_TO_CM_RATIO = 0.533333  # 1 pixel ≈ 0.125 cm
@@ -20,7 +20,7 @@ MAX_CALIBRATION_ELBOW_ANGLE = 120
 MIN_OPPOSITE_ELBOW_ANGLE = 155
 MAX_OPPOSITE_ELBOW_ANGLE = 180
 
-MIN_KNEE_ANGLE = 130
+MIN_KNEE_ANGLE = 100
 MAX_KNEE_ANGLE = 180
 
 MIN_CALIBRATION_HIP_ANGLE = 120

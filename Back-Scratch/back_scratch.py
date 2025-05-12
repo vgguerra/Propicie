@@ -11,11 +11,13 @@ PIXEL_TO_CM_RATIO = 0.625
 
 # variable initialization
 AVERAGE_OVER = 5
+POSE_HELD_DURATION = 4
+ERROR = 0.5
 
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
 
-# Inicializa o MediaPipe Holistic
+# Initialize MediaPipe Holistic
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_holistic = mp.solutions.holistic
@@ -138,12 +140,12 @@ def process_exercise(repeats):
                 left_hand = int((hand_landmark2.x * 640)), int(hand_landmark2.y * 480)
 
                 distance_pixel = calculate_distance_2d(right_hand, left_hand)
-                distance = (distance_pixel * PIXEL_TO_CM_RATIO) - 0.5
+                distance = (distance_pixel * PIXEL_TO_CM_RATIO) - ERROR
                 
-                distances.append(distance)
-                if len(distances) > AVERAGE_OVER:
-                    distances.pop(0)
-                    distance = average_distance(distances)
+                # distances.append(distance)
+                # if len(distances) > AVERAGE_OVER:
+                #     distances.pop(0)
+                #     distance = average_distance(distances)
 
                 elapsed_time,start_time = check_distance(distance,start_time) 
 
@@ -154,9 +156,9 @@ def process_exercise(repeats):
                 cv2.putText(image, f'Pos Left Hand: {left_hand[0]}, {left_hand[1]}', (1000, 200),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
-                if elapsed_time >= 4:
+                if elapsed_time >= POSE_HELD_DURATION:
                     if repeats in [0,1]:
-                        if left_hand[1] <= right_hand[1]:
+                        if left_hand[1] >= right_hand[1]:
                             distance = -distance
                     else:
                         if left_hand[1] >= right_hand[1]:
@@ -258,31 +260,31 @@ repeats = 0
 distances_right = []
 distances_left = []
 
-# age,height,weight,gender = register()
+age,height,weight,gender = register()
 
-# gender = "Feminine" if gender == "F" else "Male"
+gender = "Feminine" if gender == "F" else "Male"
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
 
     if final_distance is not None:
         
-        # real = real_distance()
+        real = real_distance()
 
-        # caminho_arquivo = "./tabelas/back_scratch.xlsx"
-        # df = pd.read_excel(caminho_arquivo, engine="openpyxl")
+        caminho_arquivo = "./tabelas/back_scratch.xlsx"
+        df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
-        # new_line = {
-        #     "Age": age,
-        #     "Height": height,
-        #     "Weight": weight,
-        #     "Gender": gender,
-        #     "Real distance": real,
-        #     "Calculated distance": final_distance,
-        # }
+        new_line = {
+            "Age": age,
+            "Height": height,
+            "Weight": weight,
+            "Gender": gender,
+            "Real distance": real,
+            "Calculated distance": final_distance
+        }
 
-        # df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
-        # df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
+        df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
+        df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
         if repeats in [0,1]: 
             distances_right.append(final_distance)
@@ -291,8 +293,8 @@ while repeats < 4:
             distances_left.append(final_distance)
             side = "left"
 
-        # with open("./logs/logs_back_scratch","a") as arquivo:
-        #     arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
+        with open("./logs/logs_back_scratch","a") as arquivo:
+            arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
         repeats += 1
 
