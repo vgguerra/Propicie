@@ -11,7 +11,7 @@ PIXEL_TO_CM_RATIO = 0.625
 
 # variable initialization
 AVERAGE_OVER = 5
-POSE_HELD_DURATION = 4
+POSE_HELD_DURATION = 3
 ERROR = 0.5
 
 # Kinect initialization
@@ -142,10 +142,10 @@ def process_exercise(repeats):
                 distance_pixel = calculate_distance_2d(right_hand, left_hand)
                 distance = (distance_pixel * PIXEL_TO_CM_RATIO) - ERROR
                 
-                # distances.append(distance)
-                # if len(distances) > AVERAGE_OVER:
-                #     distances.pop(0)
-                #     distance = average_distance(distances)
+                distances.append(distance)
+                if len(distances) > AVERAGE_OVER:
+                    distances.pop(0)
+                    distance = average_distance(distances)
 
                 elapsed_time,start_time = check_distance(distance,start_time) 
 
@@ -157,17 +157,18 @@ def process_exercise(repeats):
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
                 if elapsed_time >= POSE_HELD_DURATION:
+
                     if repeats in [0,1]:
-                        if left_hand[1] >= right_hand[1]:
+                        if left_hand[1] <= right_hand[1]:
                             distance = -distance
                     else:
-                        if left_hand[1] >= right_hand[1]:
-                            distance = -distance    
-                            
+                        if left_hand[1] <= right_hand[1]:
+                            distance = -distance
+
                     return f'{distance:.2f}'
                 
-            # else:
-            #     start_time = None  
+            else:
+                start_time = None  
 
             cv2.imshow('Left Hand Tracking with Kinect and Holistic', image)
 
