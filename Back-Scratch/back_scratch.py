@@ -12,7 +12,7 @@ PIXEL_TO_CM_RATIO = 0.625
 # variable initialization
 AVERAGE_OVER = 5
 POSE_HELD_DURATION = 3
-ERROR = 0.5
+ERROR = 0.5       
 
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
