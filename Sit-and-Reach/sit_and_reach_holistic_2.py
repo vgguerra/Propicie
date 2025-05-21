@@ -122,11 +122,12 @@ def final_visualization(left,right):
             finish_program() 
 
 # Function to show the performance screen for that attempt
-def final_repetition_visualization(final_distance):
+def final_repetition_visualization(final_distance,real_distance):
     final_repetition_frame = np.zeros((500, 800, 3), dtype=np.uint8) 
     
     cv2.putText(final_repetition_frame, f'Repetition Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
     cv2.putText(final_repetition_frame, f'Final Distance: {final_distance} centimeters', (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_repetition_frame, f'Real Distance: {real_distance} centimeters', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     cv2.putText(final_repetition_frame,f'Press "c" to continue or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
     
     cv2.imshow('Final Repetition Results', final_repetition_frame)
@@ -504,7 +505,7 @@ while repeats < 4:
         with open("./logs/logs_sit_and_reach2","a") as arquivo:
             arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
-        final_repetition_visualization(final_distance)
+        final_repetition_visualization(final_distance,real)
 
         repeats += 1 
 

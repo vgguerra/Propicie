@@ -12,7 +12,7 @@ PIXEL_TO_CM_RATIO = 0.625
 # variable initialization
 AVERAGE_OVER = 5
 POSE_HELD_DURATION = 3
-ERROR = 0.5       
+ERROR = 0      
 
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
@@ -49,12 +49,13 @@ def process_frame(kinect):
     return cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR), results, frame
 
 # Function to show the performance screen for that attempt
-def final_repetition_visualization(distance):
+def final_repetition_visualization(distance,real_distance):
 
     final_repetition_frame = np.zeros((500, 800, 3), dtype=np.uint8)
 
     cv2.putText(final_repetition_frame, f'Repetition Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(final_repetition_frame, f"Distance between both hands: {distance} cm", (50, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_repetition_frame, f"Distance between both hands: {distance} cm", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(final_repetition_frame, f'Real Distance: {real_distance} centimeters', (50, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     cv2.putText(final_repetition_frame,f'Press "c" to continue or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
     cv2.imshow("Repetition Results", final_repetition_frame)
     
@@ -123,7 +124,8 @@ def check_distance(distance,start_time):
 def process_exercise(repeats):
     distances = []
     elapsed_time = None
-    start_time = None 
+    start_time = None
+    last_detected_time = time.time() 
 
     # Main Loop
     while True:
@@ -131,6 +133,8 @@ def process_exercise(repeats):
             image, results, frame = process_frame(kinect)
 
             if results.left_hand_landmarks and results.right_hand_landmarks:
+                last_detected_time = time.time()
+
                 draw_landmarks(image, results)
 
                 hand_landmark1 = results.left_hand_landmarks.landmark[12]  
@@ -142,10 +146,10 @@ def process_exercise(repeats):
                 distance_pixel = calculate_distance_2d(right_hand, left_hand)
                 distance = (distance_pixel * PIXEL_TO_CM_RATIO) - ERROR
                 
-                distances.append(distance)
-                if len(distances) > AVERAGE_OVER:
-                    distances.pop(0)
-                    distance = average_distance(distances)
+                # distances.append(distance)
+                # if len(distances) > AVERAGE_OVER:
+                #     distances.pop(0)
+                #     distance = average_distance(distances)
 
                 elapsed_time,start_time = check_distance(distance,start_time) 
 
@@ -158,17 +162,20 @@ def process_exercise(repeats):
 
                 if elapsed_time >= POSE_HELD_DURATION:
 
-                    if repeats in [0,1]:
-                        if left_hand[1] <= right_hand[1]:
-                            distance = -distance
-                    else:
-                        if left_hand[1] <= right_hand[1]:
-                            distance = -distance
-
+                    # if repeats in [0,1]:
+                    #     if left_hand[1] <= right_hand[1]:
+                    #         distance = -distance
+                    # else:
+                    #     if left_hand[1] <= right_hand[1]:
+                    #         distance = -distance
+                        
+                    distance = -distance
+                    
                     return f'{distance:.2f}'
-                
+            
             else:
-                start_time = None  
+                 if time.time() - last_detected_time >= 3:
+                    start_time = None
 
             cv2.imshow('Left Hand Tracking with Kinect and Holistic', image)
 
@@ -261,9 +268,9 @@ repeats = 0
 distances_right = []
 distances_left = []
 
-age,height,weight,gender = register()
+# age,height,weight,gender = register()
 
-gender = "Feminine" if gender == "F" else "Male"
+# gender = "Feminine" if gender == "F" else "Male"
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
@@ -272,20 +279,20 @@ while repeats < 4:
         
         real = real_distance()
 
-        caminho_arquivo = "./tabelas/back_scratch.xlsx"
-        df = pd.read_excel(caminho_arquivo, engine="openpyxl")
+        # caminho_arquivo = "./tabelas/back_scratch.xlsx"
+        # df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
-        new_line = {
-            "Age": age,
-            "Height": height,
-            "Weight": weight,
-            "Gender": gender,
-            "Real distance": real,
-            "Calculated distance": final_distance
-        }
+        # new_line = {
+        #     "Age": age,
+        #     "Height": height,
+        #     "Weight": weight,
+        #     "Gender": gender,
+        #     "Real distance": real,
+        #     "Calculated distance": final_distance
+        # }
 
-        df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
-        df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
+        # df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
+        # df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
         if repeats in [0,1]: 
             distances_right.append(final_distance)
@@ -294,12 +301,12 @@ while repeats < 4:
             distances_left.append(final_distance)
             side = "left"
 
-        with open("./logs/logs_back_scratch","a") as arquivo:
-            arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
+        # with open("./logs/logs_back_scratch","a") as arquivo:
+        #     arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
         repeats += 1
 
-        final_repetition_visualization(final_distance)
+        final_repetition_visualization(final_distance,real)
     else:
         print("Exercise not performed correctly")
         finish_program()
