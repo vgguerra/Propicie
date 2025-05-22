@@ -1,6 +1,6 @@
 from pykinect2 import PyKinectRuntime, PyKinectV2
 import mediapipe as mp
-import datetime as dt
+import datetime as dt  
 import pandas as pd
 import numpy as np
 import time
@@ -10,9 +10,11 @@ import cv2
 PIXEL_TO_CM_RATIO = 0.625
 
 # variable initialization
-AVERAGE_OVER = 5
+POSE_NO_HELD_DURATION = 1.5
 POSE_HELD_DURATION = 3
-ERROR = 0      
+DISTANCE_CHECK = 25
+AVERAGE_OVER = 5
+ERROR = 1.91
 
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
@@ -111,7 +113,7 @@ def draw_middle_finger_only(image, hand_landmarks, color=(0, 255, 0)):
 
 # Function to check if the hands are positioned correctly
 def check_distance(distance,start_time):
-    if distance < 20:
+    if distance < DISTANCE_CHECK:
         if start_time is None:
             start_time = time.time()  
         elapsed_time = time.time() - start_time
@@ -174,7 +176,7 @@ def process_exercise(repeats):
                     return f'{distance:.2f}'
             
             else:
-                 if time.time() - last_detected_time >= 3:
+                 if time.time() - last_detected_time >= POSE_NO_HELD_DURATION:
                     start_time = None
 
             cv2.imshow('Left Hand Tracking with Kinect and Holistic', image)
@@ -263,14 +265,14 @@ def real_distance():
         elif (key >= 48 and key <= 57) or key in [44, 46, 43, 45]:  
             distancia += chr(key)
 
-repeats = 0
+repeats = 2
 
 distances_right = []
 distances_left = []
 
-# age,height,weight,gender = register()
+age,height,weight,gender = register()
 
-# gender = "Feminine" if gender == "F" else "Male"
+gender = "Feminine" if gender == "F" else "Male"
 
 while repeats < 4:
     final_distance = process_exercise(repeats)
@@ -278,21 +280,24 @@ while repeats < 4:
     if final_distance is not None:
         
         real = real_distance()
+        
+        erro = np.abs(np.abs(float(real)) - np.abs(float(final_distance)))
 
-        # caminho_arquivo = "./tabelas/back_scratch.xlsx"
-        # df = pd.read_excel(caminho_arquivo, engine="openpyxl")
+        caminho_arquivo = "./tabelas/back_scratch.xlsx"
+        df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
-        # new_line = {
-        #     "Age": age,
-        #     "Height": height,
-        #     "Weight": weight,
-        #     "Gender": gender,
-        #     "Real distance": real,
-        #     "Calculated distance": final_distance
-        # }
+        new_line = {
+            "Age": age,
+            "Height": height,
+            "Weight": weight,
+            "Gender": gender,
+            "Real distance": real,
+            "Calculated distance": final_distance,
+            "Erro": erro
+        }
 
-        # df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
-        # df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
+        df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
+        df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
         if repeats in [0,1]: 
             distances_right.append(final_distance)
