@@ -283,7 +283,7 @@ while repeats < 4:
         
         erro = np.abs(np.abs(float(real)) - np.abs(float(final_distance)))
 
-        caminho_arquivo = "../tabelas/back_scratch.xlsx"
+        caminho_arquivo = "./tabelas/back_scratch.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
         new_line = {
