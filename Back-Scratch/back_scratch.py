@@ -265,7 +265,7 @@ def real_distance():
         elif (key >= 48 and key <= 57) or key in [44, 46, 43, 45]:  
             distancia += chr(key)
 
-repeats = 2
+repeats = 0
 
 distances_right = []
 distances_left = []
@@ -283,7 +283,7 @@ while repeats < 4:
         
         erro = np.abs(np.abs(float(real)) - np.abs(float(final_distance)))
 
-        caminho_arquivo = "./tabelas/back_scratch.xlsx"
+        caminho_arquivo = "../tabelas/back_scratch.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
         new_line = {

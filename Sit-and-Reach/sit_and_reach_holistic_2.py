@@ -480,7 +480,7 @@ while repeats < 4:
     if final_distance is not None:
 
         real = real_distance()
-        caminho_arquivo = "./tabelas/sit_and_reach2.xlsx"
+        caminho_arquivo = "../tabelas/sit_and_reach2.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
         new_line = {
