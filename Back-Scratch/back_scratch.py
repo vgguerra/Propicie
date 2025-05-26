@@ -306,8 +306,8 @@ while repeats < 4:
             distances_left.append(final_distance)
             side = "left"
 
-        # with open("./logs/logs_back_scratch","a") as arquivo:
-        #     arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
+        with open("./logs/logs_back_scratch","a") as arquivo:
+            arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
         repeats += 1
 
