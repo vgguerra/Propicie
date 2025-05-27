@@ -36,7 +36,7 @@ MAX_POSTURE_HIP_ANGLE = 150
 ERROR = 1.035
 
 # variable initialization
-CALIBRATION_HELD_DURATION = 5
+CALIBRATION_HELD_DURATION = 3
 POSE_HELD_DURATION = 3 
 AVERAGE_OVER = 6
 
@@ -483,6 +483,8 @@ while repeats < 4:
         caminho_arquivo = "./tabelas/sit_and_reach2.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
+        erro = np.abs(np.abs(float(real)) - np.abs(float(final_distance)))
+
         new_line = {
             "Age": age,
             "Height": height,
@@ -490,6 +492,7 @@ while repeats < 4:
             "Gender": gender,
             "Real distance": real,
             "Calculated distance": final_distance,
+            "Erro": erro
         }
 
         df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
