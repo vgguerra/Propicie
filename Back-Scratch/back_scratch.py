@@ -16,6 +16,7 @@ DISTANCE_CHECK = 25
 AVERAGE_OVER = 5
 ERROR = 1.91
 
+
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
 
@@ -283,7 +284,7 @@ while repeats < 4:
         
         erro = np.abs(np.abs(float(real)) - np.abs(float(final_distance)))
 
-        caminho_arquivo = "./tabelas/back_scratch.xlsx"
+        caminho_arquivo = "./tabelas_utentes/back_scratch_utentes.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
         new_line = {
@@ -306,7 +307,7 @@ while repeats < 4:
             distances_left.append(final_distance)
             side = "left"
 
-        with open("./logs/logs_back_scratch","a") as arquivo:
+        with open("./logs_utentes/logs_back_scratch_utentes","a") as arquivo:
             arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
         repeats += 1

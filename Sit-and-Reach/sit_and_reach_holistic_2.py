@@ -40,7 +40,6 @@ CALIBRATION_HELD_DURATION = 3
 POSE_HELD_DURATION = 3 
 AVERAGE_OVER = 6
 
-
 # Kinect initialization
 kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
 
@@ -480,7 +479,7 @@ while repeats < 4:
     if final_distance is not None:
 
         real = real_distance()
-        caminho_arquivo = "./tabelas/sit_and_reach2.xlsx"
+        caminho_arquivo = "./tabelas_utentes/sit_and_reach_2_utentes.xlsx"
         df = pd.read_excel(caminho_arquivo, engine="openpyxl")
 
         erro = np.abs(np.abs(float(real)) - np.abs(float(final_distance)))
@@ -505,7 +504,7 @@ while repeats < 4:
             distances_left.append(final_distance)
             side = "left"
 
-        with open("./logs/logs_sit_and_reach2","a") as arquivo:
+        with open("./logs_utentes/logs_sit_and_reach_utentes","a") as arquivo:
             arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
         final_repetition_visualization(final_distance,real)
