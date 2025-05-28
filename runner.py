@@ -8,4 +8,4 @@ print("Executando Back Scratch...")
 subprocess.run(["python", "./Back-Scratch/back_scratch.py"], check=True)
 
 print("Todos os programas foram executados com sucesso.")
- 
+   

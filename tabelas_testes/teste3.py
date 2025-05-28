@@ -3,14 +3,14 @@ import pandas as pd
 
 # Criar tabela
 
-os.makedirs("./tabelas", exist_ok=True)
+# os.makedirs("./tabelas", exist_ok=True)
 
-colunas = ["Age","Height","Weigth","Gender","Real distance", "Calculated distance","Erro"]
-df = pd.DataFrame(columns=colunas)
+# colunas = ["Age","Height","Weigth","Gender","Real distance", "Calculated distance","Erro"]
+# df = pd.DataFrame(columns=colunas)
 
-df.to_excel("./tabelas/sit_and_reach_2_utentes.xlsx", index=False, engine="openpyxl")
+# df.to_excel("./tabelas/sit_and_reach_2_utentes.xlsx", index=False, engine="openpyxl")
 
-print("Arquivo Excel criado com sucesso!")
+# print("Arquivo Excel criado com sucesso!")
 
 
 
@@ -44,8 +44,10 @@ print("Arquivo Excel criado com sucesso!")
 
 # print(f"O erro aproximado é de {soma/tamanho:.3f}")
 
-"""arquivo = "./tabelas/dados.xlsx"
-df = pd.read_excel(arquivo)
+arquivo1 = "./tabelas_utentes/back_scratch_utentes.xlsx"
+arquivo2 = "./tabelas_utentes/sit_and_reach_2_utentes.xlsx"
+
+df = pd.read_excel(arquivo1)
 
 coluna = df["Erro"].values
 tamanho = df["Erro"].size + 1
@@ -54,7 +56,15 @@ soma = 0
 for col in coluna:
     soma += col 
 
+print(f"O erro do Back-Scratch aproximado é de {soma/tamanho:.3f}")
 
-print(f"O erro aproximado é de {soma/tamanho:.3f}")"""
+df = pd.read_excel(arquivo2)
 
+coluna = df["Erro"].values
+tamanho = df["Erro"].size + 1
+soma = 0
 
+for col in coluna:
+    soma += col   
+
+print(f"O erro do Sit and Reach aproximado é de {soma/tamanho:.3f}")
