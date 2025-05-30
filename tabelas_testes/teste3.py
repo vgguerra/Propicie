@@ -56,7 +56,9 @@ soma = 0
 for col in coluna:
     soma += col 
 
-print(f"O erro do Back-Scratch aproximado é de {soma/tamanho:.3f}")
+erro1 = soma/tamanho
+
+print(f"O erro do Back-Scratch aproximado é de {erro1:.3f}")
 
 df = pd.read_excel(arquivo2)
 
@@ -67,4 +69,8 @@ soma = 0
 for col in coluna:
     soma += col   
 
-print(f"O erro do Sit and Reach aproximado é de {soma/tamanho:.3f}")
+erro2 = soma/tamanho
+
+print(f"O erro do Sit and Reach aproximado é de {erro2:.3f}")
+
+print(f"O erro dos dois programas é aproximado de {(erro1 + erro2) / 2:.3f}")

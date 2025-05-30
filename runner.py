@@ -6,4 +6,4 @@ subprocess.run(["python", "./Sit-and-Reach/sit_and_reach_holistic_2.py"], check=
 print("Executando Back Scratch...")
 subprocess.run(["python", "./Back-Scratch/back_scratch.py"], check=True)
 
-print("Todos os programas foram executados com sucesso.")
+print("Todos os programas foram executados com sucesso.") 
