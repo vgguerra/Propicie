@@ -18,7 +18,7 @@ O sistema foca em duas avaliações principais:
 O núcleo do projeto é uma aplicação em Python que utiliza um sensor Kinect V2 para capturar os movimentos do usuário e o framework MediaPipe Holistic para realizar a detecção de marcos corporais em tempo real. Essa abordagem permite o cálculo preciso dos ângulos corporais para validação da postura e das distâncias-chave para a pontuação dos testes.
 
 ### 📊 Principais Descobertas
-A pesquisa conduzida por Artem Bukhantsev e aprofundada por Victor E. de L. Guerra concluiu que:
+A pesquisa conduzida por Artem Bukhantsev e aprofundada por mim concluiu que:
 * A implementação com **MediaPipe** demonstrou uma precisão superior para o teste de Sentar e Alcançar, com um Erro Médio Absoluto (MAE) de aproximadamente **2.25 cm**.
 * Esta abordagem foi significativamente mais precisa do que uma implementação nativa com PyKinect, que apresentou um MAE de 8.65 cm, devido a desafios como a instabilidade do esqueleto virtual ("jittering").
 * O teste de "Coçar as Costas" provou ser um desafio para a visão computacional devido à oclusão de membros e à orientação do usuário de costas para a câmera.
