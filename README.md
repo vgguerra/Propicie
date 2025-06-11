@@ -130,7 +130,7 @@ Você também pode executar cada script de teste individualmente:
 ├── /analises/              # Scripts e resultados para análise estatística dos dados.
 ├── /Back-Scratch/          # Contém o script Python para o teste de Coçar as Costas.
 ├── /CsRunner/              # Um projeto em C# .NET para executar os scripts Python.
-├── /relatorios/            # Relatórios de progresso e finais detalhados (em português).
+├── /relatorios/            # Relatórios de progresso e finais detalhados.
 ├── /Sit-and-Reach/         # Contém scripts Python para o teste de Sentar e Alcançar.
 ├── /tabelas_testes/        # Planilhas de dados de teste.
 ├── /tabelas_utentes/       # Planilhas com dados coletados dos testes com usuários.
