@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_excel('./tabelas_utentes/back_scratch_utentes.xlsx')  # Ou o caminho para a tabela referente ao Back-Scratch
+df = pd.read_excel('./tabelas_utentes/back_scratch_utentes.xlsx') 
 
 df.columns = df.columns.str.strip()
 
