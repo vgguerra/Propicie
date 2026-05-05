@@ -99,8 +99,8 @@ Para executar este projeto, siga os passos abaixo.
 5.  **Para alterações nos textos do programa**:
     * Após alterar os arquivos .po em locale compile-os para .mo.
    ```bash
-   msgfmt locale\en_US\LC_MESSAGES\messages.po -o locale\en_US\LC_MESSAGES\messages.mo
-   msgfmt locale\pt_PT\LC_MESSAGES\messages.po -o locale\pt_PT\LC_MESSAGES\messages.mo
+   pybabel compile -i locale/en_US/LC_MESSAGES/messages.po -o locale/en_US/LC_MESSAGES/messages.mo
+   pybabel compile -i locale/pt_PT/LC_MESSAGES/messages.po -o locale/pt_PT/LC_MESSAGES/messages.mo
    ```
 ## ▶️ Uso
 
