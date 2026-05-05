@@ -1,102 +1,52 @@
-from pykinect2 import PyKinectRuntime, PyKinectV2
-import mediapipe as mp
-import datetime as dt  
-import pandas as pd
-import numpy as np
+# =============================================================================
+# exercises/back_scratch.py
+# =============================================================================
+# Two repetitions per side (repeats 0-1 → right side, 2-3 → left side).
+# Exercise logic (distance threshold, timing) is unchanged.
+# =============================================================================
+
 import time
+
 import cv2
+import mediapipe as mp
+import numpy as np
 
-# Approximate ratio of pixels to cm at 1 meter distance
-PIXEL_TO_CM_RATIO = 0.625
+from config import (
+    BACK_SCRATCH_PIXEL_TO_CM,
+    BS_DISTANCE_THRESHOLD,
+    BS_POSE_HELD_DURATION,
+    BS_POSE_NO_HELD_DURATION,
+    BS_ERROR,
+)
+from utils import (
+    calculate_distance_2d,
+    read_kinect_frame,
+    append_to_excel,
+    append_to_log,
+    show_real_distance_screen,
+)
 
-# variable initialization
-POSE_NO_HELD_DURATION = 1.5
-POSE_HELD_DURATION = 3
-DISTANCE_CHECK = 33
-AVERAGE_OVER = 5
-ERROR = 1.91
-
-
-# Kinect initialization
-kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
-
-# Initialize MediaPipe Holistic
-mp_drawing = mp.solutions.drawing_utils
+# ---------------------------------------------------------------------------
+# MediaPipe setup
+# ---------------------------------------------------------------------------
+mp_drawing        = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
-mp_holistic = mp.solutions.holistic
-holistic = mp_holistic.Holistic()
+mp_holistic       = mp.solutions.holistic
 
-# Media Pipe Holistic initialization
-def finish_program():
-    cv2.destroyAllWindows()
-    kinect.close()
-    exit()
 
-# Function to calculate Euclidean distance in 2D (x, y only)
-def calculate_distance_2d(point1, point2):
-    return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+# =============================================================================
+# Private helpers
+# =============================================================================
 
-# Function to calculate average distance
-def average_distance(distances):
-    return sum(distances) / len(distances)
+def _draw_landmarks(image, results):
+    for hand_lm in (results.left_hand_landmarks, results.right_hand_landmarks):
+        mp_drawing.draw_landmarks(
+            image, hand_lm, mp_holistic.HAND_CONNECTIONS,
+            landmark_drawing_spec=mp_drawing_styles.get_default_hand_landmarks_style())
 
-# Function to process kinect frames
-def process_frame(kinect):
-    frame = kinect.get_last_color_frame()
-    frame = frame.reshape((1080, 1920, 4))  # BGRA
-    rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-    rgb_frame = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB)
-    rgb_frame.flags.writeable = False
-    results = holistic.process(rgb_frame)
-    rgb_frame.flags.writeable = True
-    return cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR), results, frame
 
-# Function to show the performance screen for that attempt
-def final_repetition_visualization(distance,real_distance):
-
-    final_repetition_frame = np.zeros((500, 800, 3), dtype=np.uint8)
-
-    cv2.putText(final_repetition_frame, f'Repetition Completed', (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(final_repetition_frame, f"Distance between both hands: {distance} cm", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(final_repetition_frame, f'Real Distance: {real_distance} centimeters', (50, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(final_repetition_frame,f'Press "c" to continue or "q" to finish the exercise',(50,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
-    cv2.imshow("Repetition Results", final_repetition_frame)
-    
-    while True:
-        key = cv2.waitKey(0) & 0xFF
-        if key == ord('q'):
-            finish_program()
-        elif key == ord('c'):
-            cv2.destroyWindow("Repetition Results")
-            break  
-
-# Function to show the final display
-def final_visualization(left,right):
-    final_frame = np.zeros((500,800,3),dtype=np.uint8)
-
-    cv2.putText(final_frame,f'Exercise completed',(200,100),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(final_frame, f'Better result of the right side: {right} cm', (40, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(final_frame, f'Better result of the left side: {left} cm', (40, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(final_frame,f'Press "q" to finish the exercise',(200,400),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,0),2)
-
-    cv2.imshow("Final results",final_frame)
-
-    while True:
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):  # Press 'q' to exit
-            finish_program() 
-
-# Draw hands landmarks
-def draw_landmarks(image, results):
-    mp_drawing.draw_landmarks(
-        image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
-        landmark_drawing_spec=mp_drawing_styles.get_default_hand_landmarks_style())
-    mp_drawing.draw_landmarks(
-        image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
-        landmark_drawing_spec=mp_drawing_styles.get_default_hand_landmarks_style())
-    
-# Draw only middle finger landmark
-def draw_middle_finger_only(image, hand_landmarks, color=(0, 255, 0)):
+def _draw_middle_finger(image, hand_landmarks, color=(0, 255, 0)):
+    """Draw only the middle-finger chain (joints 9-12)."""
     middle_indices = [9, 10, 11, 12]
     h, w, _ = image.shape
 
@@ -105,219 +55,160 @@ def draw_middle_finger_only(image, hand_landmarks, color=(0, 255, 0)):
         y = int(hand_landmarks.landmark[i].y * h)
         cv2.circle(image, (x, y), 5, color, -1)
 
-    for i in range(len(middle_indices) - 1):
-        x1 = int(hand_landmarks.landmark[middle_indices[i]].x * w)
-        y1 = int(hand_landmarks.landmark[middle_indices[i]].y * h)
-        x2 = int(hand_landmarks.landmark[middle_indices[i + 1]].x * w)
-        y2 = int(hand_landmarks.landmark[middle_indices[i + 1]].y * h)
-        cv2.line(image, (x1, y1), (x2, y2), color, 2)
+    for a, b in zip(middle_indices, middle_indices[1:]):
+        p1 = (int(hand_landmarks.landmark[a].x * w),
+              int(hand_landmarks.landmark[a].y * h))
+        p2 = (int(hand_landmarks.landmark[b].x * w),
+              int(hand_landmarks.landmark[b].y * h))
+        cv2.line(image, p1, p2, color, 2)
 
-# Function to check if the hands are positioned correctly
-def check_distance(distance,start_time):
-    if distance < DISTANCE_CHECK:
+
+def _check_distance_timer(distance, start_time):
+    """
+    Accumulate time while hands are within threshold.
+    Returns (elapsed_seconds, updated_start_time).
+    """
+    if distance < BS_DISTANCE_THRESHOLD:
         if start_time is None:
-            start_time = time.time()  
-        elapsed_time = time.time() - start_time
-    else:
-        start_time = None  
-        elapsed_time = 0
-    return elapsed_time, start_time
+            start_time = time.time()
+        return time.time() - start_time, start_time
+    return 0, None
 
-# Function to process the exercise Sit and Reach
-def process_exercise(repeats):
-    distances = []
-    elapsed_time = None
-    start_time = None
-    last_detected_time = time.time() 
 
-    # Main Loop
-    while True:
-        if kinect.has_new_color_frame():
-            image, results, frame = process_frame(kinect)
+# =============================================================================
+# UI screens
+# =============================================================================
 
-            if results.left_hand_landmarks and results.right_hand_landmarks:
-                last_detected_time = time.time()
-
-                draw_landmarks(image, results)
-
-                hand_landmark1 = results.left_hand_landmarks.landmark[12]  
-                hand_landmark2 = results.right_hand_landmarks.landmark[12]
-
-                right_hand = int(hand_landmark1.x * 640), int(hand_landmark1.y * 480)
-                left_hand = int((hand_landmark2.x * 640)), int(hand_landmark2.y * 480)
-
-                distance_pixel = calculate_distance_2d(right_hand, left_hand)
-                distance = (distance_pixel * PIXEL_TO_CM_RATIO) - ERROR
-                
-                # distances.append(distance)
-                # if len(distances) > AVERAGE_OVER:
-                #     distances.pop(0)
-                #     distance = average_distance(distances)
-
-                elapsed_time,start_time = check_distance(distance,start_time) 
-
-                cv2.putText(image, f"Dist: {distance:.2f} cm", (50, 50),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
-                cv2.putText(image, f'Pos Right Hand: {right_hand[0]}, {right_hand[1]}', (1000, 100),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                cv2.putText(image, f'Pos Left Hand: {left_hand[0]}, {left_hand[1]}', (1000, 200),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-
-                if elapsed_time >= POSE_HELD_DURATION:
-
-                    # if repeats in [0,1]:
-                    #     if left_hand[1] <= right_hand[1]:
-                    #         distance = -distance
-                    # else:
-                    #     if left_hand[1] <= right_hand[1]:
-                    #         distance = -distance
-                        
-                    distance = -distance
-                    
-                    return f'{distance:.2f}'
-            
-            else:
-                 if time.time() - last_detected_time >= POSE_NO_HELD_DURATION:
-                    start_time = None
-
-            cv2.imshow('Left Hand Tracking with Kinect and Holistic', image)
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                finish_program()
-
-# Function to show the register screen
-def register():
-    fields = ["Idade", "Altura (cm)", "Peso (kg)", "Genero (M/F)"]
-    values = ["", "", "", ""]
-    active_field = -1  
-
-    positions = [(50, 50 + i * 80, 550, 100 + i * 80) for i in range(len(fields))]
-
-    def mouse_callback(event, x, y, flags, param):
-        nonlocal active_field
-        if event == cv2.EVENT_LBUTTONDOWN:
-            active_field = -1  
-            for i, (x1, y1, x2, y2) in enumerate(positions):
-                if x1 <= x <= x2 and y1 <= y <= y2:
-                    active_field = i
-                    break
-
-    cv2.namedWindow("Cadastro")
-    cv2.setMouseCallback("Cadastro", mouse_callback)
+def _screen_repetition(distance, real_distance, finish_cb):
+    frame = np.zeros((500, 800, 3), dtype=np.uint8)
+    cv2.putText(frame, "Repetition Completed",                     (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+    cv2.putText(frame, f"Distance between hands: {distance} cm",   (50,  200), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
+    cv2.putText(frame, f"Real Distance: {real_distance} cm",       (50,  250), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
+    cv2.putText(frame, 'Press "c" to continue or "q" to finish',   (50,  400), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0),   2)
+    cv2.imshow("Repetition Results", frame)
 
     while True:
-        img = 255 * np.ones((400, 600, 3), dtype=np.uint8)
+        key = cv2.waitKey(0) & 0xFF
+        if key == ord("q"):
+            finish_cb()
+        elif key == ord("c"):
+            cv2.destroyWindow("Repetition Results")
+            break
 
-        for i, (x1, y1, x2, y2) in enumerate(positions):
-            background_color = (230, 230, 230)
-            cv2.rectangle(img, (x1, y1), (x2, y2), background_color, -1)
-            border_color = (0, 255, 0) if i == active_field else (0, 0, 0)
-            cv2.rectangle(img, (x1, y1), (x2, y2), border_color, 2)
-            cv2.putText(img, f"{fields[i]}:", (x1 + 10, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 2)
-            cv2.putText(img, values[i], (x1 + 10, y2 - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
 
-        cv2.putText(img, "Aperte Enter para finalizar", (50, 380), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100,100,100), 1)
-
-        cv2.imshow("Cadastro", img)
-        key = cv2.waitKey(10) & 0xFF
-
-        if key == 27:  
-            finish_program()
-        elif key == 13 or key == 10:  
-            cv2.destroyAllWindows()
-            return values
-        elif key == 9:  # Tecla Tab
-            active_field = (active_field + 1) % len(fields)
-        elif active_field != -1:
-            if key == 8:  
-                values[active_field] = values[active_field][:-1]
-            elif 32 <= key <= 126:  
-                values[active_field] += chr(key)
-
-# Function to show the real distance input screen
-def real_distance():
-    distancia = ""
-    windown_width, windown_heigth = 600, 200
-
-    cv2.namedWindow("Real Distance")
+def screen_final(best_right, best_left, finish_cb):
+    frame = np.zeros((500, 800, 3), dtype=np.uint8)
+    cv2.putText(frame, "Exercise Completed",                          (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+    cv2.putText(frame, f"Best result — right side: {best_right} cm", (40,  200), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
+    cv2.putText(frame, f"Best result — left  side: {best_left} cm",  (40,  270), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
+    cv2.putText(frame, 'Press "q" to exit',                           (200, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0),   2)
+    cv2.imshow("Final Results", frame)
 
     while True:
-        img = np.ones((windown_heigth, windown_width, 3), dtype=np.uint8) * 255
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            finish_cb()
 
-        cv2.rectangle(img, (50, 60), (550, 120), (230, 230, 230), -1)
-        cv2.rectangle(img, (50, 60), (550, 120), (0, 0, 0), 2)
 
-        cv2.putText(img, "Digite a Distância medida (cm):", (50, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-        cv2.putText(img, distancia, (60, 105), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
-        cv2.putText(img, "Pressione Enter para confirmar", (50, 170), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 1)
+# =============================================================================
+# Core exercise loop
+# =============================================================================
 
-        cv2.imshow("Real Distance", img)
-        key = cv2.waitKey(10) & 0xFF
+def run_repetition(repeats, kinect, holistic, finish_cb):
+    """
+    Run one back-scratch repetition and return the measured distance (str).
+    *finish_cb* is called on 'q' keypress or fatal error.
+    """
+    start_time        = None
+    last_detected     = time.time()
 
-        if key == 27: 
-            cv2.destroyAllWindows()
-            finish_program()
-        elif key == 13 or key == 10:  
-            if distancia:
-                cv2.destroyAllWindows()
-                return float(distancia.replace(",", ".")) 
-        elif key == 8:  
-            distancia = distancia[:-1]
-        elif (key >= 48 and key <= 57) or key in [44, 46, 43, 45]:  
-            distancia += chr(key)
+    while True:
+        if not kinect.has_new_color_frame():
+            continue
 
-repeats = 0
+        image, results, _ = read_kinect_frame(kinect, holistic)
 
-distances_right = []
-distances_left = []
+        if results.left_hand_landmarks and results.right_hand_landmarks:
+            last_detected = time.time()
+            _draw_landmarks(image, results)
 
-age,height,weight,gender = register()
+            # Middle-finger tip (landmark 12) in scaled pixel space
+            lm_left  = results.left_hand_landmarks.landmark[12]
+            lm_right = results.right_hand_landmarks.landmark[12]
 
-gender = "Feminine" if gender == "F" else "Male"
+            left_hand  = (int(lm_left.x  * 640), int(lm_left.y  * 480))
+            right_hand = (int(lm_right.x * 640), int(lm_right.y * 480))
 
-while repeats < 4:
-    final_distance = process_exercise(repeats)
+            dist_px  = calculate_distance_2d(left_hand, right_hand)
+            distance = (dist_px * BACK_SCRATCH_PIXEL_TO_CM) - BS_ERROR
 
-    if final_distance is not None:
-        
-        real = real_distance()
-        
-        erro = np.abs(np.abs(float(real)) - np.abs(float(final_distance)))
+            elapsed, start_time = _check_distance_timer(distance, start_time)
 
-        caminho_arquivo = "./tabelas_utentes/back_scratch_utentes.xlsx"
-        df = pd.read_excel(caminho_arquivo, engine="openpyxl")
+            cv2.putText(image, f"Dist: {distance:.2f} cm",         (50,   50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,   0,   0), 2)
+            cv2.putText(image, f"Right hand: {right_hand}",        (1000, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235,   0), 2)
+            cv2.putText(image, f"Left  hand: {left_hand}",         (1000, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235,   0), 2)
 
-        new_line = {
-            "Age": age,
-            "Height": height,
-            "Weight": weight,
-            "Gender": gender,
-            "Real distance": real,
-            "Calculated distance": final_distance,
-            "Erro": erro
-        }
+            if elapsed >= BS_POSE_HELD_DURATION:
+                return round(-distance, 2)
 
-        df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
-        df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
+        else:
+            # Reset timer if hands disappear for long enough
+            if time.time() - last_detected >= BS_POSE_NO_HELD_DURATION:
+                start_time = None
 
-        if repeats in [0,1]: 
-            distances_right.append(final_distance)
-            side = "right"
-        else: 
-            distances_left.append(final_distance)
-            side = "left"
+        cv2.imshow("Back Scratch", image)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            finish_cb()
 
-        with open("./logs_utentes/logs_back_scratch_utentes","a") as arquivo:
-            arquivo.write(f"{dt.datetime.now()}, {age}, {height}, {weight}, {gender}, {real}, {final_distance},{side}\n")
 
-        repeats += 1
+# =============================================================================
+# Public entry point
+# =============================================================================
 
-        final_repetition_visualization(final_distance,real)
-    else:
-        print("Exercise not performed correctly")
-        finish_program()
+_EXCEL_PATH = "./arquivos/tabelas_utentes/back_scratch_utentes.xlsx"
+_LOG_PATH   = "./arquivos/logs_utentes/logs_back_scratch_utentes"
 
-best_left,best_right = max(distances_left, key=float), max(distances_right, key=float)
-final_visualization(best_left,best_right)
 
-finish_program()
+def run(kinect, holistic, participant, finish_cb):
+    """
+    Run 4 back-scratch repetitions (2 per side).
+
+    Parameters
+    ----------
+    kinect       : PyKinectRuntime instance
+    holistic     : MediaPipe Holistic instance
+    participant  : dict with keys age, height, weight, gender
+    finish_cb    : callable — called to terminate the program cleanly
+    """
+    distances_right, distances_left = [], []
+
+    for rep in range(4):
+        dist = run_repetition(rep, kinect, holistic, finish_cb)
+
+        if dist is None:
+            print("Exercise not performed correctly.")
+            finish_cb()
+
+        real  = show_real_distance_screen()
+        error = abs(abs(float(real)) - abs(dist))
+        side  = "right" if rep in (0, 1) else "left"
+
+        append_to_excel(_EXCEL_PATH, {
+            "Age": participant["age"], "Height": participant["height"],
+            "Weight": participant["weight"], "Gender": participant["gender"],
+            "Real distance": real, "Calculated distance": dist, "Erro": error,
+        })
+        append_to_log(_LOG_PATH,
+                      participant["age"], participant["height"],
+                      participant["weight"], participant["gender"],
+                      real, dist, side)
+
+        if side == "right":
+            distances_right.append(dist)
+        else:
+            distances_left.append(dist)
+
+        _screen_repetition(f"{dist:.2f}", real, finish_cb)
+
+    best_right = max(distances_right)
+    best_left  = max(distances_left)
+    screen_final(f"{best_right:.2f}", f"{best_left:.2f}", finish_cb)
