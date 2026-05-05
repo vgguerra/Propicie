@@ -5,7 +5,7 @@
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.x-blue.svg)](https://opencv.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Um sistema inovador para a avaliação automatizada de testes de aptidão física da Bateria de Fullerton, projetado para apoiar o envelhecimento ativo. Este projeto utiliza visão computacional com um sensor Kinect V2 e a biblioteca MediaPipe Holistic do Google para fornecer medições precisas e em tempo real.
+Sistema inovador para avaliação automatizada de testes de aptidão física da *Bateria de Fullerton*, projetado para apoiar o envelhecimento ativo, auxiliando profissionais da área da saúde e de cuidados com idosos. Este projeto utiliza visão computacional com um sensor Kinect V2 e a biblioteca MediaPipe Holistic do Google para fornecer medições precisas e em tempo real.
 
 ## 📋 Sobre o Projeto
 
@@ -18,7 +18,7 @@ O sistema foca em duas avaliações principais:
 O núcleo do projeto é uma aplicação em Python que utiliza um sensor Kinect V2 para capturar os movimentos do usuário e o framework MediaPipe Holistic para realizar a detecção de marcos corporais em tempo real. Essa abordagem permite o cálculo preciso dos ângulos corporais para validação da postura e das distâncias-chave para a pontuação dos testes.
 
 ### 📊 Principais Descobertas
-A pesquisa conduzida por Artem Bukhantsev e aprofundada por mim concluiu que:
+A pesquisa conduzida por Artem Bukhantsev e aprofundada por <a href="https://github.com/vgguerra"> Victor Guerra <a/> concluiu que:
 * A implementação com **MediaPipe** demonstrou uma precisão superior para o teste de Sentar e Alcançar, com um Erro Médio Absoluto (MAE) de aproximadamente **2.25 cm**.
 * Esta abordagem foi significativamente mais precisa do que uma implementação nativa com PyKinect, que apresentou um MAE de 8.65 cm, devido a desafios como a instabilidade do esqueleto virtual ("jittering").
 * O teste de "Coçar as Costas" provou ser um desafio para a visão computacional devido à oclusão de membros e à orientação do usuário de costas para a câmera.
@@ -68,19 +68,23 @@ Para executar este projeto, siga os passos abaixo.
 
 1.  **Instale o SDK do Kinect para Windows 2.0**:
     * Baixe e instale o SDK do site oficial da Microsoft: [Kinect for Windows SDK 2.0](https://www.microsoft.com/en-us/download/details.aspx?id=44561).
-    * Conecte seu sensor Kinect ao PC via USB 3.0 e a uma fonte de energia. Verifique se ele é reconhecido no Gerenciador de Dispositivos.
+    * Conecte seu sensor Kinect ao PC via USB 3.0 e a uma fonte de energia. Verifique seu campo de visão e funcionamento pelo Kinect Studio presente na instalação do Kinect SDK.
 
 2.  **Configure o Ambiente Python**:
-    * É altamente recomendável usar um ambiente virtual. Com o Anaconda, você pode criar um com:
+    * É altamente recomendável usar um ambiente virtual. Para criar com o Anaconda:
         ```bash
         conda create -n propicie_env python=3.8
         conda activate propicie_env
         ```
 
 3.  **Instale as Bibliotecas Necessárias**:
-    * Instale as dependências principais usando pip:
+    * Instale as dependências principais usando pip e utilize as versões recomendadas para evitar erros:
         ```bash
-        pip install opencv-python mediapipe pandas numpy openpyxl
+        pip install numpy==1.23.5
+        pip install comtypes==1.1.14
+        pip install pykinect2==0.1.0
+        pip install mediapipe==0.10.9
+        pip install opencv-python pandas openpyxl
         ```
 
 4.  **Instale o PyKinect2**:
