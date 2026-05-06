@@ -17,7 +17,7 @@ O sistema foca em duas avaliações principais:
 
 O núcleo do projeto é uma aplicação em Python que utiliza um sensor Kinect V2 para capturar os movimentos do usuário e o framework MediaPipe Holistic para realizar a detecção de marcos corporais em tempo real. Essa abordagem permite o cálculo preciso dos ângulos corporais para validação da postura e das distâncias-chave para a pontuação dos testes.
 
-### 📊 Principais Descobertas
+### Principais Descobertas
 A pesquisa conduzida por Artem Bukhantsev e aprofundada por <a href="https://github.com/vgguerra"> Victor Guerra <a/> concluiu que:
 * A implementação com **MediaPipe** demonstrou uma precisão superior para o teste de Sentar e Alcançar, com um Erro Médio Absoluto (MAE) de aproximadamente **2.25 cm**.
 * Esta abordagem foi significativamente mais precisa do que uma implementação nativa com PyKinect, que apresentou um MAE de 8.65 cm, devido a desafios como a instabilidade do esqueleto virtual ("jittering").
@@ -131,26 +131,38 @@ Você também pode executar cada script de teste individualmente:
 3.  A janela principal da aplicação será aberta, mostrando o feed da câmera do Kinect com a sobreposição do esqueleto do MediaPipe.
 4.  Siga as instruções na tela para se posicionar corretamente.
 5.  O sistema detectará automaticamente quando você estiver na postura correta, manterá a pose e, em seguida, calculará o resultado.
-6.  O resultado será exibido, e você será solicitado a continuar (`c`) ou sair (`q`).
+6.  O resultado será exibido, e você será solicitado a continuar (`C`) ou sair (`Q`).
 
 ## 📁 Estrutura do Projeto
 
 ```
 .
-├── /analises/              # Scripts e resultados para análise estatística dos dados.
-├── /Back-Scratch/          # Contém o script Python para o teste de Coçar as Costas.
-├── /CsRunner/              # Um projeto em C# .NET para executar os scripts Python.
-├── /relatorios/            # Relatórios de progresso e finais detalhados.
-├── /Sit-and-Reach/         # Contém scripts Python para o teste de Sentar e Alcançar.
-├── /tabelas_testes/        # Planilhas de dados de teste.
-├── /tabelas_utentes/       # Planilhas com dados coletados dos testes com usuários.
-├── .gitignore              # Especifica arquivos a serem ignorados pelo Git.
-├── runner.py               # Um script Python simples para executar todos os testes.
-└── README.md               # Este arquivo.
+├── /analises/                 # Scripts e resultados para análise estatística dos dados.
+├── /arquivos/
+      ├── relatorios           # Relatórios de progresso e finais detalhados.
+      ├── tabelas_testes       # Planilhas de dados de teste.
+      └── tabelas_utentes      # Planilhas com dados coletados dos testes com usuários.
+├── /exercicios/
+      ├── back-scratch.py      # Script Python para o teste de Coçar as Costas.
+      └── sit-and-reach.py     # Scripts Python para o teste de Sentar e Alcançar.
+├── /locale/                   # Contém os arquivos de texto com suporte de linguagem.
+├── /ui/
+      ├── draw.py              # Script para criação de telas padronizadas.
+      ├── exercise_intro.py    # Script para mostrar qual o próximo exercício e quais foram feitos.
+      ├── language_select.py   # Script para primeira tela e seleção de linguagem.
+      ├── menu.py              # Script da tela de Menu: Automático, Sentar e Alcançar, Coçar as Costas, Visualizar Dados e Terminar Sessão.
+      └── theme.py             # Registra as cores e padrões.
+├── /CsRunner/                 # Um projeto em C# .NET para executar os scripts Python.
+├── .gitignore                 # Especifica arquivos a serem ignorados pelo Git.
+├── config.py                  # Dados fixos para os cálculos do sistema.
+├── locale_setup.py            # Aplica a linguagem utilizando os arquivos em locale.
+├── runner.py                  # Um script Python simples para executar todos os testes.
+├── utils.py                   # Script com todas as funções comuns, que antes eram duplicadas.
+└── README.md                  # Este arquivo.
 ```
 
 
-## 🙏 Agradecimentos
+## Agradecimentos
 
 * Este trabalho faz parte de uma colaboração de pesquisa entre o **Instituto Politécnico de Beja (IPBeja)** e o **Instituto Federal de Santa Catarina (IFSC)**.
 * Este projeto contribui para o projeto mais amplo **CAPACITA**, que visa desenvolver ferramentas digitais para avaliar e melhorar as capacidades físicas da população idosa.
