@@ -96,6 +96,12 @@ Para executar este projeto, siga os passos abaixo.
         ```
     * Se encontrar problemas, pode ser necessário instalar o `comtypes`.
 
+5.  **Para alterações nos textos do programa**:
+    * Após alterar os arquivos .po em locale compile-os para .mo.
+   ```bash
+   pybabel compile -i locale/en_US/LC_MESSAGES/messages.po -o locale/en_US/LC_MESSAGES/messages.mo
+   pybabel compile -i locale/pt_PT/LC_MESSAGES/messages.po -o locale/pt_PT/LC_MESSAGES/messages.mo
+   ```
 ## ▶️ Uso
 
 Após a conclusão da configuração, você pode executar as avaliações.
