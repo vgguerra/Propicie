@@ -96,6 +96,21 @@ def append_to_log(filepath, *fields):
 
 # SHARED UI WINDOWS
 
+def put_text_utf8(img, text, pos, font_size=28, color=(0, 0, 0)):
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    pil_img = Image.fromarray(img_rgb)
+
+    try:
+        font = ImageFont.truetype(r"C:\Windows\Fonts\arial.ttf", font_size)
+    except Exception:
+        font = ImageFont.load_default()
+
+    color_rgb = (color[2], color[1], color[0])
+    draw = ImageDraw.Draw(pil_img)
+    draw.text(pos, text, font=font, fill=color_rgb)
+
+    return cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
+
 def show_register_screen():
     """
     OpenCV registration form.
@@ -126,12 +141,12 @@ def show_register_screen():
             cv2.rectangle(img, (x1, y1), (x2, y2), (230, 230, 230), -1)
             border = (0, 255, 0) if i == active_field else (0, 0, 0)
             cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
-            put_text_utf8(img, f"{fields[i]}:", (x1 + 10, y1 - 10),
+            img = put_text_utf8(img, f"{fields[i]}:", (x1 + 10, y1 - 10),
               font_size=20, color=(0, 0, 0))
-            put_text_utf8(img, values[i], (x1 + 10, y2 - 20),
+            img = put_text_utf8(img, values[i], (x1 + 10, y2 - 20),
               font_size=20, color=(0, 0, 0))
 
-        put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
+        img = put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
               font_size=18, color=(100, 100, 100))
         cv2.imshow(_("Register"), img)
 
@@ -162,9 +177,9 @@ def show_real_distance_screen():
         img = np.ones((200, 600, 3), dtype=np.uint8) * 255
         cv2.rectangle(img, (50, 60), (550, 120), (230, 230, 230), -1)
         cv2.rectangle(img, (50, 60), (550, 120), (0, 0, 0), 2)
-        put_text_utf8(img, _("real_distance_label") + " (cm):", (50, 40),
+        img = put_text_utf8(img, _("real_distance_label") + " (cm):", (50, 40),
               font_size=24, color=(0, 0, 0))
-        put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
+        img = put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
               font_size=18, color=(100, 100, 100))
         cv2.imshow(_("Real Distance"), img)
 
@@ -186,25 +201,3 @@ def _quit():
     """Centralised exit — called by UI helpers that don't own Kinect/cv2."""
     cv2.destroyAllWindows()
     raise SystemExit(0)
-
-def put_text_utf8(img, text, pos, font_size=28, color=(0, 0, 0)):
-    """
-    Substituto do cv2.putText com suporte a caracteres especiais (UTF-8).
-    *color* em BGR (igual ao OpenCV).
-    """
-    # Converter BGR → RGB para PIL
-    img_pil = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    draw    = ImageDraw.Draw(img_pil)
-
-    # Tentar fonte do sistema, fallback para default
-    try:
-        font = ImageFont.truetype("arial.ttf", font_size)
-    except:
-        font = ImageFont.load_default()
-
-    # PIL usa RGB
-    color_rgb = (color[2], color[1], color[0])
-    draw.text(pos, text, font=font, fill=color_rgb)
-
-    # Converter de volta para BGR
-    cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR, img)
