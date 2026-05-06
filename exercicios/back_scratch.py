@@ -10,6 +10,8 @@ import time
 import cv2
 import mediapipe as mp
 import numpy as np
+from locale_setup import _
+from utils import (..., put_text_utf8)
 
 from config import (
     BACK_SCRATCH_PIXEL_TO_CM,
@@ -81,28 +83,28 @@ def _check_distance_timer(distance, start_time):
 
 def _screen_repetition(distance, real_distance, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    cv2.putText(frame, "Repetition Completed",                     (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(frame, f"Distance between hands: {distance} cm",   (50,  200), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
-    cv2.putText(frame, f"Real Distance: {real_distance} cm",       (50,  250), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
-    cv2.putText(frame, 'Press "c" to continue or "q" to finish',   (50,  400), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0),   2)
-    cv2.imshow("Repetition Results", frame)
+    cv2.putText(frame, _("Repetition Completed"),                     (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+    cv2.putText(frame, f"{_('Distance between hands')}: {distance} cm",   (50,  200), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
+    cv2.putText(frame, f"{_('Real Distance')}: {real_distance} cm",       (50,  250), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
+    cv2.putText(frame, _("C or Q"),   (50,  400), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0),   2)
+    cv2.imshow(_("Repetition Results"), frame)
 
     while True:
         key = cv2.waitKey(0) & 0xFF
         if key == ord("q"):
             finish_cb()
         elif key == ord("c"):
-            cv2.destroyWindow("Repetition Results")
+            cv2.destroyWindow(_("Repetition Results"))
             break
 
 
 def screen_final(best_right, best_left, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    cv2.putText(frame, "Exercise Completed",                          (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(frame, f"Best result — right side: {best_right} cm", (40,  200), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
-    cv2.putText(frame, f"Best result — left  side: {best_left} cm",  (40,  270), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
-    cv2.putText(frame, 'Press "q" to exit',                           (200, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0),   2)
-    cv2.imshow("Final Results", frame)
+    put_text_utf8(frame, _("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
+    put_text_utf8(frame, f"{_('Best result of the right side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{_('Best result of the left side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, _('Press Q to exit'), (200, 400), font_size=26, color=(255, 255, 0))
+    cv2.imshow(_("Final Results"), frame)
 
     while True:
         if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -143,9 +145,9 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
 
             elapsed, start_time = _check_distance_timer(distance, start_time)
 
-            cv2.putText(image, f"Dist: {distance:.2f} cm",         (50,   50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,   0,   0), 2)
-            cv2.putText(image, f"Right hand: {right_hand}",        (1000, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235,   0), 2)
-            cv2.putText(image, f"Left  hand: {left_hand}",         (1000, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235,   0), 2)
+            cv2.putText(image, f"{_('Distance')}: {distance:.2f} cm",         (50,   50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,   0,   0), 2)
+            cv2.putText(image, f"{_('Right hand')}: {right_hand}",        (1000, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235,   0), 2)
+            cv2.putText(image, f"{_('Left  hand')}: {left_hand}",         (1000, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235,   0), 2)
 
             if elapsed >= BS_POSE_HELD_DURATION:
                 return round(-distance, 2)

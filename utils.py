@@ -4,11 +4,11 @@
 
 import math
 import datetime as dt
-
+from locale_setup import _
 import cv2
 import numpy as np
 import pandas as pd
-
+from PIL import ImageFont, ImageDraw, Image
 
 # GEOMETRY
 
@@ -101,7 +101,7 @@ def show_register_screen():
     OpenCV registration form.
     Returns (age, height, weight, gender) as strings.
     """
-    fields      = ["Idade", "Altura (cm)", "Peso (kg)", "Genero (M/F)"]
+    fields = [_("Age"), _("Height (cm)"), _("Weight (kg)"), _("Gender (M/F)")]
     values      = ["", "", "", ""]
     active_field = -1
 
@@ -116,8 +116,8 @@ def show_register_screen():
                     active_field = i
                     break
 
-    cv2.namedWindow("Cadastro")
-    cv2.setMouseCallback("Cadastro", _mouse_cb)
+    cv2.namedWindow(_("Register"))
+    cv2.setMouseCallback(_("Register"), _mouse_cb)
 
     while True:
         img = np.ones((400, 600, 3), dtype=np.uint8) * 255
@@ -126,14 +126,14 @@ def show_register_screen():
             cv2.rectangle(img, (x1, y1), (x2, y2), (230, 230, 230), -1)
             border = (0, 255, 0) if i == active_field else (0, 0, 0)
             cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
-            cv2.putText(img, f"{fields[i]}:", (x1 + 10, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
-            cv2.putText(img, values[i], (x1 + 10, y2 - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            put_text_utf8(img, f"{fields[i]}:", (x1 + 10, y1 - 10),
+              font_size=20, color=(0, 0, 0))
+            put_text_utf8(img, values[i], (x1 + 10, y2 - 20),
+              font_size=20, color=(0, 0, 0))
 
-        cv2.putText(img, "Aperte Enter para finalizar", (50, 380),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 1)
-        cv2.imshow("Cadastro", img)
+        put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
+              font_size=18, color=(100, 100, 100))
+        cv2.imshow(_("Register"), img)
 
         key = cv2.waitKey(10) & 0xFF
         if key == 27:
@@ -157,18 +157,16 @@ def show_real_distance_screen():
     """
     entered = ""
 
-    cv2.namedWindow("Real Distance")
+    cv2.namedWindow(_("Real Distance"))
     while True:
         img = np.ones((200, 600, 3), dtype=np.uint8) * 255
         cv2.rectangle(img, (50, 60), (550, 120), (230, 230, 230), -1)
         cv2.rectangle(img, (50, 60), (550, 120), (0, 0, 0), 2)
-        cv2.putText(img, "Digite a Distância medida (cm):", (50, 40),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-        cv2.putText(img, entered, (60, 105),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
-        cv2.putText(img, "Pressione Enter para confirmar", (50, 170),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 1)
-        cv2.imshow("Real Distance", img)
+        put_text_utf8(img, _("real_distance_label") + " (cm):", (50, 40),
+              font_size=24, color=(0, 0, 0))
+        put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
+              font_size=18, color=(100, 100, 100))
+        cv2.imshow(_("Real Distance"), img)
 
         key = cv2.waitKey(10) & 0xFF
         if key == 27:
@@ -188,3 +186,25 @@ def _quit():
     """Centralised exit — called by UI helpers that don't own Kinect/cv2."""
     cv2.destroyAllWindows()
     raise SystemExit(0)
+
+def put_text_utf8(img, text, pos, font_size=28, color=(0, 0, 0)):
+    """
+    Substituto do cv2.putText com suporte a caracteres especiais (UTF-8).
+    *color* em BGR (igual ao OpenCV).
+    """
+    # Converter BGR → RGB para PIL
+    img_pil = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    draw    = ImageDraw.Draw(img_pil)
+
+    # Tentar fonte do sistema, fallback para default
+    try:
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except:
+        font = ImageFont.load_default()
+
+    # PIL usa RGB
+    color_rgb = (color[2], color[1], color[0])
+    draw.text(pos, text, font=font, fill=color_rgb)
+
+    # Converter de volta para BGR
+    cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR, img)

@@ -11,6 +11,8 @@ import time
 import cv2
 import mediapipe as mp
 import numpy as np
+from locale_setup import _
+from utils import (..., put_text_utf8)
 
 from config import (
     SIT_AND_REACH_PIXEL_TO_CM,
@@ -144,14 +146,14 @@ def _draw_angle_arcs(repeats, knee, opp_knee, hip, elbow, opp_elbow,
     o_sh, o_el, o_wr = to_px(9), to_px(10), to_px(11)
 
     draw_angle_arc(image, hp, kn, an, knee)
-    cv2.putText(image, f'Knee Angle: {knee:.1f}', kn,    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
+    cv2.putText(image, f"{_('Knee Angle')}: {knee:.1f}", kn,    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
     draw_angle_arc(image, sh, hp, kn, hip)
-    cv2.putText(image, f'Hip Angle: {hip:.1f}',   hp,    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f"{_('Hip Angle')}: {hip:.1f}",   hp,    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
     draw_angle_arc(image, sh, el, wr, elbow)
-    cv2.putText(image, f'Elbow Angle: {elbow:.1f}', el,  cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f"{_('Elbow Angle')}: {elbow:.1f}", el,  cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
     draw_angle_arc(image, o_sh, o_el, o_wr, opp_elbow)
-    cv2.putText(image, f'Opp Elbow: {opp_elbow:.1f}', o_el, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-    cv2.putText(image, f'Opp Knee: {opp_knee:.1f}', (1000, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f"{_('Opp Elbow')}: {opp_elbow:.1f}", o_el, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    cv2.putText(image, f"{_('Opp Knee')}: {opp_knee:.1f}", (1000, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
 
 
 def _check_calibration(calib_time, foot, repeats,
@@ -216,15 +218,15 @@ def _check_posture(start_time, knee, opp_knee, hip, elbow, opp_elbow,
 
 def _screen_repetition(distance, real_distance, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    cv2.putText(frame, "Repetition Completed",            (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(frame, f"Final Distance: {distance} cm",  (100, 200), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
-    cv2.putText(frame, f"Real Distance:  {real_distance} cm", (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),   2)
-    cv2.putText(frame, 'Press "c" to continue or "q" to finish', (50, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 2)
-    cv2.imshow("Repetition Results", frame)
+    put_text_utf8(frame, _("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
+    put_text_utf8(frame, f"{_('Final Distance')}: {distance} cm", (100, 200), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{_('Real Distance')}:  {real_distance} cm", (100, 250), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{_('Press C to continue or Q to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    cv2.imshow(_("Repetition Results"), frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
         if key == ord("c"):
-            cv2.destroyWindow("Repetition Results")
+            cv2.destroyWindow(_("Repetition Results"))
             break
         elif key == ord("q"):
             finish_cb()
@@ -232,15 +234,15 @@ def _screen_repetition(distance, real_distance, finish_cb):
 
 def screen_final(best_right, best_left, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    cv2.putText(frame, "Exercise Completed",                          (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-    cv2.putText(frame, f"Best result — right leg: {best_right} cm",  (40,  200), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
-    cv2.putText(frame, f"Best result — left  leg: {best_left} cm",   (40,  270), cv2.FONT_HERSHEY_SIMPLEX, 1,   (0, 255, 0),     2)
-    cv2.putText(frame, 'Press "c" to continue or "q" to exit',        (200, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0),   2)
-    cv2.imshow("Final Results", frame)
+    put_text_utf8(frame, _("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
+    put_text_utf8(frame, f"{_('Best Right Leg')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{_('Best Left Leg')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{_('C or Q')}", (200, 400), font_size=26, color=(255, 255, 0))
+    cv2.imshow(_("Final Results"), frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
         if key == ord("c"):
-            cv2.destroyWindow("Final Results")
+            cv2.destroyWindow(_("Final Results"))
             break
         elif key == ord("q"):
             finish_cb()
@@ -310,13 +312,13 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
                         final_dist = -(final_dist + SAR_ERROR)
                     break
 
-                cv2.putText(image, f"Foot: {foot[0]}, {foot[1]}",  (1000, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                cv2.putText(image, f"Hand: {hand[0]}, {hand[1]}",  (1000, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                cv2.putText(image, f"Dist: {distance:.2f} cm",     (50,    50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,   0, 0), 2)
-                cv2.putText(image, f"Pose: {pose_correct}",        (50,   250), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
+                cv2.putText(image, f"{_('Foot')}: {foot[0]}, {foot[1]}",  (1000, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                cv2.putText(image, f"{_('Hand')}: {hand[0]}, {hand[1]}",  (1000, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+                cv2.putText(image, f"{_('Dist')}: {distance:.2f} cm",     (50,    50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,   0, 0), 2)
+                cv2.putText(image, f"{_('Pose')}: {pose_correct}",        (50,   250), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
 
-        cv2.putText(image, f"Calibration: {calibration}", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
-        cv2.imshow("MediaPipe Holistic", image)
+        cv2.putText(image, f"{_('Calibration')}: {calibration}", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
+        cv2.imshow(_("MediaPipe Holistic"), image)
 
         key = cv2.waitKey(1) & 0xFF
         if key in (ord("q"), ord("Q")):
@@ -350,7 +352,7 @@ def run(kinect, holistic, participant, finish_cb):
         dist = run_repetition(rep, kinect, holistic, finish_cb)
 
         if dist is None:
-            print("Exercise not performed correctly.")
+            print(_("Exercise not performed correctly."))
             finish_cb()
 
         real  = show_real_distance_screen()
