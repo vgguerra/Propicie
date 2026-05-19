@@ -19,6 +19,13 @@ from utils import (
     show_real_distance_screen,
     put_text_utf8,
 )
+from ui.exercise_intro import show_exercise_intro
+from ui.forms import (
+    show_real_distance_screen_styled,
+    show_repetition_result,
+    show_exercise_final,    
+    show_register_screen_styled
+)
 
 from config import (
     BACK_SCRATCH_PIXEL_TO_CM,
@@ -57,7 +64,7 @@ def _draw_landmarks(image, results):
 def _draw_middle_finger(image, hand_landmarks, color=(0, 255, 0)):
     """Draw only the middle-finger chain (joints 9-12)."""
     middle_indices = [9, 10, 11, 12]
-    h, w, _ = image.shape
+    h, w, _th = image.shape
 
     for i in middle_indices:
         x = int(hand_landmarks.landmark[i].x * w)
@@ -89,6 +96,7 @@ def _check_distance_timer(distance, start_time):
 # =============================================================================
 
 def _screen_repetition(distance, real_distance, finish_cb):
+    frame = np.zeros((500, 800, 3), dtype=np.uint8)
     frame = put_text_utf8(frame, _("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
     frame = put_text_utf8(frame, f"{_('Distance between hands')}: {distance} cm", (50, 200), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('Real Distance')}: {real_distance} cm", (50, 250), font_size=32, color=(0, 255, 0))
@@ -133,7 +141,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         if not kinect.has_new_color_frame():
             continue
 
-        image, results, _ = read_kinect_frame(kinect, holistic)
+        image, results, _th = read_kinect_frame(kinect, holistic)
 
         if results.left_hand_landmarks and results.right_hand_landmarks:
             last_detected = time.time()
@@ -176,7 +184,7 @@ _EXCEL_PATH = "./arquivos/tabelas_utentes/back_scratch_utentes.xlsx"
 _LOG_PATH   = "./arquivos/logs_utentes/logs_back_scratch_utentes"
 
 
-def run(kinect, holistic, participant, finish_cb):
+def run(kinect, holistic, finish_cb):
     """
     Run 4 back-scratch repetitions (2 per side).
 
@@ -187,18 +195,38 @@ def run(kinect, holistic, participant, finish_cb):
     participant  : dict with keys age, height, weight, gender
     finish_cb    : callable — called to terminate the program cleanly
     """
+
+    age, height, weight, gender_raw = show_register_screen_styled(
+        _("Back Scratch exercise name"), _("right_side_label"), 1, 2
+    )
+    participant = {
+        "age":    age,
+        "height": height,
+        "weight": weight,
+        "gender": "Feminine" if gender_raw.strip().upper() == "F" else "Male",
+    }
+
     distances_right, distances_left = [], []
+    reals_right, reals_left = [], []
 
     for rep in range(4):
+        show_exercise_intro(_("Back Scratch exercise name"), rep, finish_cb, is_back_scratch=True)
         dist = run_repetition(rep, kinect, holistic, finish_cb)
 
         if dist is None:
             print("Exercise not performed correctly.")
             finish_cb()
 
-        real  = show_real_distance_screen()
-        error = abs(abs(float(real)) - abs(dist))
         side  = "right" if rep in (0, 1) else "left"
+        side_label = _("right_side_label") if rep in (0, 1) else _("left_side_label")
+        real = show_real_distance_screen_styled(
+            _("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2
+        )
+        if side == "right":
+            reals_right.append(real)
+        else:
+            reals_left.append(real)
+        error = abs(abs(float(real)) - abs(dist))
 
         append_to_excel(_EXCEL_PATH, {
             "Age": participant["age"], "Height": participant["height"],
@@ -215,8 +243,17 @@ def run(kinect, holistic, participant, finish_cb):
         else:
             distances_left.append(dist)
 
-        _screen_repetition(f"{dist:.2f}", real, finish_cb)
+        #_screen_repetition(f"{dist:.2f}", real, finish_cb)
+        show_repetition_result(
+            _("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2,
+            f"{dist:.2f}", real, finish_cb
+        )
 
     best_right = max(distances_right)
     best_left  = max(distances_left)
-    screen_final(f"{best_right:.2f}", f"{best_left:.2f}", finish_cb)
+    show_exercise_final(
+        _("Back Scratch exercise name"),
+        f"{best_right:.2f}", f"{best_left:.2f}",   # sistema
+        max(reals_right), max(reals_left),           # real
+        finish_cb
+    )

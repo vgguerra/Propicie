@@ -47,36 +47,24 @@ while True:
         finish()
 
     elif action == "auto":
-        # Automático — run both exercises in sequence
-        age, height, weight, gender_raw = show_register_screen()
-        participant = {
-            "age":    age,
-            "height": height,
-            "weight": weight,
-            "gender": "Feminine" if gender_raw.strip().upper() == "F" else "Male",
-        }
-        sit_and_reach.run(kinect, holistic, participant, finish)
-        back_scratch.run(kinect, holistic, participant, finish)
+        try:
+            print("[runner] a chamar sit_and_reach.run...")
+            sit_and_reach.run(kinect, holistic, finish)
+            print("[runner] sit_and_reach concluído")
+            back_scratch.run(kinect, holistic, finish)
+        except Exception as e:
+            import traceback
+            print("[runner] ERRO:")
+            print(f"[runner] Tipo: {type(e).__name__}")
+            print(f"[runner] Mensagem: {e}")
+            traceback.print_exc()
+            input("Pressione Enter para continuar...")
 
     elif action == "sit_and_reach":
-        age, height, weight, gender_raw = show_register_screen()
-        participant = {
-            "age":    age,
-            "height": height,
-            "weight": weight,
-            "gender": "Feminine" if gender_raw.strip().upper() == "F" else "Male",
-        }
-        sit_and_reach.run(kinect, holistic, participant, finish)
+        sit_and_reach.run(kinect, holistic, finish)
 
     elif action == "back_scratch":
-        age, height, weight, gender_raw = show_register_screen()
-        participant = {
-            "age":    age,
-            "height": height,
-            "weight": weight,
-            "gender": "Feminine" if gender_raw.strip().upper() == "F" else "Male",
-        }
-        back_scratch.run(kinect, holistic, participant, finish)
+        back_scratch.run(kinect, holistic, finish)
 
     elif action == "view_data":
         # Placeholder — to be implemented

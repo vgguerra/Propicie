@@ -334,3 +334,16 @@ msgstr "Press C to continue or Q to quit"
 
 msgid "Press Q to exit"
 msgstr "Press Q to exit"
+
+msgid "Press SPACE to begin"
+msgstr "Press SPACE to begin"
+
+msgid "Press SPACE to continue"
+msgstr "Press SPACE to continue"
+
+# en_US
+msgid "Press C to continue or Q to finish"
+msgstr "Press C to continue or Q to finish"
+
+msgid "Press Q to exit"
+msgstr "Press Q to exit"

@@ -326,3 +326,15 @@ msgstr "Prima C para continuar ou Q para sair"
 
 msgid "Press Q to exit"
 msgstr "Prima Q para sair"
+
+msgid "Press SPACE to continue"
+msgstr "Prima ESPAÇO para continuar"
+
+msgid "Press SPACE to begin"
+msgstr "Prima ESPAÇO para iniciar"
+
+msgid "Press C to continue or Q to finish"
+msgstr "Prima C para continuar ou Q para terminar"
+
+msgid "Press Q to exit"
+msgstr "Prima Q para sair"

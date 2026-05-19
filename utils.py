@@ -141,13 +141,13 @@ def show_register_screen():
             cv2.rectangle(img, (x1, y1), (x2, y2), (230, 230, 230), -1)
             border = (0, 255, 0) if i == active_field else (0, 0, 0)
             cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
-            img = put_text_utf8(img, f"{fields[i]}:", (x1 + 10, y1 - 10),
-              font_size=20, color=(0, 0, 0))
-            img = put_text_utf8(img, values[i], (x1 + 10, y2 - 20),
-              font_size=20, color=(0, 0, 0))
+            img = put_text_utf8(img, f"{fields[i]}:", (x1 + 10, y1 - 26),
+                font_size=20, color=(0, 0, 0))
+            img = put_text_utf8(img, values[i], (x1 + 10, y2 - 40),
+              font_size=26, color=(0, 0, 0))
 
-        img = put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
-              font_size=18, color=(100, 100, 100))
+        img = put_text_utf8(img, _("Press Enter to confirm"), (50, 360),
+            font_size=18, color=(100, 100, 100))
         cv2.imshow(_("Register"), img)
 
         key = cv2.waitKey(10) & 0xFF

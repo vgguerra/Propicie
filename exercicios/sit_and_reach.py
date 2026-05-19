@@ -20,6 +20,13 @@ from utils import (
     show_real_distance_screen,
     put_text_utf8,
 )
+from ui.exercise_intro import show_exercise_intro
+from ui.forms import (
+    show_real_distance_screen_styled,
+    show_repetition_result,
+    show_exercise_final,    
+    show_register_screen_styled
+)
 
 from config import (
     SIT_AND_REACH_PIXEL_TO_CM,
@@ -342,7 +349,7 @@ _EXCEL_PATH = "./arquivos/tabelas_utentes/sit_and_reach_2_utentes.xlsx"
 _LOG_PATH   = "./arquivos/logs_utentes/logs_sit_and_reach_utentes"
 
 
-def run(kinect, holistic, participant, finish_cb):
+def run(kinect, holistic, finish_cb):
     """
     Run 4 sit-and-reach repetitions (2 per leg).
 
@@ -353,18 +360,45 @@ def run(kinect, holistic, participant, finish_cb):
     participant  : dict with keys age, height, weight, gender
     finish_cb    : callable — called to terminate the program cleanly
     """
+    print("[SAR run] início")
+    
+    print("[SAR run] a chamar show_register_screen_styled...")
+    age, height, weight, gender_raw = show_register_screen_styled(
+        _("Sit and Reach"), _("right_leg_label"), 1, 2
+    )
+    participant = {
+        "age":    age,
+        "height": height,
+        "weight": weight,
+        "gender": "Feminine" if gender_raw.strip().upper() == "F" else "Male",
+    }
+
+    print(f"[SAR run] cadastro completo: age={age}, height={height}")
+
     distances_right, distances_left = [], []
+    reals_right, reals_left = [], []
 
     for rep in range(4):
+        print(f"[run] antes do intro, rep={rep}")
+        show_exercise_intro(_("Sit and Reach"), rep, finish_cb, is_back_scratch=False)
+        print(f"[run] depois do intro, rep={rep}")
+        
         dist = run_repetition(rep, kinect, holistic, finish_cb)
 
         if dist is None:
             print(_("Exercise not performed correctly."))
             finish_cb()
 
-        real  = show_real_distance_screen()
-        error = abs(abs(float(real)) - abs(dist))
         side  = "right" if rep in (0, 1) else "left"
+        side_label = _("right_leg_label") if rep in (0, 1) else _("left_leg_label")
+        real = show_real_distance_screen_styled(
+            _("Sit and Reach"), side_label, (rep % 2) + 1, 2
+        )
+        if side == "right":
+            reals_right.append(real)
+        else:
+            reals_left.append(real)
+        error = abs(abs(float(real)) - abs(dist))
 
         append_to_excel(_EXCEL_PATH, {
             "Age": participant["age"], "Height": participant["height"],
@@ -381,8 +415,17 @@ def run(kinect, holistic, participant, finish_cb):
         else:
             distances_left.append(dist)
 
-        _screen_repetition(f"{dist:.2f}", real, finish_cb)
+        #_screen_repetition(f"{dist:.2f}", real, finish_cb)
+        show_repetition_result(
+            _("Sit and Reach"), side_label, (rep % 2) + 1, 2,
+            f"{dist:.2f}", real, finish_cb
+        )
 
     best_right = max(distances_right)
     best_left  = max(distances_left)
-    screen_final(f"{best_right:.2f}", f"{best_left:.2f}", finish_cb)
+    show_exercise_final(
+        _("Sit and Reach"),
+        f"{best_right:.2f}", f"{best_left:.2f}",   # sistema
+        max(reals_right), max(reals_left),           # real
+        finish_cb
+    )

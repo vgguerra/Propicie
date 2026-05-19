@@ -98,19 +98,19 @@ def show_language_select() -> str:
     -------
     "pt_PT" or "en_US"
     """
-    WIN = "Language / Idioma"
+    WIN = "CAPACITA"
     cv2.namedWindow(WIN, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(WIN, W, H)
 
-    # Flag geometry
-    flag_w, flag_h = 330, 220
-    gap            = 160
+    # Flag geometry — smaller, pushed to lower third
+    flag_w, flag_h = 220, 146
+    gap            = 120
     total_w        = flag_w * 2 + gap
     start_x        = (W - total_w) // 2
-    flag_y         = (H - flag_h) // 2 - 10
+    flag_y         = H // 2 + 60   # below centre
 
-    pt_rect = (start_x,                   flag_y, start_x + flag_w,         flag_y + flag_h)
-    uk_rect = (start_x + flag_w + gap,    flag_y, start_x + flag_w*2 + gap, flag_y + flag_h)
+    pt_rect = (start_x,               flag_y, start_x + flag_w,         flag_y + flag_h)
+    uk_rect = (start_x + flag_w + gap, flag_y, start_x + flag_w*2 + gap, flag_y + flag_h)
 
     selected = None
     hover    = None   # "pt" | "uk" | None
@@ -139,16 +139,32 @@ def show_language_select() -> str:
         img = np.zeros((H, W, 3), dtype=np.uint8)
         _draw_frame(img)
 
+        # CAPACITA title — large, centred, upper half
+        title  = "CAPACITA"
+        font   = cv2.FONT_HERSHEY_SIMPLEX
+        scale  = 4.5
+        thick  = 6
+        (tw, th), _bl = cv2.getTextSize(title, font, scale, thick)
+        tx = (W - tw) // 2
+        ty = H // 2 - 30
+        cv2.putText(img, title, (tx, ty), font, scale, TEXT_COLOR, thick, cv2.LINE_AA)
+
+        # Subtle subtitle
+        sub   = "Select language / Selecione o idioma"
+        (sw, sh), _bl = cv2.getTextSize(sub, font, 0.6, 1)
+        cv2.putText(img, sub, ((W - sw) // 2, flag_y - 20),
+                    font, 0.6, TEXT_COLOR, 1, cv2.LINE_AA)
+
         # Hover highlights
         if hover == "pt":
             cv2.rectangle(img,
-                          (pt_rect[0] - 12, pt_rect[1] - 12),
-                          (pt_rect[2] + 12, pt_rect[3] + 12),
+                          (pt_rect[0] - 10, pt_rect[1] - 10),
+                          (pt_rect[2] + 10, pt_rect[3] + 10),
                           HOVER_COLOR, -1)
         if hover == "uk":
             cv2.rectangle(img,
-                          (uk_rect[0] - 12, uk_rect[1] - 12),
-                          (uk_rect[2] + 12, uk_rect[3] + 12),
+                          (uk_rect[0] - 10, uk_rect[1] - 10),
+                          (uk_rect[2] + 10, uk_rect[3] + 10),
                           HOVER_COLOR, -1)
 
         # Draw flags

@@ -37,7 +37,7 @@ def draw_institution(img: np.ndarray, extra: str = ""):
     *extra* is appended after a ' / ' separator (e.g. operator name).
     """
     label = f"{INSTITUTION} / {extra}" if extra else INSTITUTION
-    (tw, _), _ = cv2.getTextSize(label, FONT, FONT_SMALL, THICKNESS_SMALL)
+    (tw, th), _bl = cv2.getTextSize(label, FONT, FONT_SMALL, THICKNESS_SMALL)
     cv2.putText(img, label, (W - tw - 16, 30),
                 FONT, FONT_SMALL, DARK_BLUE, THICKNESS_SMALL, cv2.LINE_AA)
 
@@ -64,13 +64,13 @@ def draw_header_bar(img: np.ndarray,
 
     # Centre — side label
     side_label = side
-    (tw, _), _ = cv2.getTextSize(side_label, FONT, FONT_LABEL, THICKNESS_SMALL)
+    (tw, th), _bl = cv2.getTextSize(side_label, FONT, FONT_LABEL, THICKNESS_SMALL)
     cv2.putText(img, side_label, ((W - tw) // 2, 40),
                 FONT, FONT_LABEL, HEADER_TEXT, THICKNESS_SMALL, cv2.LINE_AA)
 
     # Right — repetition counter
     rep_label = f"{_('repetition_label')} {rep_current}/{rep_total}"
-    (tw, _), _ = cv2.getTextSize(rep_label, FONT, FONT_LABEL, THICKNESS_SMALL)
+    (tw, th), _bl = cv2.getTextSize(rep_label, FONT, FONT_LABEL, THICKNESS_SMALL)
     cv2.putText(img, rep_label, (W - tw - 20, 40),
                 FONT, FONT_LABEL, HEADER_TEXT, THICKNESS_SMALL, cv2.LINE_AA)
 
@@ -88,7 +88,7 @@ def draw_title_page(img: np.ndarray, title: str, institution_extra: str = ""):
     draw_institution(img, institution_extra)
 
     # Title text
-    (tw, th), _ = cv2.getTextSize(title, FONT, FONT_TITLE, THICKNESS_TITLE)
+    (tw, th), _bl = cv2.getTextSize(title, FONT, FONT_TITLE, THICKNESS_TITLE)
     tx = (W - tw) // 2
     ty = 80
 
@@ -119,7 +119,7 @@ def draw_button(img: np.ndarray,
     color = (110, 40, 40) if hovered else BTN_BLUE   # slightly lighter on hover
     cv2.rectangle(img, (x, y), (x + w, y + h), color, -1)
 
-    (tw, th), _ = cv2.getTextSize(label, FONT, FONT_BTN, THICKNESS_BTN)
+    (tw, th), _bl = cv2.getTextSize(label, FONT, FONT_BTN, THICKNESS_BTN)
     tx = x + (w - tw) // 2
     ty = y + (h + th) // 2
     cv2.putText(img, label, (tx, ty),
