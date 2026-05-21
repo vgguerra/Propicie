@@ -1,146 +1,146 @@
-# Propicie: Avaliação Automatizada da Aptidão Física
+# Propicie: Automated Physical Fitness Assessment
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-v0.8+-green.svg)](https://mediapipe.dev/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.x-blue.svg)](https://opencv.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Um sistema inovador para a avaliação automatizada de testes de aptidão física da Bateria de Fullerton, projetado para apoiar o envelhecimento ativo. Este projeto utiliza visão computacional com um sensor Kinect V2 e a biblioteca MediaPipe Holistic do Google para fornecer medições precisas e em tempo real.
+An innovative system for the automated evaluation of physical fitness tests from the Fullerton Battery, designed to support active aging. This project leverages computer vision with a Kinect V2 sensor and Google's MediaPipe Holistic library to provide accurate, real-time measurements.
 
-## 📋 Sobre o Projeto
+## About the Project
 
-Este projeto, desenvolvido como parte da colaboração **PROPICIE - IPBEJA & IFSC** e contribuindo para a iniciativa **CAPACITA**, visa automatizar a avaliação da aptidão física de idosos. Ao automatizar os testes da Bateria de Testes Funcionais de Fullerton, podemos coletar dados objetivos sobre flexibilidade e força, o que é crucial para monitorar o declínio físico e promover programas de envelhecimento ativo personalizados.
+This project, developed as part of the PROPICIE IPBEJA & IFSC collaboration and contributing to the CAPACITA initiative, aims to automate the physical fitness assessment of older adults. By automating the Fullerton Functional Fitness Test Battery, we can collect objective data on flexibility and strength, which is crucial for monitoring physical decline and promoting personalized active aging programs.
 
-O sistema foca em duas avaliações principais:
-* **Teste de Sentar e Alcançar** (`Sentado e alcançar os pés com as mãos`): Mede a flexibilidade dos membros inferiores.
-* **Teste de "Coçar as Costas"** (`Alcançar as mãos atrás das costas`): Mede a flexibilidade dos membros superiores (ombros).
+The system focuses on two main assessments:
+* **Sit-and-Reach Test** (`Sitting and reaching the feet with the hands`): measures the flexibility of the lower limbs.
+* **Back-Scratch Test** (`Reaching the hands behind the back`): measures the flexibility of the upper limbs (shoulders).
 
-O núcleo do projeto é uma aplicação em Python que utiliza um sensor Kinect V2 para capturar os movimentos do usuário e o framework MediaPipe Holistic para realizar a detecção de marcos corporais em tempo real. Essa abordagem permite o cálculo preciso dos ângulos corporais para validação da postura e das distâncias-chave para a pontuação dos testes.
+The core of the project is a Python application that uses a Kinect V2 sensor to capture the user's movements and the MediaPipe Holistic framework to perform real-time detection of body landmarks. This approach allows for the accurate calculation of body angles for posture validation and of the key distances for scoring the tests.
 
-### 📊 Principais Descobertas
-A pesquisa conduzida por Artem Bukhantsev e aprofundada por mim concluiu que:
-* A implementação com **MediaPipe** demonstrou uma precisão superior para o teste de Sentar e Alcançar, com um Erro Médio Absoluto (MAE) de aproximadamente **2.25 cm**.
-* Esta abordagem foi significativamente mais precisa do que uma implementação nativa com PyKinect, que apresentou um MAE de 8.65 cm, devido a desafios como a instabilidade do esqueleto virtual ("jittering").
-* O teste de "Coçar as Costas" provou ser um desafio para a visão computacional devido à oclusão de membros e à orientação do usuário de costas para a câmera.
+### Key Findings
+The research conducted by Artem Bukhantsev and further developed by me concluded that:
+* The MediaPipe implementation demonstrated superior accuracy for the Sit-and-Reach test, with a Mean Absolute Error (MAE) of approximately 2.25 cm.
+* This approach was significantly more accurate than a native PyKinect implementation, which presented an MAE of 8.65 cm, due to challenges such as virtual skeleton instability ("jittering").
+* The Back-Scratch test proved to be a challenge for computer vision due to limb occlusion and the user's orientation with their back to the camera.
 
-## ✨ Funcionalidades
+## Features
 
-* **Avaliação em Tempo Real**: Análise automatizada dos exercícios "Sentar e Alcançar" e "Coçar as Costas".
-* **Rastreamento de Alta Precisão**: Utiliza o MediaPipe Holistic para um rastreamento robusto e em tempo real de 33 marcos de pose, além de marcos detalhados das mãos.
-* **Validação de Postura**: Calcula ângulos articulares (joelho, quadril, cotovelo) para garantir que o usuário esteja executando o exercício corretamente antes de realizar a medição.
-* **Cadastro de Usuário**: Uma interface simples para registrar os dados do participante (idade, altura, peso, gênero) antes de iniciar os testes.
-* **Registro de Dados**: Salva automaticamente os resultados dos testes, incluindo a distância calculada, a distância real (para validação) e o erro de medição, em arquivos Excel (`.xlsx`) para análise posterior.
-* **Análise Estatística**: Inclui scripts em Python para analisar os dados coletados e calcular estatísticas-chave sobre o erro de medição.
-* **Feedback em Tempo Real**: Fornece visualizações na tela do esqueleto, métricas-chave e instruções para guiar o usuário.
+* **Real-Time Assessment**: automated analysis of the "Sit-and-Reach" and "Back-Scratch" exercises.
+* **High-Precision Tracking**: uses MediaPipe Holistic for robust, real-time tracking of 33 pose landmarks, in addition to detailed hand landmarks.
+* **Posture Validation**: calculates joint angles (knee, hip, elbow) to ensure the user is performing the exercise correctly before taking the measurement.
+* **User Registration**: a simple interface to register the participant's data (age, height, weight, gender) before starting the tests.
+* **Data Logging**: automatically saves the test results, including the calculated distance, the actual distance (for validation), and the measurement error, into Excel files (`.xlsx`) for later analysis.
+* **Statistical Analysis**: includes Python scripts to analyze the collected data and compute key statistics on the measurement error.
+* **Real-Time Feedback**: provides on-screen visualizations of the skeleton, key metrics, and instructions to guide the user.
 
-## 🛠️ Como Funciona
+## How It Works
 
-O sistema segue um fluxo de trabalho claro para cada avaliação:
-1.  **Cadastro do Usuário**: O usuário insere seus dados demográficos.
-2.  **Captura de Vídeo**: Um Kinect V2 captura o feed de vídeo do usuário.
-3.  **Detecção de Marcos**: O vídeo é processado quadro a quadro. O MediaPipe Holistic detecta os marcos do corpo, mãos e face do usuário.
-4.  **Calibração e Verificação da Postura**:
-    * Para o teste de **Sentar e Alcançar**, o sistema valida a postura verificando se os ângulos do joelho, quadril e cotovelo estão dentro de limites pré-definidos (por exemplo, o joelho deve estar estendido). Uma vez que o usuário mantém uma pose de calibração válida, a posição do pé é fixada como referência.
-    * Para o teste de **Coçar as Costas**, o sistema aguarda o usuário manter uma pose estável com as mãos atrás das costas.
-5.  **Medição da Distância**: A distância euclidiana entre os marcos-chave (por exemplo, pontas dos dedos até a posição calibrada do pé, ou pontas dos dedos de uma mão para a outra) é calculada em pixels e convertida para centímetros. Um fator de correção de erro, derivado de testes empíricos, é aplicado para aumentar a precisão.
-6.  **Exibição e Registro dos Resultados**: A distância final calculada é exibida na tela, e os resultados completos são salvos em um arquivo de log e em uma planilha Excel para o grupo de usuários.
+The system follows a clear workflow for each assessment:
+1.  **User Registration**: the user enters their demographic data.
+2.  **Video Capture**: a Kinect V2 captures the user's video feed.
+3.  **Landmark Detection**: the video is processed frame by frame. MediaPipe Holistic detects the user's body, hand, and face landmarks.
+4.  **Calibration and Posture Verification**:
+    * For the Sit-and-Reach test, the system validates the posture by checking whether the knee, hip, and elbow angles are within predefined limits (for example, the knee must be extended). Once the user maintains a valid calibration pose, the foot position is locked in as a reference.
+    * For the Back-Scratch test, the system waits for the user to hold a stable pose with their hands behind their back.
+5.  **Distance Measurement**: the Euclidean distance between the key landmarks (for example, fingertips to the calibrated foot position, or one hand's fingertips to the other's) is calculated in pixels and converted to centimeters. An error correction factor, derived from empirical testing, is applied to improve accuracy.
+6.  **Result Display and Logging**: the final calculated distance is displayed on the screen, and the complete results are saved to a log file and to an Excel spreadsheet for the user group.
 
-## 🚀 Tecnologias Utilizadas
+## Technologies Used
 
-* **Linguagem**: **Python 3.8+**
-* **Visão Computacional**: **OpenCV**, **MediaPipe Holistic**
-* **Hardware**: **Microsoft Kinect for Windows v2**
-* **Wrapper do SDK do Kinect**: **PyKinect2**
-* **Manipulação e Análise de Dados**: **Pandas**, **NumPy**
-* **Orquestração**: Os scripts podem ser executados diretamente com Python (`runner.py`) ou através de um **Runner em C# .NET** (`CsRunner/`).
+* **Language**: Python 3.8+
+* **Computer Vision**: OpenCV, MediaPipe Holistic
+* **Hardware**: Microsoft Kinect for Windows v2
+* **Kinect SDK Wrapper**: PyKinect2
+* **Data Handling and Analysis**: Pandas, NumPy
+* **Orchestration**: the scripts can be run directly with Python (`runner.py`) or through a C# .NET Runner (`CsRunner/`).
 
-## ⚙️ Configuração e Instalação
+## Setup and Installation
 
-Para executar este projeto, siga os passos abaixo.
+To run this project, follow the steps below.
 
-### Pré-requisitos
-* Um computador com **Windows 10/11** (necessário para o SDK do Kinect).
-* Um sensor **Microsoft Kinect v2** com seu respectivo adaptador de energia e cabo USB 3.0.
-* Uma porta **USB 3.0** livre.
-* **Python 3.8** (a distribuição Anaconda é recomendada).
+### Prerequisites
+* A computer running Windows 10/11 (required for the Kinect SDK).
+* A Microsoft Kinect v2 sensor with its corresponding power adapter and USB 3.0 cable.
+* A free USB 3.0 port.
+* Python 3.8 (the Anaconda distribution is recommended).
 
-### Passos de Instalação
+### Installation Steps
 
-1.  **Instale o SDK do Kinect para Windows 2.0**:
-    * Baixe e instale o SDK do site oficial da Microsoft: [Kinect for Windows SDK 2.0](https://www.microsoft.com/en-us/download/details.aspx?id=44561).
-    * Conecte seu sensor Kinect ao PC via USB 3.0 e a uma fonte de energia. Verifique se ele é reconhecido no Gerenciador de Dispositivos.
+1.  **Install the Kinect for Windows SDK 2.0**:
+    * Download and install the SDK from Microsoft's official site: [Kinect for Windows SDK 2.0](https://www.microsoft.com/en-us/download/details.aspx?id=44561).
+    * Connect your Kinect sensor to the PC via USB 3.0 and to a power source. Verify that it is recognized in the Device Manager.
 
-2.  **Configure o Ambiente Python**:
-    * É altamente recomendável usar um ambiente virtual. Com o Anaconda, você pode criar um com:
+2.  **Set Up the Python Environment**:
+    * It is highly recommended to use a virtual environment. With Anaconda, you can create one with:
         ```bash
         conda create -n propicie_env python=3.8
         conda activate propicie_env
         ```
 
-3.  **Instale as Bibliotecas Necessárias**:
-    * Instale as dependências principais usando pip:
+3.  **Install the Required Libraries**:
+    * Install the main dependencies using pip:
         ```bash
         pip install opencv-python mediapipe pandas numpy openpyxl
         ```
 
-4.  **Instale o PyKinect2**:
-    * `PyKinect2` requer uma instalação manual. Clone o repositório oficial e execute o script de setup.
+4.  **Install PyKinect2**:
+    * `PyKinect2` requires a manual installation. Clone the official repository and run the setup script.
         ```bash
         git clone [https://github.com/Kinect/PyKinect2.git](https://github.com/Kinect/PyKinect2.git)
         cd PyKinect2
         python setup.py install
         ```
-    * Se encontrar problemas, pode ser necessário instalar o `comtypes`.
+    * If you run into issues, you may need to install `comtypes`.
 
-## ▶️ Uso
+## Usage
 
-Após a conclusão da configuração, você pode executar as avaliações.
+Once setup is complete, you can run the assessments.
 
-### Executando a Suíte de Testes Completa
-Você pode executar os testes de Sentar e Alcançar e de Coçar as Costas sequencialmente usando o script de execução fornecido.
+### Running the Full Test Suite
+You can run the Sit-and-Reach and Back-Scratch tests sequentially using the provided runner script.
 
 ```bash
 python runner.py
 ```
 
-### Executando Testes Individuais
-Você também pode executar cada script de teste individualmente:
+### Running Individual Tests
+You can also run each test script individually:
 
-* **Para o Teste de Sentar e Alcançar**:
+* For the Sit-and-Reach Test:
     ```bash
     python ./Sit-and-Reach/sit_and_reach_holistic_2.py
     ```
-* **Para o Teste de Coçar as Costas**:
+* For the Back-Scratch Test:
     ```bash
     python ./Back-Scratch/back_scratch.py
     ```
 
-### O Processo
-1.  Quando um script é iniciado, uma janela aparecerá solicitando as informações do usuário (Idade, Altura, Peso, Gênero). Preencha os campos e pressione `Enter`.
-2.  Em seguida, uma janela solicitará a distância real medida. Isso é usado para validação e cálculo de erro. Insira o valor e pressione `Enter`.
-3.  A janela principal da aplicação será aberta, mostrando o feed da câmera do Kinect com a sobreposição do esqueleto do MediaPipe.
-4.  Siga as instruções na tela para se posicionar corretamente.
-5.  O sistema detectará automaticamente quando você estiver na postura correta, manterá a pose e, em seguida, calculará o resultado.
-6.  O resultado será exibido, e você será solicitado a continuar (`c`) ou sair (`q`).
+### The Process
+1.  When a script is started, a window will appear prompting for the user's information (Age, Height, Weight, Gender). Fill in the fields and press `Enter`.
+2.  Next, a window will prompt for the actual measured distance. This is used for validation and error calculation. Enter the value and press `Enter`.
+3.  The main application window will open, showing the Kinect camera feed with the MediaPipe skeleton overlay.
+4.  Follow the on-screen instructions to position yourself correctly.
+5.  The system will automatically detect when you are in the correct posture, hold the pose, and then compute the result.
+6.  The result will be displayed, and you will be prompted to continue (`c`) or quit (`q`).
 
-## 📁 Estrutura do Projeto
+## Project Structure
 
 ```
 .
-├── /analises/              # Scripts e resultados para análise estatística dos dados.
-├── /Back-Scratch/          # Contém o script Python para o teste de Coçar as Costas.
-├── /CsRunner/              # Um projeto em C# .NET para executar os scripts Python.
-├── /relatorios/            # Relatórios de progresso e finais detalhados.
-├── /Sit-and-Reach/         # Contém scripts Python para o teste de Sentar e Alcançar.
-├── /tabelas_testes/        # Planilhas de dados de teste.
-├── /tabelas_utentes/       # Planilhas com dados coletados dos testes com usuários.
-├── .gitignore              # Especifica arquivos a serem ignorados pelo Git.
-├── runner.py               # Um script Python simples para executar todos os testes.
-└── README.md               # Este arquivo.
+├── /analises/              # Scripts and results for the statistical analysis of the data.
+├── /Back-Scratch/          # Contains the Python script for the Back-Scratch test.
+├── /CsRunner/              # A C# .NET project to run the Python scripts.
+├── /relatorios/            # Detailed progress and final reports.
+├── /Sit-and-Reach/         # Contains Python scripts for the Sit-and-Reach test.
+├── /tabelas_testes/        # Test data spreadsheets.
+├── /tabelas_utentes/       # Spreadsheets with data collected from user testing.
+├── .gitignore              # Specifies files to be ignored by Git.
+├── runner.py               # A simple Python script to run all tests.
+└── README.md               # This file.
 ```
 
 
-## 🙏 Agradecimentos
+## Acknowledgements
 
-* Este trabalho faz parte de uma colaboração de pesquisa entre o **Instituto Politécnico de Beja (IPBeja)** e o **Instituto Federal de Santa Catarina (IFSC)**.
-* Este projeto contribui para o projeto mais amplo **CAPACITA**, que visa desenvolver ferramentas digitais para avaliar e melhorar as capacidades físicas da população idosa.
+* This work is part of a research collaboration between the Polytechnic Institute of Beja (IPBeja) and the Federal Institute of Santa Catarina (IFSC).
+* This project contributes to the broader CAPACITA project, which aims to develop digital tools to assess and improve the physical capabilities of the elderly population.
