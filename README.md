@@ -94,7 +94,6 @@ Para executar este projeto, siga os passos abaixo.
         cd PyKinect2
         python setup.py install
         ```
-    * Se encontrar problemas, pode ser necessário instalar o `comtypes`.
 
 5.  **Para alterações nos textos do programa**:
     * Após alterar os arquivos .po em locale compile-os para .mo.
