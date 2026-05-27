@@ -244,17 +244,6 @@ msgstr "Pos. mão esquerda"
 msgid "Correct"
 msgstr "Correta"
 
-msgid "Best Right Leg"
-msgstr "Melhor resultado com a perna direita"
-
-msgid "Best Left Leg"
-msgstr "Melhor resultado com a perna esquerda"
-
-msgid "Best Right Side"
-msgstr "Melhor resultado do lado direito"
-
-msgid "Best Left Side"
-msgstr "Melhor resultado do lado esquerdo"
 msgid "Main Menu"
 msgstr "Menu Principal"
 
@@ -338,3 +327,9 @@ msgstr "Prima C para continuar ou Q para terminar"
 
 msgid "Press Q to exit"
 msgstr "Prima Q para sair"
+
+msgid "right_side_label"
+msgstr "Lado Direito"
+
+msgid "left_side_label"
+msgstr "Lado Esquerdo"

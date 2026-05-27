@@ -257,13 +257,12 @@ def screen_final(best_right, best_left, finish_cb):
     frame = put_text_utf8(frame, f"{_('Best Left Leg')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('C or Q')}", (200, 400), font_size=26, color=(255, 255, 0))
     cv2.imshow(win_title(_("Final Results")), frame)
+    
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == ord("c"):
+        if key == ord("q") or key == 27: # Se pressionar Q ou ESC
             cv2.destroyWindow(win_title(_("Final Results")))
-            break
-        elif key == ord("q"):
-            finish_cb()
+            return
 
 
 # =============================================================================

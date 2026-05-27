@@ -347,3 +347,9 @@ msgstr "Press C to continue or Q to finish"
 
 msgid "Press Q to exit"
 msgstr "Press Q to exit"
+
+msgid "right_side_label"
+msgstr "Right Side"
+
+msgid "left_side_label"
+msgstr "Left Side"
