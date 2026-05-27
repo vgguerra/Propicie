@@ -12,7 +12,7 @@ import numpy as np
 from locale_setup import _
 from ui.draw import blank_canvas, draw_title_page, draw_button
 from ui.theme import W, H, BORDER_INSET, FONT, FONT_SMALL, THICKNESS_SMALL, DARK_BLUE
-
+from utils import win_title
 
 # ---------------------------------------------------------------------------
 # Button definitions — (msgid, action_key)
@@ -47,7 +47,7 @@ def show_main_menu() -> str:
     Display the main menu and return the selected action key.
     Blocks until the user clicks a button or presses ESC (→ 'quit').
     """
-    WIN = _("Main Menu")
+    WIN = win_title(_("Main Menu"))
     cv2.namedWindow(WIN, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(WIN, W, H)
 

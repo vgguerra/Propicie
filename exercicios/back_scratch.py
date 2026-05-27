@@ -18,13 +18,14 @@ from utils import (
     append_to_log,
     show_real_distance_screen,
     put_text_utf8,
+    win_title,
 )
 from ui.exercise_intro import show_exercise_intro
 from ui.forms import (
     show_real_distance_screen_styled,
     show_repetition_result,
     show_exercise_final,    
-    show_register_screen_styled
+    show_register_screen_styled,
 )
 
 from config import (
@@ -101,14 +102,14 @@ def _screen_repetition(distance, real_distance, finish_cb):
     frame = put_text_utf8(frame, f"{_('Distance between hands')}: {distance} cm", (50, 200), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('Real Distance')}: {real_distance} cm", (50, 250), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, _("C or Q"), (50, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(_("Repetition Results"), frame)
+    cv2.imshow(win_title(_("Repetition Results")), frame)
 
     while True:
         key = cv2.waitKey(0) & 0xFF
         if key == ord("q"):
             finish_cb()
         elif key == ord("c"):
-            cv2.destroyWindow(_("Repetition Results"))
+            cv2.destroyWindow(win_title(_("Repetition Results")))
             break
 
 
@@ -118,7 +119,7 @@ def screen_final(best_right, best_left, finish_cb):
     frame = put_text_utf8(frame, f"{_('Best result of the right side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('Best result of the left side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, _('Press Q to exit'), (200, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(_("Final Results"), frame)
+    cv2.imshow(win_title(_("Final Results")), frame)
 
     while True:
         if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -141,7 +142,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         if not kinect.has_new_color_frame():
             continue
 
-        image, results, _th = read_kinect_frame(kinect, holistic)
+        image, results, _raw = read_kinect_frame(kinect, holistic)
 
         if results.left_hand_landmarks and results.right_hand_landmarks:
             last_detected = time.time()
@@ -171,7 +172,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
             if time.time() - last_detected >= BS_POSE_NO_HELD_DURATION:
                 start_time = None
 
-        cv2.imshow("Back Scratch", image)
+        cv2.imshow(win_title(_("Back Scratch")), image)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             finish_cb()
 
@@ -192,13 +193,13 @@ def run(kinect, holistic, finish_cb):
     ----------
     kinect       : PyKinectRuntime instance
     holistic     : MediaPipe Holistic instance
-    participant  : dict with keys age, height, weight, gender
     finish_cb    : callable — called to terminate the program cleanly
     """
 
     age, height, weight, gender_raw = show_register_screen_styled(
         _("Back Scratch exercise name"), _("right_side_label"), 1, 2
     )
+
     participant = {
         "age":    age,
         "height": height,
@@ -220,7 +221,7 @@ def run(kinect, holistic, finish_cb):
         side  = "right" if rep in (0, 1) else "left"
         side_label = _("right_side_label") if rep in (0, 1) else _("left_side_label")
         real = show_real_distance_screen_styled(
-            _("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2
+            win_title(_("Back Scratch exercise name")), side_label, (rep % 2) + 1, 2
         )
         if side == "right":
             reals_right.append(real)
@@ -245,7 +246,7 @@ def run(kinect, holistic, finish_cb):
 
         #_screen_repetition(f"{dist:.2f}", real, finish_cb)
         show_repetition_result(
-            _("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2,
+             _("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2,
             f"{dist:.2f}", real, finish_cb
         )
 

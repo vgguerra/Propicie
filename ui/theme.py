@@ -5,7 +5,7 @@
 # =============================================================================
 
 # --- Palette ---
-BG          = (240, 245, 248)   # #F8F5F0 — light blue-grey background
+BG = (248, 245, 240)   # #F8F5F0 — light blue-grey background
 DARK_BLUE   = (142,  46,  46)   # #2E2E8E — primary dark blue (borders, text)
 MID_BLUE    = (160,  80,  80)   # #50508E — slightly lighter (hover states)
 BTN_BLUE    = (139,  56,  56)   # #383894 — button fill

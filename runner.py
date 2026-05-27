@@ -48,17 +48,15 @@ while True:
 
     elif action == "auto":
         try:
-            print("[runner] a chamar sit_and_reach.run...")
             sit_and_reach.run(kinect, holistic, finish)
-            print("[runner] sit_and_reach concluído")
             back_scratch.run(kinect, holistic, finish)
-        except Exception as e:
-            import traceback
-            print("[runner] ERRO:")
-            print(f"[runner] Tipo: {type(e).__name__}")
-            print(f"[runner] Mensagem: {e}")
-            traceback.print_exc()
-            input("Pressione Enter para continuar...")
+        except SystemExit:
+            raise
+        except BaseException as e:
+            import traceback, sys
+            traceback.print_exc(file=sys.stdout)
+            sys.stdout.flush()
+            input("Enter...")
 
     elif action == "sit_and_reach":
         sit_and_reach.run(kinect, holistic, finish)

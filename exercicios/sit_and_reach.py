@@ -19,14 +19,18 @@ from utils import (
     append_to_log,
     show_real_distance_screen,
     put_text_utf8,
+    win_title,
 )
 from ui.exercise_intro import show_exercise_intro
 from ui.forms import (
     show_real_distance_screen_styled,
     show_repetition_result,
     show_exercise_final,    
-    show_register_screen_styled
+    show_register_screen_styled,
+    _make_base,
+    _draw_header,
 )
+from ui.theme import  W, H, HEADER_H, DARK_BLUE
 
 from config import (
     SIT_AND_REACH_PIXEL_TO_CM,
@@ -236,11 +240,11 @@ def _screen_repetition(distance, real_distance, finish_cb):
     frame = put_text_utf8(frame, f"{_('Final Distance')}: {distance} cm", (100, 200), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('Real Distance')}: {real_distance} cm", (100, 250), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('Press C to continue or Q to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(_("Repetition Results"), frame)
+    cv2.imshow(win_title(_("Repetition Results")), frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
         if key == ord("c"):
-            cv2.destroyWindow(_("Repetition Results"))
+            cv2.destroyWindow(win_title(_("Repetition Results")))
             break
         elif key == ord("q"):
             finish_cb()
@@ -252,11 +256,11 @@ def screen_final(best_right, best_left, finish_cb):
     frame = put_text_utf8(frame, f"{_('Best Right Leg')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('Best Left Leg')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('C or Q')}", (200, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(_("Final Results"), frame)
+    cv2.imshow(win_title(_("Final Results")), frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
         if key == ord("c"):
-            cv2.destroyWindow(_("Final Results"))
+            cv2.destroyWindow(win_title(_("Final Results")))
             break
         elif key == ord("q"):
             finish_cb()
@@ -271,6 +275,8 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
     Run one sit-and-reach repetition and return the measured distance (str).
     *finish_cb* is called on 'q' keypress or fatal error.
     """
+    print(f"[run_rep] início repeats={repeats}")
+
     calib_time   = None
     calib_locked = 0.0
     calib_prog   = 0.0
@@ -314,7 +320,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
                     distances.pop(0)
                     distance = rolling_average(distances)
 
-                pose_correct, _, pose_start, final_dist = _check_posture(
+                pose_correct, _prog, pose_start, final_dist = _check_posture(
                     pose_start, *angles, SAR_POSE_DURATION, 0, distance
                 )
 
@@ -331,8 +337,36 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
                 cv2.putText(image, f"{_('Dist')}: {distance:.2f} cm",     (50,    50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,   0, 0), 2)
                 cv2.putText(image, f"{_('Pose')}: {pose_correct}",        (50,   250), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
 
-        cv2.putText(image, f"{_('Calibration')}: {calibration}", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
-        cv2.imshow(_("MediaPipe Holistic"), image)
+        side_label = _("right_leg_label") if repeats in (0, 1) else _("left_leg_label")
+        rep_num    = (repeats % 2) + 1  
+
+        canvas = _make_base(_("Sit and Reach"), side_label, rep_num, 2) 
+
+        feed_h = H - HEADER_H - 10
+        feed_w = int(image.shape[1] * feed_h / image.shape[0])
+        feed_x = (W - feed_w) // 2
+        resized = cv2.resize(image, (feed_w, feed_h))
+        canvas[HEADER_H + 5 : HEADER_H + 5 + feed_h, feed_x : feed_x + feed_w] = resized
+
+        #cv2.rectangle(canvas,
+        #      (feed_x - 2, HEADER_H + 3),
+        #      (feed_x + feed_w + 2, HEADER_H + 5 + feed_h + 2),
+        #      DARK_BLUE, 2)
+
+        #cv2.putText(canvas, f"{_('Calibration')}: {calibration}", (feed_x + 10, HEADER_H + 40),
+         #           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (128, 0, 0), 2)
+        #cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 10, HEADER_H + 70),
+         #           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (128, 0, 0), 2)
+
+        overlay = canvas.copy()
+        cv2.rectangle(overlay, (feed_x + 5, HEADER_H + 10), (feed_x + 420, HEADER_H + 80), (0, 0, 0), -1)
+        cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
+        cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 38),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+        cv2.putText(canvas, f"{_('Calibration')}: {calibration}", (feed_x + 12, HEADER_H + 68),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+
+        cv2.imshow(win_title(_("Sit and Reach")), canvas)
 
         key = cv2.waitKey(1) & 0xFF
         if key in (ord("q"), ord("Q")):
@@ -361,71 +395,81 @@ def run(kinect, holistic, finish_cb):
     finish_cb    : callable — called to terminate the program cleanly
     """
     print("[SAR run] início")
+    try:
+
+        print("[SAR run] a chamar show_register_screen_styled...")
+        age, height, weight, gender_raw = show_register_screen_styled(
+            _("Sit and Reach"), _("right_leg_label"), 1, 2
+        )
+        participant = {
+            "age":    age,
+            "height": height,
+            "weight": weight,
+            "gender": "Feminine" if gender_raw.strip().upper() == "F" else "Male",
+        }
+
+        print(f"[SAR run] cadastro completo: age={age}, height={height}")
+
+        distances_right, distances_left = [], []
+        reals_right, reals_left = [], []
+
+        for rep in range(4):
+            print(f"[SAR run] rep={rep} a iniciar")
+
+            show_exercise_intro(_("Sit and Reach"), rep, finish_cb, is_back_scratch=False)
+            print(f"[SAR run] rep={rep} intro concluído — a chamar run_repetition")
+
+            dist = run_repetition(rep, kinect, holistic, finish_cb)
+            print(f"[SAR run] rep={rep} dist={dist}")
+
+            if dist is None:
+                print(_("Exercise not performed correctly."))
+                finish_cb()
+
+            side  = "right" if rep in (0, 1) else "left"
+            side_label = _("right_leg_label") if rep in (0, 1) else _("left_leg_label")
+            real = show_real_distance_screen_styled(
+                _("Sit and Reach"), side_label, (rep % 2) + 1, 2
+            )
+            if side == "right":
+                reals_right.append(real)
+            else:
+                reals_left.append(real)
+            error = abs(abs(float(real)) - abs(dist))
+
+            append_to_excel(_EXCEL_PATH, {
+                "Age": participant["age"], "Height": participant["height"],
+                "Weight": participant["weight"], "Gender": participant["gender"],
+                "Real distance": real, "Calculated distance": dist, "Erro": error,
+            })
+            append_to_log(_LOG_PATH,
+                        participant["age"], participant["height"],
+                        participant["weight"], participant["gender"],
+                        real, dist, side)
+
+            if side == "right":
+                distances_right.append(dist)
+            else:
+                distances_left.append(dist)
+
+            #_screen_repetition(f"{dist:.2f}", real, finish_cb)
+            show_repetition_result(
+                _("Sit and Reach"), side_label, (rep % 2) + 1, 2,
+                f"{dist:.2f}", real, finish_cb
+            )
+
+        best_right = max(distances_right)
+        best_left  = max(distances_left)
+        show_exercise_final(
+            _("Sit and Reach"),
+            f"{best_right:.2f}", f"{best_left:.2f}",   # sistema
+            max(reals_right), max(reals_left),           # real
+            finish_cb
+        )            
+    except Exception as e:
+        import traceback, sys
+        traceback.print_exc(file=sys.stdout)
+        sys.stdout.flush()
+        raise
+
     
-    print("[SAR run] a chamar show_register_screen_styled...")
-    age, height, weight, gender_raw = show_register_screen_styled(
-        _("Sit and Reach"), _("right_leg_label"), 1, 2
-    )
-    participant = {
-        "age":    age,
-        "height": height,
-        "weight": weight,
-        "gender": "Feminine" if gender_raw.strip().upper() == "F" else "Male",
-    }
-
-    print(f"[SAR run] cadastro completo: age={age}, height={height}")
-
-    distances_right, distances_left = [], []
-    reals_right, reals_left = [], []
-
-    for rep in range(4):
-        print(f"[run] antes do intro, rep={rep}")
-        show_exercise_intro(_("Sit and Reach"), rep, finish_cb, is_back_scratch=False)
-        print(f"[run] depois do intro, rep={rep}")
-        
-        dist = run_repetition(rep, kinect, holistic, finish_cb)
-
-        if dist is None:
-            print(_("Exercise not performed correctly."))
-            finish_cb()
-
-        side  = "right" if rep in (0, 1) else "left"
-        side_label = _("right_leg_label") if rep in (0, 1) else _("left_leg_label")
-        real = show_real_distance_screen_styled(
-            _("Sit and Reach"), side_label, (rep % 2) + 1, 2
-        )
-        if side == "right":
-            reals_right.append(real)
-        else:
-            reals_left.append(real)
-        error = abs(abs(float(real)) - abs(dist))
-
-        append_to_excel(_EXCEL_PATH, {
-            "Age": participant["age"], "Height": participant["height"],
-            "Weight": participant["weight"], "Gender": participant["gender"],
-            "Real distance": real, "Calculated distance": dist, "Erro": error,
-        })
-        append_to_log(_LOG_PATH,
-                      participant["age"], participant["height"],
-                      participant["weight"], participant["gender"],
-                      real, dist, side)
-
-        if side == "right":
-            distances_right.append(dist)
-        else:
-            distances_left.append(dist)
-
-        #_screen_repetition(f"{dist:.2f}", real, finish_cb)
-        show_repetition_result(
-            _("Sit and Reach"), side_label, (rep % 2) + 1, 2,
-            f"{dist:.2f}", real, finish_cb
-        )
-
-    best_right = max(distances_right)
-    best_left  = max(distances_left)
-    show_exercise_final(
-        _("Sit and Reach"),
-        f"{best_right:.2f}", f"{best_left:.2f}",   # sistema
-        max(reals_right), max(reals_left),           # real
-        finish_cb
-    )

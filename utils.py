@@ -12,6 +12,10 @@ from PIL import ImageFont, ImageDraw, Image
 
 # GEOMETRY
 
+def win_title(name):
+    """Return window title with CAPACITA prefix."""
+    return f"CAPACITA - {name}"
+
 def calculate_distance_2d(point1, point2):
     """Euclidean distance between two (x, y) points."""
     return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
@@ -131,8 +135,9 @@ def show_register_screen():
                     active_field = i
                     break
 
-    cv2.namedWindow(_("Register"))
-    cv2.setMouseCallback(_("Register"), _mouse_cb)
+    win = win_title(_("Register"))
+    cv2.namedWindow(win)
+    cv2.setMouseCallback(win, _mouse_cb)
 
     while True:
         img = np.ones((400, 600, 3), dtype=np.uint8) * 255
@@ -148,7 +153,7 @@ def show_register_screen():
 
         img = put_text_utf8(img, _("Press Enter to confirm"), (50, 360),
             font_size=18, color=(100, 100, 100))
-        cv2.imshow(_("Register"), img)
+        cv2.imshow(win, img)
 
         key = cv2.waitKey(10) & 0xFF
         if key == 27:
@@ -172,7 +177,9 @@ def show_real_distance_screen():
     """
     entered = ""
 
-    cv2.namedWindow(_("Real Distance"))
+    win = win_title(_("Real Distance"))
+    cv2.namedWindow(win)
+
     while True:
         img = np.ones((200, 600, 3), dtype=np.uint8) * 255
         cv2.rectangle(img, (50, 60), (550, 120), (230, 230, 230), -1)
@@ -181,7 +188,8 @@ def show_real_distance_screen():
               font_size=24, color=(0, 0, 0))
         img = put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
               font_size=18, color=(100, 100, 100))
-        cv2.imshow(_("Real Distance"), img)
+              
+        cv2.imshow(win, img)
 
         key = cv2.waitKey(10) & 0xFF
         if key == 27:

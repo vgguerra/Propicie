@@ -16,7 +16,7 @@ from ui.theme import (
     BG, DARK_BLUE, HEADER_BG, HEADER_TEXT, BTN_BLUE, BTN_TEXT,
     W, H, HEADER_H, FONT, FONT_LABEL, THICKNESS_SMALL,
 )
-
+from utils import win_title
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -101,9 +101,12 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
 
         # Card geometry
         card_w, card_h = 580, 480
-        card_x = (W - card_w) // 2
-        card_y = HEADER_H + (H - HEADER_H - card_h) // 2
+        card_x = 40
+        card_y = 10
         print(f"[register] card_x={card_x} card_y={card_y}")
+
+        win_w = card_w + 80   # 660
+        win_h = card_h + 60   # 540
 
         # Field geometry inside card
         field_x      = card_x + 30
@@ -121,7 +124,7 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
             for i in range(len(fields))
         ]
 
-        WIN = _("Register")
+        WIN = win_title(_("Register"))
         print(f"[register] WIN={WIN}")
 
 
@@ -139,7 +142,12 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
         cv2.setMouseCallback(WIN, _mouse_cb)
 
         while True:
-            img = _make_base(exercise, side, rep_current, rep_total)
+            img = np.zeros((win_h, win_w, 3), dtype=np.uint8)
+            img[:] = BG
+
+            _draw_card(img, card_x, card_y, card_w, card_h)
+            img = _draw_card_title(img, _("Register").upper(),
+                                card_x, card_y, card_w, title_h)
 
             # Card background
             _draw_card(img, card_x, card_y, card_w, card_h)
@@ -150,25 +158,20 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
 
             # Fields
             for i, (x1, y1, x2, y2) in enumerate(positions):
-                # Label above field
                 img = _put_text(img, f"{fields[i]}:", (x1, y1 - 22),
                                 font_size=18, color=tuple(DARK_BLUE))
-
-                # Field box
                 cv2.rectangle(img, (x1, y1), (x2, y2), (255, 255, 255), -1)
                 border = BTN_BLUE if i == active_field else DARK_BLUE
                 cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
-
-                # Value inside field
                 img = _put_text(img, values[i], (x1 + 10, y1 + 12),
                                 font_size=22, color=(0, 0, 0))
 
             # Footer hint
-            hint_y = card_y + card_h + 18
+            hint_y = card_y + card_h + 12
             img = _put_text(img, _("Press Enter to confirm"),
-                            ((W - 300) // 2, hint_y),
+                            ((win_w - 300) // 2, hint_y),
                             font_size=18, color=tuple(DARK_BLUE))
-
+                            
             cv2.imshow(WIN, img)
 
             key = cv2.waitKey(10) & 0xFF
@@ -204,8 +207,19 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
 
     # Card geometry
     card_w, card_h = 580, 260
+    title_h   = 58
+
+    win_h = card_h + 80
+    win_w = card_w + 80
+
+    card_x_local = 40
+    card_y_local = 10
     card_x = (W - card_w) // 2
     card_y = HEADER_H + (H - HEADER_H - card_h) // 2
+
+    field_x_local = card_x_local + 30
+    field_w_local = card_w - 60
+    field_y_local = card_y_local + title_h + 50
 
     title_h   = 58
     field_x   = card_x + 30
@@ -213,36 +227,41 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
     field_y   = card_y + title_h + 50
     field_h   = 60
 
-    WIN = _("Real Measurement")
+    WIN = win_title(_("Real Measurement"))
     cv2.namedWindow(WIN, cv2.WINDOW_AUTOSIZE)
 
     while True:
-        img = _make_base(exercise, side, rep_current, rep_total)
+        img = np.zeros((win_h, win_w, 3), dtype=np.uint8)
+        img[:] = BG
 
         # Card
-        _draw_card(img, card_x, card_y, card_w, card_h)
-        img = _draw_card_title(img, _("Real Measurement").upper(),
-                               card_x, card_y, card_w, title_h)
+        _draw_card(img, card_x_local, card_y_local, card_w, card_h)
 
-        # Label
+        img = _draw_card_title(img, _("Real Measurement").upper(),
+                           card_x_local, card_y_local, card_w, title_h)
         img = _put_text(img, f"{_('real_distance_label')} (cm):",
-                        (field_x, card_y + title_h + 16),
-                        font_size=20, color=tuple(DARK_BLUE))
+                    (field_x_local, card_y_local + title_h + 16),
+                    font_size=20, color=tuple(DARK_BLUE))
 
         # Input field
-        cv2.rectangle(img, (field_x, field_y),
-                      (field_x + field_w, field_y + field_h),
+        cv2.rectangle(img, (field_x_local, field_y_local),
+                      (field_x_local + field_w_local, field_y_local + field_h),
                       (255, 255, 255), -1)
-        cv2.rectangle(img, (field_x, field_y),
-                      (field_x + field_w, field_y + field_h),
+        cv2.rectangle(img, (field_x_local, field_y_local),
+                      (field_x_local + field_w_local, field_y_local + field_h),
                       DARK_BLUE, 2)
-        img = _put_text(img, entered,
-                        (field_x + 12, field_y + 12),
-                        font_size=28, color=(0, 0, 200))
+        if not entered:
+            img = _put_text(img, "+3.33 / -3.33",
+                            (field_x_local + 12, field_y_local + 12),
+                            font_size=24, color=(180, 190, 200))
+        else:
+            img = _put_text(img, entered,
+                            (field_x_local + 12, field_y_local + 12),
+                            font_size=28, color=(0, 0, 200))
 
         # Hint
         img = _put_text(img, _("Press Enter to confirm"),
-                        (field_x, field_y + field_h + 14),
+                        (field_x_local, field_y_local + field_h + 14),
                         font_size=16, color=(100, 100, 100))
 
         cv2.imshow(WIN, img)
@@ -298,11 +317,12 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
     real_title_y = sys_value_y + value_h + block_gap
     real_value_y = real_title_y + block_h + 8
 
-    WIN = _("Repetition Completed")
+    WIN = win_title(_("Repetition Completed"))
     cv2.namedWindow(WIN, cv2.WINDOW_AUTOSIZE)
 
     while True:
-        img = _make_base(exercise, side, rep_current, rep_total)
+        img = np.zeros((H, W, 3), dtype=np.uint8)
+        img[:] = BG
 
         # Outer card
         _draw_card(img, card_x, card_y, card_w, card_h)
@@ -417,7 +437,7 @@ def show_exercise_final(exercise, best_system_right, best_system_left,
     real_right_val_y = real_title_y + block_h + 8
     real_left_val_y  = real_right_val_y + value_h + 8
 
-    WIN = _("Exercise Completed")
+    WIN = win_title(_("Exercise Completed"))
     cv2.namedWindow(WIN, cv2.WINDOW_AUTOSIZE)
 
     while True:
@@ -506,14 +526,20 @@ def show_exercise_final(exercise, best_system_right, best_system_left,
                         (content_x + 14, real_left_val_y + 10),
                         font_size=22, color=tuple(DARK_BLUE))
 
-        # Exercise label at bottom centre
+        # Exercise label at bottom centre   
+        texto_y = H - 40
+
         (tw, _h), _th = cv2.getTextSize(exercise.upper(), FONT, 0.7, 1)
-        cv2.putText(img, exercise.upper(), ((W - tw) // 2, H - 30),
+        x_exercicio = (W - tw) // 2
+
+        cv2.putText(img, exercise.upper(), (x_exercicio, texto_y),
                     FONT, 0.7, DARK_BLUE, 1, cv2.LINE_AA)
 
         # Footer hint
+        x_footer = content_x
+
         img = _put_text(img, _("Press Q to exit"),
-                        ((W - 200) // 2, card_y + card_h + 16),
+                        (x_footer, texto_y - 4), 
                         font_size=18, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
