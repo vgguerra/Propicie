@@ -18,40 +18,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:668
-#: Sit-and-Reach/sit_and_reach_julia.py:726 runner_2.py:117 runner_2.py:198
-#: runner_2.py:282 runner_2.py:285
-msgid "Sit and Reach"
-msgstr "Sit and Reach"
-
-#: runner_2.py:117
-msgid "Right Leg  x2  ->  Left Leg  x2"
-msgstr "Right Leg  x2  ->  Left Leg  x2"
-
-#: runner_2.py:118 runner_2.py:202 runner_2.py:289 runner_2.py:292
-msgid "Back Scratch"
-msgstr "Back Scratch"
-
-#: runner_2.py:118
-msgid "Right Side x2  ->  Left Side x2"
-msgstr "Right Side x2  ->  Left Side x2"
-
-#: runner_2.py:129
-msgid "Fitness Assessment  v2.0"
-msgstr "Fitness Assessment  v2.0"
-
-#: runner_2.py:135
-msgid "Exercise sequence for this session:"
-msgstr "Exercise sequence for this session:"
-
-#: runner_2.py:192 runner_2.py:298
-msgid "Assessment complete"
-msgstr "Assessment complete"
-
-#: runner_2.py:282 runner_2.py:289
-msgid "Starting"
-msgstr "Starting"
-
 #: Sit-and-Reach/sit_and_reach_julia.py:593
 #: Sit-and-Reach/sit_and_reach_julia.py:694 runner_2.py:285 runner_2.py:292
 msgid "Right"
@@ -61,10 +27,6 @@ msgstr "Right"
 #: Sit-and-Reach/sit_and_reach_julia.py:694 runner_2.py:285 runner_2.py:292
 msgid "Left"
 msgstr "Left"
-
-#: runner_2.py:298
-msgid "All data saved"
-msgstr "All data saved"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:206
 msgid "CALIBRATION STATUS"
@@ -87,17 +49,14 @@ msgid "Exercise Completed"
 msgstr "Exercise Completed"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:482
-#, fuzzy
 msgid "Final Results"
 msgstr "Final Results"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:497
-#, fuzzy
 msgid "Repetition Completed"
 msgstr "Repetition complete"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:498
-#, fuzzy
 msgid "Final Repetition Results"
 msgstr "Final Repetition Results"
 
@@ -118,7 +77,6 @@ msgid "Gender (M/F)"
 msgstr "Gender (M/F)"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:528
-#, fuzzy
 msgid "Registration"
 msgstr "Registration"
 
@@ -177,12 +135,6 @@ msgstr "Hip Angle"
 msgid "Elbow Angle"
 msgstr "Elbow Angle"
 
-msgid "Best result of the right leg"
-msgstr "Best result of the right leg"
-
-msgid "Best result of the left leg"
-msgstr "Best result of the left leg"
-
 msgid "Final Distance"
 msgstr "Final Distance"
 
@@ -240,17 +192,6 @@ msgstr "Left Hand Pos."
 msgid "Correct"
 msgstr "Correct"
 
-msgid "Best Right Leg"
-msgstr "Best result on the right leg"
-
-msgid "Best Left Leg"
-msgstr "Best result on the left leg"
-
-msgid "Best Right Side"
-msgstr "Best result on the right side"
-
-msgid "Best Left Side"
-msgstr "Best result on the left side"
 msgid "Main Menu"
 msgstr "Main Menu"
 
@@ -262,9 +203,6 @@ msgstr "Visualize Data"
 
 msgid "End Session"
 msgstr "End Session"
-
-msgid "operator_label"
-msgstr "?"
 
 msgid "institution_label"
 msgstr "IPBeja"
@@ -288,7 +226,7 @@ msgid "Next"
 msgstr "Next"
 
 msgid "System Distance"
-msgstr "Final Distance (System)"
+msgstr "System Distance"
 
 msgid "Real Measurement"
 msgstr "Real Measurement"
@@ -345,11 +283,8 @@ msgstr "Press SPACE to continue"
 msgid "Press C to continue or Q to finish"
 msgstr "Press C to continue or Q to finish"
 
-msgid "Press Q to exit"
-msgstr "Press Q to exit"
+msgid "best_right_side_label"
+msgstr "Best Measurement on Right Side"
 
-msgid "right_side_label"
-msgstr "Right Side"
-
-msgid "left_side_label"
-msgstr "Left Side"
+msgid "best_left_side_label"
+msgstr "Best Measurement on Left Side"

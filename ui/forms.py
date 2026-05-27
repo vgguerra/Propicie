@@ -478,7 +478,7 @@ def show_exercise_final(exercise, best_system_right, best_system_left,
                       (content_x + content_w, sys_right_val_y + value_h),
                       DARK_BLUE, 2)
         img = _put_text(img,
-                        f"{_('right_side_label')}: {best_system_right} cm",
+                        f"{_('best_right_side_label')}: {best_system_right} cm",
                         (content_x + 14, sys_right_val_y + 10),
                         font_size=22, color=tuple(DARK_BLUE))
 
@@ -490,7 +490,7 @@ def show_exercise_final(exercise, best_system_right, best_system_left,
                       (content_x + content_w, sys_left_val_y + value_h),
                       DARK_BLUE, 2)
         img = _put_text(img,
-                        f"{_('left_side_label')}: {best_system_left} cm",
+                        f"{_('best_left_side_label')}: {best_system_left} cm",
                         (content_x + 14, sys_left_val_y + 10),
                         font_size=22, color=tuple(DARK_BLUE))
 
@@ -510,7 +510,7 @@ def show_exercise_final(exercise, best_system_right, best_system_left,
                       (content_x + content_w, real_right_val_y + value_h),
                       DARK_BLUE, 2)
         img = _put_text(img,
-                        f"{_('Best Right Leg')}: {best_real_right:.2f} cm",
+                        f"{_('best_right_side_label')}: {best_real_right:.2f} cm",
                         (content_x + 14, real_right_val_y + 10),
                         font_size=22, color=tuple(DARK_BLUE))
 
@@ -522,7 +522,7 @@ def show_exercise_final(exercise, best_system_right, best_system_left,
                       (content_x + content_w, real_left_val_y + value_h),
                       DARK_BLUE, 2)
         img = _put_text(img,
-                        f"{_('Best Left Leg')}: {best_real_left:.2f} cm",
+                        f"{_('best_left_side_label')}: {best_real_left:.2f} cm",
                         (content_x + 14, real_left_val_y + 10),
                         font_size=22, color=tuple(DARK_BLUE))
 
