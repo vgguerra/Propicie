@@ -107,23 +107,17 @@ Para executar este projeto, siga os passos abaixo.
 Após a conclusão da configuração, você pode executar as avaliações.
 
 ### Executando a Suíte de Testes Completa
-Você pode executar os testes de Sentar e Alcançar e de Coçar as Costas sequencialmente usando o script de execução fornecido.
+Para executar o programa:
 
 ```bash
 python runner.py
 ```
-
-### Executando Testes Individuais
-Você também pode executar cada script de teste individualmente:
-
-* **Para o Teste de Sentar e Alcançar**:
-    ```bash
-    python ./Sit-and-Reach/sit_and_reach_holistic_2.py
-    ```
-* **Para o Teste de Coçar as Costas**:
-    ```bash
-    python ./Back-Scratch/back_scratch.py
-    ```
+Selecione a linguagem desejada, depois selecione entre as opções:
+* **Automático**: Inicia-se com o Sentar e Alcançar, repete 2 vezes para cada lado, e depois segue para o Coçar as Costas, também repete 2 vezes para cada lado, ao final retorna para o menu.
+* **Sentar e Alncançar**: Repete 2 vezes para cada lado, ao final retorna para o menu.
+* **Coçar as Costas**: Repete 2 vezes para cada lado, ao final retorna para o menu.
+* **Visualizar Dados**: A implementar.
+* **Encerrar Sessão**: Finaliza o programa.
 
 ### O Processo
 1.  Quando um script é iniciado, uma janela aparecerá solicitando as informações do usuário (Idade, Altura, Peso, Gênero). Preencha os campos e pressione `Enter`.
