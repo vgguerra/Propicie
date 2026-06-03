@@ -1,12 +1,3 @@
-# =============================================================================
-# ui/forms.py — Register and Real Distance screens with new design
-# =============================================================================
-# Both screens follow the PDF design:
-#   - Full-width coloured header bar (exercise | side | repetition)
-#   - White card centred on a light-blue background
-#   - Input fields inside the card
-# =============================================================================
-
 import cv2
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image
