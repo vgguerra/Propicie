@@ -102,14 +102,14 @@ def _screen_repetition(distance, real_distance, finish_cb):
     frame = put_text_utf8(frame, _("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
     frame = put_text_utf8(frame, f"{_('Distance between hands')}: {distance} cm", (50, 200), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('Real Distance')}: {real_distance} cm", (50, 250), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Press C to continue or Q to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    frame = put_text_utf8(frame, f"{_('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
     cv2.imshow(win_title(_("Repetition Results")), frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == ord("c"):
+        if key == 32:  # space
             cv2.destroyWindow(win_title(_("Repetition Results")))
             break
-        elif key == ord("q"):
+        elif key == 27:  # esc
             finish_cb()
 
 
@@ -118,13 +118,13 @@ def screen_final(best_right, best_left, finish_cb):
     frame = put_text_utf8(frame, _("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
     frame = put_text_utf8(frame, f"{_('Best result of the right side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('Best result of the left side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('C or Q')}", (200, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(win_title(_("Final Results")), frame)
+    frame = put_text_utf8(frame, f"{_('Press ESC to finish')}", (200, 400), font_size=26, color=(255, 255, 0))
+    cv2.imshow(win_title(_("System Results")), frame)
     
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == ord("q") or key == 27:
-            cv2.destroyWindow(win_title(_("Final Results")))
+        if key == 27:
+            cv2.destroyWindow(win_title(_("System Results")))
             return
 
 
@@ -207,7 +207,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         cv2.imshow(win_title(exercise_title), canvas)
 
         key = cv2.waitKey(1) & 0xFF
-        if key in (ord("q"), ord("Q")):
+        if key == 27:
             finish_cb()
 
     return final_dist

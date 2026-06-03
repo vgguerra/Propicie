@@ -135,17 +135,8 @@ msgstr "Hip Angle"
 msgid "Elbow Angle"
 msgstr "Elbow Angle"
 
-msgid "System Distance"
-msgstr "System Distance"
-
 msgid "Incorrect"
 msgstr "Incorrect"
-
-msgid "Foot position X/Y"
-msgstr "Foot position X/Y"
-
-msgid "Hand position X/Y"
-msgstr "Hand position X/Y"
 
 msgid "Dist"
 msgstr "Dist"
@@ -162,32 +153,8 @@ msgstr "Not Detected"
 msgid "Detected"
 msgstr "Detected"
 
-msgid "Position both hands in view"
-msgstr "Position both hands in view"
-
-msgid "Move hands closer together"
-msgstr "Move hands closer together"
-
-msgid "Hold position to measure"
-msgstr "Hold position to measure"
-
 msgid "Distance between both hands"
 msgstr "Distance between both hands"
-
-msgid "Best result of the right side"
-msgstr "Best result of the right side"
-
-msgid "Best result of the left side"
-msgstr "Best result of the left side"
-
-msgid "Press Enter to finish"
-msgstr "Press Enter to finish"
-
-msgid "Pos Right Hand"
-msgstr "Right Hand Pos."
-
-msgid "Pos Left Hand"
-msgstr "Left Hand Pos."
 
 msgid "Correct"
 msgstr "Correct"
@@ -210,12 +177,6 @@ msgstr "IPBeja"
 msgid "repetition_label"
 msgstr "Repetition"
 
-msgid "right_leg_label"
-msgstr "Right Leg"
-
-msgid "left_leg_label"
-msgstr "Left Leg"
-
 msgid "right_side_label"
 msgstr "Right Side"
 
@@ -234,6 +195,9 @@ msgstr "Real Measurement"
 msgid "real_distance_label"
 msgstr "Real Distance"
 
+msgid "system_distance_label"
+msgstr "Distância do Sistema"
+
 msgid "System Measurement"
 msgstr "System Measurement"
 
@@ -249,39 +213,17 @@ msgstr "Repetition Completed"
 msgid "Back Scratch exercise name"
 msgstr "Back Scratch"
 
-msgid "Age"
-msgstr "Age"
-
-msgid "Height (cm)"
-msgstr "Height (cm)"
-
-msgid "Weight (kg)"
-msgstr "Weight (kg)"
-
-msgid "Gender (M/F)"
-msgstr "Gender (M/F)"
-
 msgid "Press Enter to confirm"
 msgstr "Press Enter to confirm"
 
 msgid "Register"
 msgstr "Register"
 
-msgid "C or Q"
-msgstr "Press C to continue or Q to quit"
-
-msgid "Press Q to exit"
-msgstr "Press Q to exit"
-
 msgid "Press SPACE to begin"
 msgstr "Press SPACE to begin"
 
 msgid "Press SPACE to continue"
 msgstr "Press SPACE to continue"
-
-# en_US
-msgid "Press C to continue or Q to finish"
-msgstr "Press C to continue or Q to finish"
 
 msgid "best_right_side_label"
 msgstr "Best Measurement on Right Side"
@@ -294,3 +236,12 @@ msgstr "1° Repetition"
 
 msgid "rep_2_label"
 msgstr "2° Repetition"
+
+msgid "space_esc"
+msgstr "Press ESPACE to continue or ESC to finish"
+
+msgid "esc_finish"
+msgstr "Press ESC to finish"
+
+msgid "Sit and Reach"
+msgstr "Sit and Reach"

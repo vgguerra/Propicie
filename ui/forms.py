@@ -284,32 +284,21 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
 
 def show_repetition_result(exercise, side, rep_current, rep_total,
                             system_dist, real_dist, finish_cb):
-    """
-    Show the repetition result screen with system and real distances.
-    Matches PDF page 6 design.
-    Press 'c' to continue, 'q' to quit.
+    # Janela compacta
+    win_w = 760
+    win_h = 580
 
-    Parameters
-    ----------
-    exercise    : translated exercise name
-    side        : translated side label
-    rep_current : current rep number (1-based)
-    rep_total   : total reps (2)
-    system_dist : distance measured by the system (str, e.g. "-5.45")
-    real_dist   : distance manually measured (float)
-    finish_cb   : callable — called on Q press
-    """
-    # Card geometry
-    card_w, card_h = 700, 420
-    card_x = (W - card_w) // 2
-    card_y = HEADER_H + (H - HEADER_H - card_h) // 2
+    card_w = win_w - 60
+    card_h = win_h - 100
+    card_x = 30
+    card_y = 10
 
-    title_h    = 58
-    block_h    = 52
-    value_h    = 70
-    block_gap  = 30
-    content_x  = card_x + 40
-    content_w  = card_w - 80
+    title_h   = 58
+    block_h   = 48
+    value_h   = 70
+    block_gap = 24
+    content_x = card_x + 40
+    content_w = card_w - 80
 
     # Y positions for each block
     sys_title_y  = card_y + title_h + 20
@@ -321,79 +310,62 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
     cv2.namedWindow(WIN, cv2.WINDOW_AUTOSIZE)
 
     while True:
-        img = np.zeros((H, W, 3), dtype=np.uint8)
+        img = np.zeros((win_h, win_w, 3), dtype=np.uint8)
         img[:] = BG
 
-        # Outer card
         _draw_card(img, card_x, card_y, card_w, card_h)
-
-        # Card title — "Repetição Concluída"
         img = _draw_card_title(img, _("Repetition Completed").upper(),
                                card_x, card_y, card_w, title_h)
 
-        # --- System distance block ---
-        # Section header
+        # System distance
         cv2.rectangle(img, (content_x, sys_title_y),
-                      (content_x + content_w, sys_title_y + block_h),
-                      BTN_BLUE, -1)
-        img = _put_text(img, _("System Distance"),
-                        (content_x + 16, sys_title_y + 12),
-                        font_size=24, color=(255, 255, 255))
+                      (content_x + content_w, sys_title_y + block_h), BTN_BLUE, -1)
+        img = _put_text(img, _("System Measurement"),
+                        (content_x + 16, sys_title_y + 10), font_size=22, color=(255, 255, 255))
 
-        # Value box
         cv2.rectangle(img, (content_x, sys_value_y),
-                      (content_x + content_w, sys_value_y + value_h),
-                      (255, 255, 255), -1)
+                      (content_x + content_w, sys_value_y + value_h), (255, 255, 255), -1)
         cv2.rectangle(img, (content_x, sys_value_y),
-                      (content_x + content_w, sys_value_y + value_h),
-                      DARK_BLUE, 2)
+                      (content_x + content_w, sys_value_y + value_h), DARK_BLUE, 2)
         img = _put_text(img, f"{system_dist} cm",
-                        (content_x + 16, sys_value_y + 16),
-                        font_size=28, color=tuple(DARK_BLUE))
+                        (content_x + 16, sys_value_y + 16), font_size=28, color=tuple(DARK_BLUE))
 
-        # --- Real distance block ---
+        # Real distance
         cv2.rectangle(img, (content_x, real_title_y),
-                      (content_x + content_w, real_title_y + block_h),
-                      BTN_BLUE, -1)
+                      (content_x + content_w, real_title_y + block_h), BTN_BLUE, -1)
         img = _put_text(img, _("Real Measurement Result"),
-                        (content_x + 16, real_title_y + 12),
-                        font_size=24, color=(255, 255, 255))
+                        (content_x + 16, real_title_y + 10), font_size=22, color=(255, 255, 255))
 
-        # Value box
         cv2.rectangle(img, (content_x, real_value_y),
-                      (content_x + content_w, real_value_y + value_h),
-                      (255, 255, 255), -1)
+                      (content_x + content_w, real_value_y + value_h), (255, 255, 255), -1)
         cv2.rectangle(img, (content_x, real_value_y),
-                      (content_x + content_w, real_value_y + value_h),
-                      DARK_BLUE, 2)
+                      (content_x + content_w, real_value_y + value_h), DARK_BLUE, 2)
         img = _put_text(img, f"{real_dist:.2f} cm",
-                        (content_x + 16, real_value_y + 16),
-                        font_size=28, color=tuple(DARK_BLUE))
+                        (content_x + 16, real_value_y + 16), font_size=28, color=tuple(DARK_BLUE))
 
         # Footer hint
-        footer_y = card_y + card_h + 16
-        img = _put_text(img, _("Press C to continue or Q to finish"),
-                        ((W - 420) // 2, footer_y),
-                        font_size=18, color=tuple(DARK_BLUE))
+        hint_y = card_y + card_h + 12
+        img = _put_text(img, _("space_esc"),
+                        ((win_w - 420) // 2, hint_y), font_size=16, color=tuple(DARK_BLUE))
 
-        # Bottom bar — exercise / side / rep
+        # Bottom bar
         rep_label = f"{_('repetition_label')} {rep_current}/{rep_total}"
-        cv2.putText(img, exercise.upper(), (50, H - 20),
-                    FONT, 0.6, DARK_BLUE, 1, cv2.LINE_AA)
-        (tw, th), _th = cv2.getTextSize(side, FONT, 0.6, 1)
-        cv2.putText(img, side, ((W - tw) // 2, H - 20),
-                    FONT, 0.6, DARK_BLUE, 1, cv2.LINE_AA)
-        (tw, th), _th = cv2.getTextSize(rep_label, FONT, 0.6, 1)
-        cv2.putText(img, rep_label, (W - tw - 50, H - 20),
-                    FONT, 0.6, DARK_BLUE, 1, cv2.LINE_AA)
+        cv2.putText(img, exercise.upper(), (20, win_h - 14),
+                    FONT, 0.55, DARK_BLUE, 1, cv2.LINE_AA)
+        (tw, th), _bl = cv2.getTextSize(side, FONT, 0.55, 1)
+        cv2.putText(img, side, ((win_w - tw) // 2, win_h - 14),
+                    FONT, 0.55, DARK_BLUE, 1, cv2.LINE_AA)
+        (tw, th), _bl = cv2.getTextSize(rep_label, FONT, 0.55, 1)
+        cv2.putText(img, rep_label, (win_w - tw - 20, win_h - 14),
+                    FONT, 0.55, DARK_BLUE, 1, cv2.LINE_AA)
 
         cv2.imshow(WIN, img)
 
         key = cv2.waitKey(16) & 0xFF
-        if key == ord("c"):
+        if key == ord(" "):
             cv2.destroyWindow(WIN)
             return
-        elif key in (ord("q"), ord("Q"), 27):
+        elif key == 27:
             finish_cb()
 
 
@@ -401,150 +373,120 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
 # Exercise final result screen
 # ---------------------------------------------------------------------------
 
-def show_exercise_final(exercise, best_system_right, best_system_left,
-                        best_real_right, best_real_left, finish_cb):
-    """
-    Show the final exercise result screen.
-    Matches PDF page 8 design — two sections: System and Real measurements.
-    Press 'q' to exit to main menu.
-
-    Parameters
-    ----------
-    exercise          : translated exercise name
-    best_system_right : best system distance — right side (str)
-    best_system_left  : best system distance — left side (str)
-    best_real_right   : best real distance — right side (float)
-    best_real_left    : best real distance — left side (float)
-    finish_cb         : callable — called on Q press
-    """
-    # Card geometry
-    card_w, card_h = 760, 520
-    card_x = (W - card_w) // 2
-    card_y = HEADER_H + (H - HEADER_H - card_h) // 2
-
-    title_h   = 58
-    block_h   = 48
-    value_h   = 52
-    block_gap = 18
-    content_x = card_x + 40
-    content_w = card_w - 80
-
-    # Y positions
-    sys_title_y      = card_y + title_h + 16
-    sys_right_val_y  = sys_title_y + block_h + 8
-    sys_left_val_y   = sys_right_val_y + value_h + 8
-    real_title_y     = sys_left_val_y + value_h + block_gap + 8
-    real_right_val_y = real_title_y + block_h + 8
-    real_left_val_y  = real_right_val_y + value_h + 8
+def show_exercise_final(exercise,
+                        system_right_1, system_right_2,
+                        system_left_1,  system_left_2,
+                        real_right_1,   real_right_2,
+                        real_left_1,    real_left_2,
+                        finish_cb):
 
     WIN = win_title(_("Exercise Completed"))
     cv2.namedWindow(WIN, cv2.WINDOW_AUTOSIZE)
+
+    # Layout - Otimizado para fontes maiores e melhor preenchimento
+    card_x, card_y = 40, 40
+    card_w, card_h = W - 80, H - 120
+    title_h  = 58
+    sec_h    = 48   # secção lado
+    rep_h    = 28   # subtítulo repetição
+    box_h    = 140  # AUMENTADO: Caixa de valores maior (antes era 110)
+    gap      = 12   # Ajustado para equilibrar o espaço vertical reconstruído
+    col_w    = (card_w - 80) // 2   # largura de cada coluna
+    col1_x   = card_x + 40
+    col2_x   = col1_x + col_w + 20
+
+    # Y de cada secção calculados dinamicamente com base no novo tamanho
+    right_sec_y  = card_y + title_h + gap
+    right_rep_y  = right_sec_y + sec_h + 4
+    right_box_y  = right_rep_y + rep_h + 2
+    left_sec_y   = right_box_y + box_h + gap + 4
+    left_rep_y   = left_sec_y + sec_h + 4
+    left_box_y   = left_rep_y + rep_h + 2
 
     while True:
         img = np.zeros((H, W, 3), dtype=np.uint8)
         img[:] = BG
 
-        # Institution label top right
-        cv2.putText(img, "IPBeja", (W - 100, 30),
-                    FONT, 0.7, DARK_BLUE, 1, cv2.LINE_AA)
+        # Borda exterior
+        cv2.rectangle(img, (card_x, card_y), (card_x + card_w, card_y + card_h), DARK_BLUE, 2)
 
-        # Title with decorative lines
-        title_text = _("Exercise Completed")
-        (tw, th), _th = cv2.getTextSize(title_text, FONT, 1.6, 3)
+        # IPBeja
+        cv2.putText(img, "IPBeja", (W - 110, 28), FONT, 0.7, DARK_BLUE, 1, cv2.LINE_AA)
+
+        # Título
+        (tw, th), _bl = cv2.getTextSize(_("Exercise Completed"), FONT, 1.6, 3)
         tx = (W - tw) // 2
-        ty = 80
+        ty = card_y + 50
         line_y = ty - th // 2 + 5
-        cv2.line(img, (60, line_y), (tx - 20, line_y), DARK_BLUE, 2)
-        cv2.line(img, (tx + tw + 20, line_y), (W - 60, line_y), DARK_BLUE, 2)
-        cv2.putText(img, title_text, (tx, ty),
-                    FONT, 1.6, DARK_BLUE, 3, cv2.LINE_AA)
+        cv2.line(img, (card_x + 20, line_y), (tx - 20, line_y), DARK_BLUE, 2)
+        cv2.line(img, (tx + tw + 20, line_y), (card_x + card_w - 20, line_y), DARK_BLUE, 2)
+        cv2.putText(img, _("Exercise Completed"), (tx, ty), FONT, 1.6, DARK_BLUE, 3, cv2.LINE_AA)
 
-        # Outer card
-        _draw_card(img, card_x, card_y, card_w, card_h)
+        # ── Secção Lado Direito ──
+        cv2.rectangle(img, (col1_x, right_sec_y), (col1_x + col_w * 2 + 20, right_sec_y + sec_h), BTN_BLUE, -1)
+        (tw, th), _bl = cv2.getTextSize(_("right_side_label"), FONT, 1.0, 2)
+        cv2.putText(img, _("right_side_label"), (col1_x + (col_w * 2 + 20 - tw) // 2, right_sec_y + sec_h - 12),
+                    FONT, 1.0, (255, 255, 255), 2, cv2.LINE_AA)
 
-        # ── System measurement section ──
-        cv2.rectangle(img, (content_x, sys_title_y),
-                      (content_x + content_w, sys_title_y + block_h),
-                      BTN_BLUE, -1)
-        img = _put_text(img, _("System Measurement"),
-                        (content_x + 16, sys_title_y + 10),
-                        font_size=22, color=(255, 255, 255))
+        # Subtítulos repetições direito
+        for ci, label in enumerate([_("rep_1_label"), _("rep_2_label")]):
+            cx = col1_x if ci == 0 else col2_x
+            (tw, th), _bl = cv2.getTextSize(label, FONT, 0.75, 1)
+            cv2.putText(img, label, (cx + (col_w - tw) // 2, right_rep_y + rep_h - 6),
+                        FONT, 0.75, DARK_BLUE, 1, cv2.LINE_AA)
 
-        # Right value
-        cv2.rectangle(img, (content_x, sys_right_val_y),
-                      (content_x + content_w, sys_right_val_y + value_h),
-                      (255, 255, 255), -1)
-        cv2.rectangle(img, (content_x, sys_right_val_y),
-                      (content_x + content_w, sys_right_val_y + value_h),
-                      DARK_BLUE, 2)
-        img = _put_text(img,
-                        f"{_('best_right_side_label')}: {best_system_right} cm",
-                        (content_x + 14, sys_right_val_y + 10),
-                        font_size=22, color=tuple(DARK_BLUE))
+        # Caixas valores direito
+        for ci, (sys_v, real_v) in enumerate([(system_right_1, real_right_1), (system_right_2, real_right_2)]):
+            cx = col1_x if ci == 0 else col2_x
+            box_y = right_box_y
+            cv2.rectangle(img, (cx, box_y), (cx + col_w, box_y + box_h), (255, 255, 255), -1)
+            cv2.rectangle(img, (cx, box_y), (cx + col_w, box_y + box_h), DARK_BLUE, 2)
+            
+            # AUMENTADO: font_size=26 e posições Y ajustadas para centralizar o texto maior
+            img = _put_text(img, f"{_('system_distance_label')}: {sys_v} cm",
+                            (cx + 16, box_y + 20), font_size=26, color=tuple(DARK_BLUE))
+            img = _put_text(img, f"{_('real_distance_label')}: {real_v:.2f} cm",
+                            (cx + 16, box_y + 80), font_size=26, color=tuple(DARK_BLUE))
+                                
+        # ── Secção Lado Esquerdo ──
+        cv2.rectangle(img, (col1_x, left_sec_y), (col1_x + col_w * 2 + 20, left_sec_y + sec_h), BTN_BLUE, -1)
+        (tw, th), _bl = cv2.getTextSize(_("left_side_label"), FONT, 1.0, 2)
+        cv2.putText(img, _("left_side_label"), (col1_x + (col_w * 2 + 20 - tw) // 2, left_sec_y + sec_h - 12),
+                    FONT, 1.0, (255, 255, 255), 2, cv2.LINE_AA)
 
-        # Left value
-        cv2.rectangle(img, (content_x, sys_left_val_y),
-                      (content_x + content_w, sys_left_val_y + value_h),
-                      (255, 255, 255), -1)
-        cv2.rectangle(img, (content_x, sys_left_val_y),
-                      (content_x + content_w, sys_left_val_y + value_h),
-                      DARK_BLUE, 2)
-        img = _put_text(img,
-                        f"{_('best_left_side_label')}: {best_system_left} cm",
-                        (content_x + 14, sys_left_val_y + 10),
-                        font_size=22, color=tuple(DARK_BLUE))
+        # Subtítulos repetições esquerdo
+        for ci, label in enumerate([_("rep_1_label"), _("rep_2_label")]):
+            cx = col1_x if ci == 0 else col2_x
+            (tw, th), _bl = cv2.getTextSize(label, FONT, 0.75, 1)
+            cv2.putText(img, label, (cx + (col_w - tw) // 2, left_rep_y + rep_h - 6),
+                        FONT, 0.75, DARK_BLUE, 1, cv2.LINE_AA)
 
-        # ── Real measurement section ──
-        cv2.rectangle(img, (content_x, real_title_y),
-                      (content_x + content_w, real_title_y + block_h),
-                      BTN_BLUE, -1)
-        img = _put_text(img, _("Real Measurement Result"),
-                        (content_x + 16, real_title_y + 10),
-                        font_size=22, color=(255, 255, 255))
+        # Caixas valores esquerdo
+        for ci, (sys_v, real_v) in enumerate([(system_left_1, real_left_1), (system_left_2, real_left_2)]):
+            cx = col1_x if ci == 0 else col2_x
+            box_y = left_box_y
+            cv2.rectangle(img, (cx, box_y), (cx + col_w, box_y + box_h), (255, 255, 255), -1)
+            cv2.rectangle(img, (cx, box_y), (cx + col_w, box_y + box_h), DARK_BLUE, 2)
+            
+            # AUMENTADO: font_size=26 e posições Y ajustadas para centralizar o texto maior
+            img = _put_text(img, f"{_('system_distance_label')}: {sys_v} cm",
+                            (cx + 16, box_y + 20), font_size=26, color=tuple(DARK_BLUE))
+            img = _put_text(img, f"{_('real_distance_label')}: {real_v:.2f} cm",
+                            (cx + 16, box_y + 80), font_size=26, color=tuple(DARK_BLUE))
 
-        # Right value
-        cv2.rectangle(img, (content_x, real_right_val_y),
-                      (content_x + content_w, real_right_val_y + value_h),
-                      (255, 255, 255), -1)
-        cv2.rectangle(img, (content_x, real_right_val_y),
-                      (content_x + content_w, real_right_val_y + value_h),
-                      DARK_BLUE, 2)
-        img = _put_text(img,
-                        f"{_('best_right_side_label')}: {best_real_right:.2f} cm",
-                        (content_x + 14, real_right_val_y + 10),
-                        font_size=22, color=tuple(DARK_BLUE))
+        # Exercise label base
+        (tw, th), _bl = cv2.getTextSize(exercise.upper(), FONT, 0.8, 1)
+        cv2.putText(img, exercise.upper(), ((W - tw) // 2, card_y + card_h + 30),
+                    FONT, 0.8, DARK_BLUE, 1, cv2.LINE_AA)
 
-        # Left value
-        cv2.rectangle(img, (content_x, real_left_val_y),
-                      (content_x + content_w, real_left_val_y + value_h),
-                      (255, 255, 255), -1)
-        cv2.rectangle(img, (content_x, real_left_val_y),
-                      (content_x + content_w, real_left_val_y + value_h),
-                      DARK_BLUE, 2)
-        img = _put_text(img,
-                        f"{_('best_left_side_label')}: {best_real_left:.2f} cm",
-                        (content_x + 14, real_left_val_y + 10),
-                        font_size=22, color=tuple(DARK_BLUE))
-
-        # Exercise label at bottom centre   
-        texto_y = H - 40
-
-        (tw, _h), _th = cv2.getTextSize(exercise.upper(), FONT, 0.7, 1)
-        x_exercicio = (W - tw) // 2
-
-        cv2.putText(img, exercise.upper(), (x_exercicio, texto_y),
-                    FONT, 0.7, DARK_BLUE, 1, cv2.LINE_AA)
-
-        # Footer hint
-        x_footer = content_x
-
-        img = _put_text(img, _("Press Q to exit"),
-                        (x_footer, texto_y - 4), 
-                        font_size=18, color=tuple(DARK_BLUE))
+        # Hint
+        img = _put_text(img, _("Press ESC to exit"),
+                        ((W - 200) // 2, card_y + card_h + 55),
+                        font_size=16, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
-
         key = cv2.waitKey(16) & 0xFF
-        if key in (ord("q"), ord("Q"), 27):
+        if key == 27: 
             cv2.destroyWindow(WIN)
-            return
+            finish_cb()
+            break

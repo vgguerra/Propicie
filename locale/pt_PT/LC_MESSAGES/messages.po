@@ -135,17 +135,8 @@ msgstr "Ângulo do quadril"
 msgid "Elbow Angle"
 msgstr "Ângulo do cotovelo"
 
-msgid "System Distance"
-msgstr "Distância da medição automática"
-
 msgid "Incorrect"
 msgstr "Incorreta"
-
-msgid "Foot position X/Y"
-msgstr "Coordenadas do pé X/Y"
-
-msgid "Hand position X/Y"
-msgstr "Coordenadas da mão X/Y"
 
 msgid "Dist"
 msgstr "Dist"
@@ -164,21 +155,6 @@ msgstr "Detetado"
 
 msgid "Distance between both hands"
 msgstr "Distância da medição automática"
-
-msgid "Best result of the right side"
-msgstr "Melhor resultado do lado direito"
-
-msgid "Best result of the left side"
-msgstr "Melhor resultado do lado esquerdo"
-
-msgid "Press Enter to finish"
-msgstr "Prima Enter para terminar"
-
-msgid "Pos Right Hand"
-msgstr "Pos. mão direita"
-
-msgid "Pos Left Hand"
-msgstr "Pos. mão esquerda"
 
 msgid "Correct"
 msgstr "Correta"
@@ -201,12 +177,6 @@ msgstr "IPBeja"
 msgid "repetition_label"
 msgstr "Repetição"
 
-msgid "right_leg_label"
-msgstr "Lado Direito"
-
-msgid "left_leg_label"
-msgstr "Lado Esquerdo"
-
 msgid "right_side_label"
 msgstr "Lado Direito"
 
@@ -224,6 +194,9 @@ msgstr "Medida Real"
 
 msgid "real_distance_label"
 msgstr "Distância Real"
+
+msgid "system_distance_label"
+msgstr "Distância do Sistema"
 
 msgid "System Measurement"
 msgstr "Medição do Sistema"
@@ -246,20 +219,11 @@ msgstr "Prima Enter para confirmar"
 msgid "Register"
 msgstr "Cadastro"
 
-msgid "C or Q"
-msgstr "Prima C para continuar ou Q para sair"
-
-msgid "Press Q to exit"
-msgstr "Prima Q para sair"
-
 msgid "Press SPACE to continue"
 msgstr "Prima ESPAÇO para continuar"
 
 msgid "Press SPACE to begin"
 msgstr "Prima ESPAÇO para iniciar"
-
-msgid "Press C to continue or Q to finish"
-msgstr "Prima C para continuar ou Q para terminar"
 
 msgid "best_right_side_label"
 msgstr "Melhor Resultado do Lado Direito"
@@ -272,3 +236,12 @@ msgstr "1° Repetição"
 
 msgid "rep_2_label"
 msgstr "2° Repetição"
+
+msgid "space_esc"
+msgstr "Prima ESPAÇO para continuar ou ESC para sair"
+
+msgid "esc_finish"
+msgstr "Press ESC to finish"
+
+msgid "Sit and Reach"
+msgstr "Sentar e Alcançar"

@@ -101,12 +101,11 @@ def show_exercise_intro(exercise_name, rep, finish_cb, is_back_scratch=False):
     right_label = f"{_('right_side_label')} x2"
     left_label  = f"{_('left_side_label')} x2"
         
-    print("[intro] a entrar no loop")
+    print("[intro] importado")
+    print("[intro] canvas criado")
 
     while True:
-        print("[intro] importado")
         img = blank_canvas()
-        print("[intro] canvas criado")
 
         # Title + decorative lines + institution label
         draw_title_page(img, title)

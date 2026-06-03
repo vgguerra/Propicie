@@ -237,31 +237,31 @@ def _check_posture(start_time, knee, opp_knee, hip, elbow, opp_elbow,
 def _screen_repetition(distance, real_distance, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
     frame = put_text_utf8(frame, _("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
-    frame = put_text_utf8(frame, f"{_('Final Distance')}: {distance} cm", (100, 200), font_size=32, color=(0, 255, 0))
+    frame = put_text_utf8(frame, f"{_('System Distance')}: {distance} cm", (100, 200), font_size=32, color=(0, 255, 0))
     frame = put_text_utf8(frame, f"{_('Real Distance')}: {real_distance} cm", (100, 250), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Press C to continue or Q to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    frame = put_text_utf8(frame, f"{_('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
     cv2.imshow(win_title(_("Repetition Results")), frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == ord("c"):
+        if key == ord(" "):
             cv2.destroyWindow(win_title(_("Repetition Results")))
             break
-        elif key == ord("q"):
+        elif key == 27:
             finish_cb()
 
 
 def screen_final(best_right, best_left, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
     frame = put_text_utf8(frame, _("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
-    frame = put_text_utf8(frame, f"{_('Best Right Leg')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Best Left Leg')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('C or Q')}", (200, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(win_title(_("Final Results")), frame)
+    frame = put_text_utf8(frame, f"{_('Best Right Side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
+    frame = put_text_utf8(frame, f"{_('Best Left Side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
+    frame = put_text_utf8(frame, f"{_('esc_finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    cv2.imshow(win_title(_("System Results")), frame)
     
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == ord("q") or key == 27: # Se pressionar Q ou ESC
-            cv2.destroyWindow(win_title(_("Final Results")))
+        if key == 27:
+            cv2.destroyWindow(win_title(_("System Results")))
             return
 
 
@@ -272,7 +272,7 @@ def screen_final(best_right, best_left, finish_cb):
 def run_repetition(repeats, kinect, holistic, finish_cb):
     """
     Run one sit-and-reach repetition and return the measured distance (str).
-    *finish_cb* is called on 'q' keypress or fatal error.
+    *finish_cb* is called on ESC keypress or fatal error.
     """
     print(f"[run_rep] início repeats={repeats}")
 
@@ -336,7 +336,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
                 cv2.putText(image, f"{_('Dist')}: {distance:.2f} cm",     (50,    50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,   0, 0), 2)
                 cv2.putText(image, f"{_('Pose')}: {pose_correct}",        (50,   250), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
 
-        side_label = _("right_leg_label") if repeats in (0, 1) else _("left_leg_label")
+        side_label = _("right_side_label") if repeats in (0, 1) else _("left_side_label")
         rep_num    = (repeats % 2) + 1  
 
         canvas = _make_base(_("Sit and Reach"), side_label, rep_num, 2) 
@@ -368,7 +368,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         cv2.imshow(win_title(_("Sit and Reach")), canvas)
 
         key = cv2.waitKey(1) & 0xFF
-        if key in (ord("q"), ord("Q")):
+        if key == 27:
             finish_cb()
 
     return round(final_dist, 2)
@@ -398,7 +398,7 @@ def run(kinect, holistic, finish_cb):
 
         print("[SAR run] a chamar show_register_screen_styled...")
         age, height, weight, gender_raw = show_register_screen_styled(
-            _("Sit and Reach"), _("right_leg_label"), 1, 2
+            _("Sit and Reach"), _("right_side_label"), 1, 2
         )
         participant = {
             "age":    age,
@@ -426,7 +426,7 @@ def run(kinect, holistic, finish_cb):
                 finish_cb()
 
             side  = "right" if rep in (0, 1) else "left"
-            side_label = _("right_leg_label") if rep in (0, 1) else _("left_leg_label")
+            side_label = _("right_side_label") if rep in (0, 1) else _("left_side_label")
             real = show_real_distance_screen_styled(
                 _("Sit and Reach"), side_label, (rep % 2) + 1, 2
             )
@@ -461,10 +461,12 @@ def run(kinect, holistic, finish_cb):
         best_left  = max(distances_left)
         show_exercise_final(
             _("Sit and Reach"),
-            f"{best_right:.2f}", f"{best_left:.2f}",   # sistema
-            max(reals_right), max(reals_left),           # real
+            f"{distances_right[0]:.2f}", f"{distances_right[1]:.2f}",
+            f"{distances_left[0]:.2f}",  f"{distances_left[1]:.2f}",
+            reals_right[0], reals_right[1],
+            reals_left[0],  reals_left[1],
             finish_cb
-        )            
+        )
     except Exception as e:
         import traceback, sys
         traceback.print_exc(file=sys.stdout)
