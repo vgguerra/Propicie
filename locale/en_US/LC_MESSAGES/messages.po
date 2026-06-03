@@ -49,16 +49,16 @@ msgid "Exercise Completed"
 msgstr "Exercise Completed"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:482
-msgid "Final Results"
-msgstr "Final Results"
+msgid "System Results"
+msgstr "System Results"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:497
 msgid "Repetition Completed"
 msgstr "Repetition complete"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:498
-msgid "Final Repetition Results"
-msgstr "Final Repetition Results"
+msgid "System Repetition Results"
+msgstr "System Repetition Results"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:511
 msgid "Age"
@@ -135,8 +135,8 @@ msgstr "Hip Angle"
 msgid "Elbow Angle"
 msgstr "Elbow Angle"
 
-msgid "Final Distance"
-msgstr "Final Distance"
+msgid "System Distance"
+msgstr "System Distance"
 
 msgid "Incorrect"
 msgstr "Incorrect"
@@ -288,3 +288,9 @@ msgstr "Best Measurement on Right Side"
 
 msgid "best_left_side_label"
 msgstr "Best Measurement on Left Side"
+
+msgid "rep_1_label"
+msgstr "1° Repetition"
+
+msgid "rep_2_label"
+msgstr "2° Repetition"

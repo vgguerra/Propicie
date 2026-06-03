@@ -98,12 +98,8 @@ def show_exercise_intro(exercise_name, rep, finish_cb, is_back_scratch=False):
     start_y  = (H - row_gap * 2) // 2 - 20
     cx       = W // 2
 
-    if is_back_scratch:
-        right_label = f"{_('right_side_label')} x2"
-        left_label  = f"{_('left_side_label')} x2"
-    else:
-        right_label = f"{_('right_leg_label')} x2"
-        left_label  = f"{_('left_leg_label')} x2"
+    right_label = f"{_('right_side_label')} x2"
+    left_label  = f"{_('left_side_label')} x2"
         
     print("[intro] a entrar no loop")
 
@@ -130,7 +126,7 @@ def show_exercise_intro(exercise_name, rep, finish_cb, is_back_scratch=False):
                     FONT, 0.65, DARK_BLUE, 1, cv2.LINE_AA)
 
         # Bottom bar — exercise name / side / rep counter
-        side_label = _("right_leg_label") if rep < 2 else _("left_leg_label")
+        side_label = _("right_side_label") if rep < 2 else _("left_side_label")
         rep_label  = f"{_('repetition_label')} {(rep % 2) + 1}/2"
         cv2.putText(img, exercise_name.upper(), (50, H - 20),
                     FONT, 0.6, DARK_BLUE, 1, cv2.LINE_AA)
@@ -147,5 +143,5 @@ def show_exercise_intro(exercise_name, rep, finish_cb, is_back_scratch=False):
         if key == ord(" "):
             cv2.destroyWindow(WIN)
             return
-        elif key in (ord("q"), ord("Q"), 27):
+        elif key == 27:
             finish_cb()
