@@ -91,7 +91,7 @@ msgstr "Distância da medição manual"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:568
 msgid "Enter the measured distance (cm):"
-msgstr "Registe a distância da medição manual (cm)"
+msgstr "Registre a distância da medição manual (cm)"
 
 #: Sit-and-Reach/sit_and_reach_julia.py:691
 msgid "Feminine"
@@ -211,13 +211,13 @@ msgid "Repetition Completed"
 msgstr "Repetição Concluída"
 
 msgid "Back Scratch exercise name"
-msgstr "Coçar as Costas"
+msgstr "Alcançar atrás das Costas"
 
 msgid "Press Enter to confirm"
 msgstr "Prima Enter para confirmar"
 
 msgid "Register"
-msgstr "Cadastro"
+msgstr "Registro"
 
 msgid "Press SPACE to continue"
 msgstr "Prima ESPAÇO para continuar"
