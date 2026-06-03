@@ -291,10 +291,18 @@ def run(kinect, holistic, finish_cb):
         best_right = max(distances_right)
         best_left  = max(distances_left)
 
+        while len(distances_right) < 2: distances_right.append(0.0)
+        while len(distances_left) < 2:  distances_left.append(0.0)
+        while len(reals_right) < 2:     reals_right.append(0.0)
+        while len(reals_left) < 2:      reals_left.append(0.0)
+
+        # CHAMA A TELA FINAL COMPLETA (Igual à do Sit and Reach)
         show_exercise_final(
             _("Back Scratch exercise name"),
-            f"{best_right:.2f}", f"{best_left:.2f}",   # sistema
-            max(reals_right), max(reals_left),           # real
+            f"{distances_right[0]:.2f}", f"{distances_right[1]:.2f}",
+            f"{distances_left[0]:.2f}",  f"{distances_left[1]:.2f}",
+            reals_right[0], reals_right[1],
+            reals_left[0],  reals_left[1],
             finish_cb
         )            
         cv2.destroyAllWindows()

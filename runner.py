@@ -41,29 +41,26 @@ def finish():
 # Main menu loop
 # ---------------------------------------------------------------------------
 while True:
-    action = show_main_menu()
-
-    if action == "quit":
-        finish()
-
-    elif action == "auto":
-        try:
-            sit_and_reach.run(kinect, holistic, finish)
-            back_scratch.run(kinect, holistic, finish)
-        except SystemExit:
-            raise
-        except BaseException as e:
-            import traceback, sys
-            traceback.print_exc(file=sys.stdout)
-            sys.stdout.flush()
-            input("Enter...")
-
-    elif action == "sit_and_reach":
+    escolha = show_main_menu()
+        
+    if escolha == "quit":
+        break
+        
+    elif escolha == "auto":
+        print("A iniciar Modo Automático...")
+        # Corre o primeiro
         sit_and_reach.run(kinect, holistic, finish)
-
-    elif action == "back_scratch":
+        # Assim que o ecrã final do primeiro fechar (pressionando ESC), corre o segundo
         back_scratch.run(kinect, holistic, finish)
+        # Ao acabar o segundo, o loop continua e volta sozinho para o Menu Principal!
+        
+    elif escolha == "sit_and_reach":
+        sit_and_reach.run(kinect, holistic, finish)
+        # Quando fechar a tela final, volta para o menu automaticamente
+        
+    elif escolha == "back_scratch":
+        back_scratch.run(kinect, holistic, finish)
+        # Quando fechar a tela final, volta para o menu automaticamente
 
-    elif action == "view_data":
-        # Placeholder — to be implemented
-        pass
+    # Se sair do loop (escolha == "quit")
+finish()

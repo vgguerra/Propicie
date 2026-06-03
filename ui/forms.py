@@ -488,5 +488,4 @@ def show_exercise_final(exercise,
         key = cv2.waitKey(16) & 0xFF
         if key == 27: 
             cv2.destroyWindow(WIN)
-            finish_cb()
             break
