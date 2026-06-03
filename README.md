@@ -13,7 +13,7 @@ Este projeto, desenvolvido como parte da colaboração **PROPICIE - IPBEJA & IFS
 
 O sistema foca em duas avaliações principais:
 * **Teste de Sentar e Alcançar** (`Sentado e alcançar os pés com as mãos`): Mede a flexibilidade dos membros inferiores.
-* **Teste de "Coçar as Costas"** (`Alcançar as mãos atrás das costas`): Mede a flexibilidade dos membros superiores (ombros).
+* **Teste de Alcançar atrás das Costas** (`Alcançar as mãos atrás das costas`): Mede a flexibilidade dos membros superiores (ombros).
 
 O núcleo do projeto é uma aplicação em Python que utiliza um sensor Kinect V2 para capturar os movimentos do usuário e o framework MediaPipe Holistic para realizar a detecção de marcos corporais em tempo real. Essa abordagem permite o cálculo preciso dos ângulos corporais para validação da postura e das distâncias-chave para a pontuação dos testes.
 
@@ -21,11 +21,11 @@ O núcleo do projeto é uma aplicação em Python que utiliza um sensor Kinect V
 A pesquisa conduzida por Artem Bukhantsev e aprofundada por <a href="https://github.com/vgguerra"> Victor Guerra <a/> concluiu que:
 * A implementação com **MediaPipe** demonstrou uma precisão superior para o teste de Sentar e Alcançar, com um Erro Médio Absoluto (MAE) de aproximadamente **2.25 cm**.
 * Esta abordagem foi significativamente mais precisa do que uma implementação nativa com PyKinect, que apresentou um MAE de 8.65 cm, devido a desafios como a instabilidade do esqueleto virtual ("jittering").
-* O teste de "Coçar as Costas" provou ser um desafio para a visão computacional devido à oclusão de membros e à orientação do usuário de costas para a câmera.
+* O teste de Alcançar atrás das Costas provou ser um desafio para a visão computacional devido à oclusão de membros e à orientação do usuário de costas para a câmera.
 
 ## ✨ Funcionalidades
 
-* **Avaliação em Tempo Real**: Análise automatizada dos exercícios "Sentar e Alcançar" e "Coçar as Costas".
+* **Avaliação em Tempo Real**: Análise automatizada dos exercícios Sentar e Alcançar e Alcançar atrás das Costas.
 * **Rastreamento de Alta Precisão**: Utiliza o MediaPipe Holistic para um rastreamento robusto e em tempo real de 33 marcos de pose, além de marcos detalhados das mãos.
 * **Validação de Postura**: Calcula ângulos articulares (joelho, quadril, cotovelo) para garantir que o usuário esteja executando o exercício corretamente antes de realizar a medição.
 * **Cadastro de Usuário**: Uma interface simples para registrar os dados do participante (idade, altura, peso, gênero) antes de iniciar os testes.
@@ -41,7 +41,7 @@ O sistema segue um fluxo de trabalho claro para cada avaliação:
 3.  **Detecção de Marcos**: O vídeo é processado quadro a quadro. O MediaPipe Holistic detecta os marcos do corpo, mãos e face do usuário.
 4.  **Calibração e Verificação da Postura**:
     * Para o teste de **Sentar e Alcançar**, o sistema valida a postura verificando se os ângulos do joelho, quadril e cotovelo estão dentro de limites pré-definidos (por exemplo, o joelho deve estar estendido). Uma vez que o usuário mantém uma pose de calibração válida, a posição do pé é fixada como referência.
-    * Para o teste de **Coçar as Costas**, o sistema aguarda o usuário manter uma pose estável com as mãos atrás das costas.
+    * Para o teste de **Alcançar atrás das Costas**, o sistema aguarda o usuário manter uma pose estável com as mãos atrás das costas.
 5.  **Medição da Distância**: A distância euclidiana entre os marcos-chave (por exemplo, pontas dos dedos até a posição calibrada do pé, ou pontas dos dedos de uma mão para a outra) é calculada em pixels e convertida para centímetros. Um fator de correção de erro, derivado de testes empíricos, é aplicado para aumentar a precisão.
 6.  **Exibição e Registro dos Resultados**: A distância final calculada é exibida na tela, e os resultados completos são salvos em um arquivo de log e em uma planilha Excel para o grupo de usuários.
 
@@ -112,9 +112,9 @@ Para executar o programa:
 python runner.py
 ```
 Selecione a linguagem desejada, depois selecione entre as opções:
-* **Automático**: Inicia-se com o Sentar e Alcançar, repete 2 vezes para cada lado, e depois segue para o Coçar as Costas, também repete 2 vezes para cada lado, ao final retorna para o menu.
+* **Automático**: Inicia-se com o Sentar e Alcançar, repete 2 vezes para cada lado, e depois segue para o Alcançar atrás das Costas, também repete 2 vezes para cada lado, ao final retorna para o menu.
 * **Sentar e Alncançar**: Repete 2 vezes para cada lado, ao final retorna para o menu.
-* **Coçar as Costas**: Repete 2 vezes para cada lado, ao final retorna para o menu.
+* **Alcançar atrás das Costas**: Repete 2 vezes para cada lado, ao final retorna para o menu.
 * **Visualizar Dados**: A implementar.
 * **Encerrar Sessão**: Finaliza o programa.
 
@@ -136,14 +136,14 @@ Selecione a linguagem desejada, depois selecione entre as opções:
       ├── tabelas_testes       # Planilhas de dados de teste.
       └── tabelas_utentes      # Planilhas com dados coletados dos testes com usuários.
 ├── /exercicios/
-      ├── back-scratch.py      # Script Python para o teste de Coçar as Costas.
+      ├── back-scratch.py      # Script Python para o teste de Alcançar atrás das Costas.
       └── sit-and-reach.py     # Scripts Python para o teste de Sentar e Alcançar.
 ├── /locale/                   # Contém os arquivos de texto com suporte de linguagem.
 ├── /ui/
       ├── draw.py              # Script para criação de telas padronizadas.
       ├── exercise_intro.py    # Script para mostrar qual o próximo exercício e quais foram feitos.
       ├── language_select.py   # Script para primeira tela e seleção de linguagem.
-      ├── menu.py              # Script da tela de Menu: Automático, Sentar e Alcançar, Coçar as Costas, Visualizar Dados e Terminar Sessão.
+      ├── menu.py              # Script da tela de Menu: Automático, Sentar e Alcançar, Alcançar atrás das Costas, Visualizar Dados e Terminar Sessão.
       └── theme.py             # Registra as cores e padrões.
 ├── /CsRunner/                 # Um projeto em C# .NET para executar os scripts Python.
 ├── .gitignore                 # Especifica arquivos a serem ignorados pelo Git.
