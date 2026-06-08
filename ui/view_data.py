@@ -95,8 +95,7 @@ def _generate_processed_chart(df):
     try:
         if df.empty: return None
         
-        # Isola as últimas 25 ocorrências ordenadas para estabilidade visual
-        df_chart = df.tail(100).reset_index()
+        df_chart = df.reset_index(drop=True)
         
         fig = plt.figure(figsize=(9.2, 3.4), dpi=100)
         ax = fig.add_subplot(111)
@@ -106,7 +105,7 @@ def _generate_processed_chart(df):
         
         if 'Real distance' in df_chart.columns and 'Calculated distance' in df_chart.columns:
             ax.plot(df_chart.index + 1, df_chart['Real distance'], marker='o', linewidth=2, color=c_dark_blue, label=_tr('Distância Real'))
-            ax.plot(df_chart.index + 1, df_chart['Calculated distance'], marker='s', linewidth=2, color=c_btn_blue, label=_tr('Distância Calculada'))
+            ax.plot(df_chart.index + 1, df_chart['System distance'], marker='s', linewidth=2, color=c_btn_blue, label=_tr('Distância Calculada'))
             
         ax.set_title(_tr("Medições Filtradas (cm)"), fontsize=11, fontweight='bold', color=c_dark_blue, pad=6)
         ax.set_xlabel(_tr("Sequência Cronológica de Repetições"), fontsize=9, color=c_dark_blue)
@@ -135,75 +134,215 @@ def show_data_visualization():
     WIN = win_title(_tr("Visualize Data"))
     cv2.namedWindow(WIN, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(WIN, W, H)
-    
-    # Dicionário de Estados das Checkboxes — Inicializados todos como True
+
+    # Dicionário de Estados das Checkboxes
     opts = {
-        "exe_sr": True, "exe_bs": True,      # Exercícios
-        "gen_f": True,  "gen_m": True,       # Géneros
-        "side_esq": True, "side_dir": True,  # Lados Corporais
-        "age_g60": True, "age_l60": True     # Faixas Etárias
+        "exe_sr": True, "exe_bs": True,
+        "gen_f": True,  "gen_m": True,
+        "side_esq": True, "side_dir": True
     }
-    
-    # Renderização Inicial Automática
-    df_current = _load_and_filter_data(opts)
+
+    # ── Per-exercise data loading ──
+    sr_full = pd.DataFrame()
+    if os.path.exists(_PATH_SR):
+        try:
+            sr_full = pd.read_excel(_PATH_SR)
+        except Exception as e: print(f"Erro SR: {e}")
+    bs_full = pd.DataFrame()
+    if os.path.exists(_PATH_BS):
+        try:
+            bs_full = pd.read_excel(_PATH_BS)
+        except Exception as e: print(f"Erro BS: {e}")
+
+    sr_total = len(sr_full)
+    bs_total = len(bs_full)
+    sr_min = 0
+    sr_max = max(0, sr_total - 1)
+    bs_min = 0
+    bs_max = max(0, bs_total - 1)
+    dragging = None  # ("sr","min"), ("sr","max"), ("bs","min"), ("bs","max") or None
+
+    # ── Filtering helpers ──
+    def _apply_filters(df):
+        if df.empty:
+            return df
+        for old_col, new_col in [('Weigth', 'Weight'), ('Género', 'Gender'), ('Genero', 'Gender'), ('Sexo', 'Gender'), ('lado', 'Side'), ('Lado', 'Side'), ('idade', 'Age'), ('Idade', 'Age')]:
+            if old_col in df.columns and new_col not in df.columns:
+                df.rename(columns={old_col: new_col}, inplace=True)
+        if 'Gender' in df.columns:
+            if opts["gen_f"] and not opts["gen_m"]:
+                df = df[df['Gender'].astype(str).str.strip().str.upper().str.startswith('F')]
+            elif opts["gen_m"] and not opts["gen_f"]:
+                df = df[df['Gender'].astype(str).str.strip().str.upper().str.startswith('M')]
+        if 'Side' in df.columns:
+            if opts["side_dir"] and not opts["side_esq"]:
+                df = df[df['Side'].astype(str).str.lower() == 'right']
+            elif opts["side_esq"] and not opts["side_dir"]:
+                df = df[df['Side'].astype(str).str.lower() == 'left']
+        return df
+
+    def _build_filtered_data():
+        df_list = []
+        if opts["exe_sr"] and not sr_full.empty:
+            d = sr_full.iloc[sr_min:sr_max+1].copy()
+            d['Origem_Ex'] = "Sit & Reach"
+            df_list.append(d)
+        if opts["exe_bs"] and not bs_full.empty:
+            d = bs_full.iloc[bs_min:bs_max+1].copy()
+            d['Origem_Ex'] = "Back Scratch"
+            df_list.append(d)
+        if not df_list:
+            return pd.DataFrame()
+        df = pd.concat(df_list, ignore_index=True)
+        return _apply_filters(df)
+
+    df_current = _build_filtered_data()
     current_chart = _generate_processed_chart(df_current)
-    
-    # Coordenadas Simétricas das 4 Colunas (X1, Y1, X2, Y2, Chave)
+
+    # ── Slider constants ──
+    SLIDER_LEFT  = 370
+    SLIDER_RIGHT = 600
+    SLIDER_H     = 8
+    HANDLE_R     = 8
+    SR_SLIDER_Y  = 182
+    BS_SLIDER_Y  = 232
+
+    def _sr_idx_to_px(idx):
+        if sr_total <= 1:
+            return (SLIDER_LEFT + SLIDER_RIGHT) // 2
+        return int(SLIDER_LEFT + (idx / (sr_total - 1)) * (SLIDER_RIGHT - SLIDER_LEFT))
+
+    def _sr_px_to_idx(px):
+        if sr_total <= 1:
+            return 0
+        ratio = (px - SLIDER_LEFT) / (SLIDER_RIGHT - SLIDER_LEFT)
+        idx = int(round(ratio * (sr_total - 1)))
+        return max(0, min(sr_total - 1, idx))
+
+    def _bs_idx_to_px(idx):
+        if bs_total <= 1:
+            return (SLIDER_LEFT + SLIDER_RIGHT) // 2
+        return int(SLIDER_LEFT + (idx / (bs_total - 1)) * (SLIDER_RIGHT - SLIDER_LEFT))
+
+    def _bs_px_to_idx(px):
+        if bs_total <= 1:
+            return 0
+        ratio = (px - SLIDER_LEFT) / (SLIDER_RIGHT - SLIDER_LEFT)
+        idx = int(round(ratio * (bs_total - 1)))
+        return max(0, min(bs_total - 1, idx))
+
+    def _on_slider(mx, my, slider_y):
+        return SLIDER_LEFT <= mx <= SLIDER_RIGHT and abs(my - slider_y) <= HANDLE_R + 15
+
+    def _near_handle(px, mx, my, slider_y):
+        return abs(mx - px) <= HANDLE_R + 5 and abs(my - slider_y) <= HANDLE_R + 15
+
+    # ── Click zones (colunas deslocadas para a direita) ──
     click_zones = [
-        # Coluna 1: Exercícios (X = 100)
         (100, 170, 125, 195, "exe_sr"),
         (100, 220, 125, 245, "exe_bs"),
-        # Coluna 2: Géneros (X = 360)
-        (360, 170, 385, 195, "gen_f"),
-        (360, 220, 385, 245, "gen_m"),
-        # Coluna 3: Lados Corporais (X = 580)
-        (580, 170, 605, 195, "side_esq"),
-        (580, 220, 605, 245, "side_dir"),
-        # Coluna 4: Idades (X = 780)
-        (780, 170, 805, 195, "age_g60"),
-        (780, 220, 805, 245, "age_l60")
+        (680, 170, 705, 195, "gen_f"),
+        (680, 220, 705, 245, "gen_m"),
+        (840, 170, 865, 195, "side_esq"),
+        (840, 220, 865, 245, "side_dir")
     ]
-    
-    # Botão Calcular posicionado à extrema direita da faixa reguladora
-    btn_calc = (1000, 120, 1110, 155)
+
+    btn_calc = (1075, 188, 1195, 228)
     hover_calc = False
 
+    # ── Mouse callback ──
     def _mouse_callback(event, x, y, flags, param):
-        nonlocal current_chart, df_current, hover_calc
-        
-        # Gestão do Hover do Botão Calcular
-        if btn_calc[0] <= x <= btn_calc[2] and btn_calc[1] <= y <= btn_calc[3]:
-            hover_calc = True
-            if event == cv2.EVENT_LBUTTONDOWN:
-                df_current = _load_and_filter_data(opts)
-                current_chart = _generate_processed_chart(df_current)
-        else:
-            hover_calc = False
-            
-        # Gestão de Cliques nas Checkboxes com Regra de Mínimo 1 Ativo por Grupo
+        nonlocal sr_min, sr_max, bs_min, bs_max, dragging, hover_calc, sr_full, bs_full
+        nonlocal sr_total, bs_total, df_current, current_chart
+
         if event == cv2.EVENT_LBUTTONDOWN:
-            for x1, y1, x2, y2, key in click_zones:
-                if x1 <= x <= x2 and y1 <= y <= y2:
-                    
-                    # 1. Bloqueio para Grupo Exercícios
-                    if key == "exe_sr" and opts["exe_sr"] and not opts["exe_bs"]: continue
-                    if key == "exe_bs" and opts["exe_bs"] and not opts["exe_sr"]: continue
-                    
-                    # 2. Bloqueio para Grupo Género
-                    if key == "gen_f" and opts["gen_f"] and not opts["gen_m"]: continue
-                    if key == "gen_m" and opts["gen_m"] and not opts["gen_f"]: continue
-                    
-                    # 3. Bloqueio para Grupo Lado Corporal
-                    if key == "side_esq" and opts["side_esq"] and not opts["side_dir"]: continue
-                    if key == "side_dir" and opts["side_dir"] and not opts["side_esq"]: continue
-                    
-                    # 4. Bloqueio para Grupo Faixa Etária
-                    if key == "age_g60" and opts["age_g60"] and not opts["age_l60"]: continue
-                    if key == "age_l60" and opts["age_l60"] and not opts["age_g60"]: continue
-                    
-                    # Inverte o estado da checkbox validada
-                    opts[key] = not opts[key]
-                    break
+            sr_min_px = _sr_idx_to_px(sr_min)
+            sr_max_px = _sr_idx_to_px(sr_max)
+            bs_min_px = _bs_idx_to_px(bs_min)
+            bs_max_px = _bs_idx_to_px(bs_max)
+
+            if _near_handle(sr_min_px, x, y, SR_SLIDER_Y):
+                dragging = ("sr", "min"); return
+            if _near_handle(sr_max_px, x, y, SR_SLIDER_Y):
+                dragging = ("sr", "max"); return
+            if _near_handle(bs_min_px, x, y, BS_SLIDER_Y):
+                dragging = ("bs", "min"); return
+            if _near_handle(bs_max_px, x, y, BS_SLIDER_Y):
+                dragging = ("bs", "max"); return
+            if _on_slider(x, y, SR_SLIDER_Y):
+                click_idx = _sr_px_to_idx(x)
+                if abs(click_idx - sr_min) <= abs(click_idx - sr_max):
+                    sr_min = min(click_idx, sr_max)
+                else:
+                    sr_max = max(click_idx, sr_min)
+                return
+            if _on_slider(x, y, BS_SLIDER_Y):
+                click_idx = _bs_px_to_idx(x)
+                if abs(click_idx - bs_min) <= abs(click_idx - bs_max):
+                    bs_min = min(click_idx, bs_max)
+                else:
+                    bs_max = max(click_idx, bs_min)
+                return
+
+        elif event == cv2.EVENT_MOUSEMOVE:
+            if dragging is not None:
+                ex, handle = dragging
+                if ex == "sr":
+                    new_idx = _sr_px_to_idx(x)
+                    if handle == "min":
+                        sr_min = min(new_idx, sr_max)
+                    else:
+                        sr_max = max(new_idx, sr_min)
+                else:
+                    new_idx = _bs_px_to_idx(x)
+                    if handle == "min":
+                        bs_min = min(new_idx, bs_max)
+                    else:
+                        bs_max = max(new_idx, bs_min)
+                return
+            hover_calc = (btn_calc[0] <= x <= btn_calc[2] and
+                          btn_calc[1] <= y <= btn_calc[3])
+            return
+
+        elif event == cv2.EVENT_LBUTTONUP:
+            if dragging is not None:
+                dragging = None
+            return
+
+        if event != cv2.EVENT_LBUTTONDOWN:
+            return
+
+        # Botão Calcular — reload data, apply ranges + filters
+        if btn_calc[0] <= x <= btn_calc[2] and btn_calc[1] <= y <= btn_calc[3]:
+            sr_full = pd.DataFrame()
+            if os.path.exists(_PATH_SR):
+                try:
+                    sr_full = pd.read_excel(_PATH_SR)
+                except Exception as e: print(f"Erro SR: {e}")
+            bs_full = pd.DataFrame()
+            if os.path.exists(_PATH_BS):
+                try:
+                    bs_full = pd.read_excel(_PATH_BS)
+                except Exception as e: print(f"Erro BS: {e}")
+            sr_total = len(sr_full)
+            bs_total = len(bs_full)
+            sr_min = 0; sr_max = max(0, sr_total - 1)
+            bs_min = 0; bs_max = max(0, bs_total - 1)
+            df_current = _build_filtered_data()
+            current_chart = _generate_processed_chart(df_current)
+            return
+
+        # Checkboxes
+        for x1, y1, x2, y2, key in click_zones:
+            if x1 <= x <= x2 and y1 <= y <= y2:
+                if key == "exe_sr" and opts["exe_sr"] and not opts["exe_bs"]: continue
+                if key == "exe_bs" and opts["exe_bs"] and not opts["exe_sr"]: continue
+                if key == "gen_f" and opts["gen_f"] and not opts["gen_m"]: continue
+                if key == "gen_m" and opts["gen_m"] and not opts["gen_f"]: continue
+                if key == "side_esq" and opts["side_esq"] and not opts["side_dir"]: continue
+                if key == "side_dir" and opts["side_dir"] and not opts["side_esq"]: continue
+                opts[key] = not opts[key]
+                break
 
     cv2.setMouseCallback(WIN, _mouse_callback)
 
@@ -211,7 +350,7 @@ def show_data_visualization():
         img = blank_canvas()
         cv2.rectangle(img, (BORDER_INSET, 80), (W - BORDER_INSET, H - BORDER_INSET), DARK_BLUE, 2)
 
-        # Título centrado na linha superior da borda (como o menu)
+        # Título
         title_text = _tr("Visualize Data")
         font_size_title = 43
         tw, th = _measure_text(title_text, font_size_title, is_bold=True)
@@ -220,52 +359,73 @@ def show_data_visualization():
         pad = 14
         cv2.rectangle(img, (tx - pad, ty - pad), (tx + tw + pad, ty + th + pad), BG, -1)
         img = _put_text(img, title_text, (tx, ty), font_size=font_size_title, color=tuple(DARK_BLUE), is_bold=True)
-        
-        # Faixa de Instrução Principal (Alargada para cobrir o novo layout)
-        cv2.rectangle(img, (80, 120), (980, 155), tuple(DARK_BLUE), -1)
+
+        # Faixa de Instrução Principal
+        cv2.rectangle(img, (80, 120), (1070, 155), tuple(DARK_BLUE), -1)
         img = _put_text(img, _tr("choose"), (95, 128), font_size=15, color=(255, 255, 255))
-        
-        # Desenho modular das Checkboxes gráficas
+
         def _draw_chk(canvas, x, y, checked, label):
             cv2.rectangle(canvas, (x, y), (x + 24, y + 24), tuple(DARK_BLUE), 2)
             if checked:
                 cv2.rectangle(canvas, (x + 5, y + 5), (x + 19, y + 19), tuple(DARK_BLUE), -1)
             return _put_text(canvas, label, (x + 36, y + 3), font_size=16, color=tuple(DARK_BLUE))
 
-        # Renderização das 4 Colunas Sétricas no Painel OpenCV
+        # Checkboxes
         img = _draw_chk(img, 100, 170, opts["exe_sr"], _tr("Sentar e Alcançar"))
         img = _draw_chk(img, 100, 220, opts["exe_bs"], _tr("Alcançar atrás das Costas"))
-        
-        img = _draw_chk(img, 360, 170, opts["gen_f"], _tr("Feminino"))
-        img = _draw_chk(img, 360, 220, opts["gen_m"], _tr("Masculino"))
-        
-        img = _draw_chk(img, 580, 170, opts["side_esq"], _tr("Esquerdo"))
-        img = _draw_chk(img, 580, 220, opts["side_dir"], _tr("Direito"))
-        
-        img = _draw_chk(img, 780, 170, opts["age_g60"], _tr("+60"))
-        img = _draw_chk(img, 780, 220, opts["age_l60"], _tr("-60"))
-        
-        # Renderização Estilizada do Botão Calcular
+        img = _draw_chk(img, 680, 170, opts["gen_f"], _tr("Feminino"))
+        img = _draw_chk(img, 680, 220, opts["gen_m"], _tr("Masculino"))
+        img = _draw_chk(img, 840, 170, opts["side_esq"], _tr("Esquerdo"))
+        img = _draw_chk(img, 840, 220, opts["side_dir"], _tr("Direito"))
+
+        # Botão Calcular
         bc_color = tuple(BTN_BLUE) if hover_calc else (255, 255, 255)
         txt_color = (255, 255, 255) if hover_calc else tuple(DARK_BLUE)
         cv2.rectangle(img, (btn_calc[0], btn_calc[1]), (btn_calc[2], btn_calc[3]), tuple(DARK_BLUE), 1)
         cv2.rectangle(img, (btn_calc[0]+1, btn_calc[1]+1), (btn_calc[2]-1, btn_calc[3]-1), bc_color, -1)
-        img = _put_text(img, _tr("calculate"), (btn_calc[0] + 18, btn_calc[1] + 8), font_size=14, color=txt_color)
+        calc_text = _tr("calculate")
+        tw_calc, th_calc = _measure_text(calc_text, 28)
+        cx = btn_calc[0] + (btn_calc[2] - btn_calc[0] - tw_calc) // 2
+        cy = btn_calc[1] + (btn_calc[3] - btn_calc[1] - th_calc) // 2
+        img = _put_text(img, calc_text, (cx, cy), font_size=28, color=txt_color)
 
-        # Zona de Exibição do Gráfico Dinâmico (centralizado em x)
+        # ── Two per-exercise range sliders ──
+        def _draw_slider(canvas, idx_to_px, cur_min, cur_max, total, slider_y):
+            if total <= 1:
+                return canvas
+            min_px = idx_to_px(cur_min)
+            max_px = idx_to_px(cur_max)
+            cv2.rectangle(canvas, (SLIDER_LEFT, slider_y - SLIDER_H//2), (min_px, slider_y + SLIDER_H//2), tuple(DARK_BLUE), -1)
+            cv2.rectangle(canvas, (min_px, slider_y - SLIDER_H//2), (max_px, slider_y + SLIDER_H//2), tuple(BTN_BLUE), -1)
+            cv2.rectangle(canvas, (max_px, slider_y - SLIDER_H//2), (SLIDER_RIGHT, slider_y + SLIDER_H//2), tuple(DARK_BLUE), -1)
+            cv2.circle(canvas, (min_px, slider_y), HANDLE_R, tuple(DARK_BLUE), -1)
+            cv2.circle(canvas, (max_px, slider_y), HANDLE_R, tuple(DARK_BLUE), -1)
+            lbl_min = str(cur_min + 1)
+            lbl_max = str(cur_max + 1)
+            tw_min, _ = _measure_text(lbl_min, 14)
+            canvas = _put_text(canvas, lbl_min, (min_px - tw_min//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
+            tw_max, _ = _measure_text(lbl_max, 14)
+            canvas = _put_text(canvas, lbl_max, (max_px - tw_max//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
+            canvas = _put_text(canvas, "1", (SLIDER_LEFT - 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
+            tw_end, _ = _measure_text(str(total), 12)
+            canvas = _put_text(canvas, str(total), (SLIDER_RIGHT - tw_end + 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
+            return canvas
+
+        img = _draw_slider(img, _sr_idx_to_px, sr_min, sr_max, sr_total, SR_SLIDER_Y)
+        img = _draw_slider(img, _bs_idx_to_px, bs_min, bs_max, bs_total, BS_SLIDER_Y)
+
+        # ── Chart area ──
         gy = 310
-        if current_chart is not None and not df_current.empty:
+        if current_chart is not None:
             gh, gw, _ = current_chart.shape
             gx = (W - gw) // 2
-            
-            # Erro Médio — centrado acima da tabela
-            erro_col = next((c for c in ['Erro', 'erro', 'Error'] if c in df_current.columns), None)
-            if erro_col:
-                avg_err = df_current[erro_col].mean()
-                err_txt = f"{_tr('avarage_error')}: {avg_err:.2f} cm"
-                tw_e, _ = _measure_text(err_txt, 14)
-                img = _put_text(img, err_txt, ((W - tw_e) // 2, gy - 20), font_size=14, color=tuple(DARK_BLUE))
-            
+            if not df_current.empty:
+                erro_col = next((c for c in ['Erro', 'erro', 'Error'] if c in df_current.columns), None)
+                if erro_col:
+                    avg_err = df_current[erro_col].mean()
+                    err_txt = f"{_tr('avarage_error')} {avg_err:.2f} cm"
+                    tw_e, _ = _measure_text(err_txt, 14)
+                    img = _put_text(img, err_txt, ((W - tw_e) // 2, gy - 20), font_size=14, color=tuple(DARK_BLUE))
             img[gy:gy+gh, gx:gx+gw] = current_chart
             cv2.rectangle(img, (gx, gy), (gx + gw, gy + gh), DARK_BLUE, 1)
         else:
@@ -275,14 +435,15 @@ def show_data_visualization():
             tw_e, _ = _measure_text(_tr("no_data"), 16)
             img = _put_text(img, _tr("no_data"), ((W - tw_e) // 2, gy + 100), font_size=16, color=tuple(DARK_BLUE))
 
-        # Rodapé de Saída Uniforme
-        img = _put_text(img, _tr("esc_return"), (W // 2 - 180, H - 65), font_size=14, color=tuple(DARK_BLUE))
+        # Rodapé
+        tw_esc, _ = _measure_text(_tr("esc_return"), 14)
+        img = _put_text(img, _tr("esc_return"), ((W - tw_esc) // 2, H - 65), font_size=14, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
         key = cv2.waitKey(20) & 0xFF
         if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
             break
-        elif key == 27:  
+        elif key == 27:
             break
-            
+
     cv2.destroyWindow(WIN)
