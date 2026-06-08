@@ -18,7 +18,6 @@ from utils import (
     append_to_excel,
     append_to_log,
     show_real_distance_screen,
-    put_text_utf8,
     win_title,
 )
 from ui.exercise_intro import show_exercise_intro
@@ -29,6 +28,8 @@ from ui.forms import (
     show_register_screen_styled,
     _make_base,
     _draw_header,
+    _put_text,
+    _put_text_multi,
 )
 from ui.theme import W, H, HEADER_H, DARK_BLUE
 
@@ -98,15 +99,19 @@ def _check_distance_timer(distance, start_time):
 
 def _screen_repetition(distance, real_distance, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    put_text_utf8(frame, trans("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
-    put_text_utf8(frame, f"{trans('Distance between hands')}: {distance} cm", (50, 200), font_size=32, color=(0, 255, 0))
-    put_text_utf8(frame, f"{trans('Real Distance')}: {real_distance} cm", (50, 250), font_size=32, color=(0, 255, 0))
-    put_text_utf8(frame, f"{trans('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(win_title(trans("Repetition Results")), frame)
+    frame = _put_text(frame, trans("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
+    frame = _put_text(frame, f"{trans('Distance between hands')}: {distance} cm", (50, 200), font_size=32, color=(0, 255, 0))
+    frame = _put_text(frame, f"{trans('Real Distance')}: {real_distance} cm", (50, 250), font_size=32, color=(0, 255, 0))
+    frame = _put_text(frame, f"{trans('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    win_name = win_title(trans("Repetition Results"))
+    cv2.imshow(win_name, frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == 32:  # space
-            cv2.destroyWindow(win_title(trans("Repetition Results")))
+        if cv2.getWindowProperty(win_name, cv2.WND_PROP_VISIBLE) < 1:
+            cv2.destroyWindow(win_name)
+            finish_cb()
+        elif key == 32:  # space
+            cv2.destroyWindow(win_name)
             break
         elif key == 27:  # esc
             finish_cb()
@@ -114,16 +119,20 @@ def _screen_repetition(distance, real_distance, finish_cb):
 
 def screen_final(best_right, best_left, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    put_text_utf8(frame, trans("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
-    put_text_utf8(frame, f"{trans('Best result of the right side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
-    put_text_utf8(frame, f"{trans('Best result of the left side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
-    put_text_utf8(frame, f"{trans('Press ESC to finish')}", (200, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(win_title(trans("System Results")), frame)
+    frame = _put_text(frame, trans("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
+    frame = _put_text(frame, f"{trans('Best result of the right side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
+    frame = _put_text(frame, f"{trans('Best result of the left side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
+    frame = _put_text(frame, f"{trans('Press ESC to finish')}", (200, 400), font_size=26, color=(255, 255, 0))
+    win_name = win_title(trans("System Results"))
+    cv2.imshow(win_name, frame)
     
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == 27:
-            cv2.destroyWindow(win_title(trans("System Results")))
+        if cv2.getWindowProperty(win_name, cv2.WND_PROP_VISIBLE) < 1:
+            cv2.destroyWindow(win_name)
+            return
+        elif key == 27:
+            cv2.destroyWindow(win_name)
             return
 
 
@@ -142,6 +151,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
     exercise_title = trans("Back Scratch exercise name")
     side_label     = trans("right_side_label") if repeats in (0, 1) else trans("left_side_label")
     rep_num        = (repeats % 2) + 1
+    win_name       = win_title(exercise_title)
 
     while True:
         if not kinect.has_new_color_frame():
@@ -189,15 +199,18 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
         
         # Inserção de Strings Informativas seguras contra acentos
-        put_text_utf8(canvas, f"{trans('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 38), font_size=24, color=(255, 255, 255))
+        canvas = _put_text(canvas, f"{trans('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 18), font_size=24, color=(255, 255, 255))
         
         status_timer = f"{trans('Hold')}: {elapsed:.1f}s / {BS_POSE_HELD_DURATION}s" if elapsed > 0 else f"{trans('Hold')}: ---"
-        put_text_utf8(canvas, status_timer, (feed_x + 12, HEADER_H + 68), font_size=24, color=(255, 255, 255))
+        canvas = _put_text(canvas, status_timer, (feed_x + 12, HEADER_H + 48), font_size=24, color=(255, 255, 255))
 
-        cv2.imshow(win_title(exercise_title), canvas)
+        cv2.imshow(win_name, canvas)
 
         key = cv2.waitKey(1) & 0xFF
-        if key == 27:
+        if cv2.getWindowProperty(win_name, cv2.WND_PROP_VISIBLE) < 1:
+            cv2.destroyWindow(win_name)
+            finish_cb()
+        elif key == 27:
             finish_cb()
 
     return final_dist
@@ -206,8 +219,8 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
 # =============================================================================
 # Public entry point
 # =============================================================================
-
-_EXCEL_PATH = "./arquivos/tabelas_utentes/back_scratch_utentes.xlsx"
+_EXCEL_PATH = "./arquivos/tabelas_testes/back_scratch_test_julia.xlsx"
+#_EXCEL_PATH = "./arquivos/tabelas_utentes/back_scratch_utentes.xlsx"
 _LOG_PATH   = "./arquivos/logs_utentes/logs_back_scratch_utentes"
 
 

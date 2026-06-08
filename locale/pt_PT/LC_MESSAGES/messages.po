@@ -96,10 +96,6 @@ msgstr "Feminino"
 msgid "Male"
 msgstr "Masculino"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:729
-msgid "Exercise not performed correctly"
-msgstr "Exercício não efetuado corretamente"
-
 msgid "Wrong Position"
 msgstr "Posição errada"
 
@@ -240,3 +236,27 @@ msgstr "Press ESC to finish"
 
 msgid "Sit and Reach"
 msgstr "Sentar e Alcançar"
+
+msgid "avarage_error"
+msgstr "Erro Médio:"
+
+msgid "esc_return"
+msgstr "Prima ESC para voltar"
+
+msgid "no_data"
+msgstr "Nenhum dado encontrado para a seleção"
+
+msgid "+60"
+msgstr "Idade =>60"
+
+msgid "-60"
+msgstr "Idade <60"
+
+msgid "choose"
+msgstr "Escolha entre as opções e clique em Calcular:"
+
+msgid "Visualize Data"
+msgstr "Visualização de Dados"
+
+msgid "calculate"
+msgstr "Calcular"

@@ -15,117 +15,33 @@
 
 import cv2
 import numpy as np
-import unicodedata
-from PIL import Image, ImageDraw, ImageFont
 
 from locale_setup import _ as trans
-from ui.draw import draw_title_page, draw_button, blank_canvas
-from ui.theme import (  
-    W, H, BTN_BLUE, BTN_TEXT, DARK_BLUE,
-    FONT, FONT_BTN, FONT_LABEL, THICKNESS_BTN, THICKNESS_SMALL,
+from ui.draw import (draw_button, draw_rep_circles, blank_canvas,
+                     _get_text_size, _put_text_utf8)
+from ui.theme import (
+    W, H, BG, BORDER_INSET, BTN_BLUE, BTN_TEXT, DARK_BLUE, INSTITUTION,
+    FONT_BTN, FONT_TITLE, FONT_SMALL,
 )
 
-# ---------------------------------------------------------------------------
-# Unicode / UTF-8 Text Rendering Helpers (Pillow Wrapper)
-# ---------------------------------------------------------------------------
-
-def _get_font(scale):
-    """Maps OpenCV scale to an approximate PIL TrueType font size."""
-    font_size = max(12, int(scale * 24))
-    # Tries common system fonts to ensure cross-platform compatibility
-    for font_name in ["arial.ttf", "DejaVuSans.ttf", "calibri.ttf", "LiberationSans-Regular.ttf"]:
-        try:
-            return ImageFont.truetype(font_name, font_size)
-        except IOError:
-            continue
-    return ImageFont.load_default()
-
-
-def _get_text_size(text, scale):
-    """Alternative to cv2.getTextSize supporting Unicode."""
-    font = _get_font(scale)
-    canvas = Image.new('RGB', (1, 1))
-    draw = ImageDraw.Draw(canvas)
-    bbox = draw.textbbox((0, 0), text, font=font)
-    return bbox[2] - bbox[0], bbox[3] - bbox[1]
-
-
-def _put_text_utf8(img, text, org, scale, color):
-    """Alternative to cv2.putText that correctly renders accents and UTF-8."""
-    font = _get_font(scale)
-    tw, th = _get_text_size(text, scale)
-    x, y = org
-    # Adjusts OpenCV's bottom-left baseline to PIL's top-left coordinate
-    y_pil = y - th
-    
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img_pil = Image.fromarray(img_rgb)
-    draw = ImageDraw.Draw(img_pil)
-    
-    # Converts BGR (OpenCV) to RGB (PIL)
-    rgb_color = (color[2], color[1], color[0])
-    draw.text((x, y_pil), text, font=font, fill=rgb_color)
-    
-    # Mutates the original OpenCV image buffer in-place
-    img[:] = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
-
-
-def _remove_accents(text):
-    """Fallback utility to strip accents if external functions fail."""
-    return "".join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
-
 
 # ---------------------------------------------------------------------------
-# Circle helpers
+# Row helpers
 # ---------------------------------------------------------------------------
 
-def _draw_circle_done(img, cx, cy, r):
-    """Filled circle with X — completed repetition."""
-    cv2.circle(img, (cx, cy), r, BTN_BLUE, -1)
-    d = int(r * 0.45)
-    cv2.line(img, (cx - d, cy - d), (cx + d, cy + d), (255, 255, 255), 3)
-    cv2.line(img, (cx + d, cy - d), (cx - d, cy + d), (255, 255, 255), 3)
-
-
-def _draw_circle_current(img, cx, cy, r):
-    """Hollow ring — current repetition."""
-    cv2.circle(img, (cx, cy), r, BTN_BLUE, 4)
-
-
-def _draw_circle_pending(img, cx, cy, r):
-    """Filled solid circle — pending repetition."""
-    cv2.circle(img, (cx, cy), r, BTN_BLUE, -1)
-
-
-def _draw_row(img, label, cx, cy, total, done, current, radius=42):
-    """
-    Draw label button + circles for one side row.
-    *done* = number of completed reps (show X)
-    *current* = index of current rep (show ○), -1 if none active yet
-    """
-    # Label button
-    btn_w, btn_h = 380, 52
+def _draw_row(img, label, cx, cy, total, done, current=-1, radius=48):
+    """Draw label button + circles for one side row."""
+    btn_w, btn_h = 460, 64
     bx = cx - btn_w // 2
     by = cy - btn_h // 2
     cv2.rectangle(img, (bx, by), (bx + btn_w, by + btn_h), BTN_BLUE, -1)
     
-    tw, th = _get_text_size(label, FONT_BTN)
-    _put_text_utf8(img, label, (bx + (btn_w - tw) // 2, by + (btn_h + th) // 2), FONT_BTN, BTN_TEXT)
+    label_scale = 1.5
+    tw, th = _get_text_size(label, label_scale)
+    _put_text_utf8(img, label, (bx + (btn_w - tw) // 2, by + (btn_h + th) // 2), label_scale, BTN_TEXT)
 
-    # Circles below the label
-    gap     = radius * 2 + 28
-    total_w = total * radius * 2 + (total - 1) * 28
-    start_x = cx - total_w // 2 + radius
-    circle_y = cy + btn_h // 2 + radius + 18
-
-    for i in range(total):
-        cx_i = start_x + i * gap
-        if i < done:
-            _draw_circle_done(img, cx_i, circle_y, radius)
-        elif i == current:
-            _draw_circle_current(img, cx_i, circle_y, radius)
-        else:
-            _draw_circle_pending(img, cx_i, circle_y, radius)
+    circle_y = cy + btn_h // 2 + radius + 20
+    draw_rep_circles(img, cx, circle_y, total, done, radius, current)
 
 
 # ---------------------------------------------------------------------------
@@ -159,11 +75,30 @@ def show_exercise_intro(exercise_name, rep, finish_cb, is_back_scratch=False):
     while True:
         img = blank_canvas()
 
-        # Title + decorative lines + institution label
-        draw_title_page(img, _remove_accents(title))
+        # Outer border with top edge at Y=80 (como o menu)
+        cv2.rectangle(img,
+                      (BORDER_INSET, 80),
+                      (W - BORDER_INSET, H - BORDER_INSET),
+                      DARK_BLUE, 2)
+
+        # Institution label — right-aligned with right border
+        inst_tw, _ = _get_text_size(INSTITUTION, FONT_SMALL)
+        _put_text_utf8(img, INSTITUTION, (W - BORDER_INSET - inst_tw, 70),
+                       FONT_SMALL, DARK_BLUE)
+
+        # Title centered on the top border line (Y=80)
+        tw, th = _get_text_size(title, FONT_TITLE)
+        tx = (W - tw) // 2
+        ty = 80 + th // 2
+        pad = 20
+        cv2.rectangle(img,
+                      (tx - pad, ty - th - pad),
+                      (tx + tw + pad, ty + pad),
+                      BG, -1)
+        _put_text_utf8(img, title, (tx, ty), FONT_TITLE, DARK_BLUE)
 
         # Right side row
-        _draw_row(img, right_label, cx, start_y + 80,
+        _draw_row(img, right_label, cx, start_y + 50,
                   total=2, done=right_done, current=right_current)
 
         # Left side row
@@ -190,7 +125,10 @@ def show_exercise_intro(exercise_name, rep, finish_cb, is_back_scratch=False):
         cv2.imshow(WIN, img)
 
         key = cv2.waitKey(16) & 0xFF
-        if key == ord(" "):
+        if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
+            cv2.destroyWindow(WIN)
+            finish_cb()
+        elif key == ord(" "):
             cv2.destroyWindow(WIN)
             return
         elif key == 27:

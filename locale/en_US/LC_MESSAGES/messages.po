@@ -240,3 +240,27 @@ msgstr "Press ESC to finish"
 
 msgid "Sit and Reach"
 msgstr "Sit and Reach"
+
+msgid "avarage_error"
+msgstr "Avarage Error:"
+
+msgid "esc_return"
+msgstr "Press ESC to return"
+
+msgid "no_data"
+msgstr "No data found for this selection"
+
+msgid "+60"
+msgstr "Age =>60"
+
+msgid "-60"
+msgstr "Age <60"
+
+msgid "choose"
+msgstr "Choose between the options and click in Calculate:"
+
+msgid "Visualize Data"
+msgstr "Visualize Data"
+
+msgid "calculate"
+msgstr "Calculate"

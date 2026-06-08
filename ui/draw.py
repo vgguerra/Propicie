@@ -5,6 +5,8 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+from typing import Optional
+
 from ui.theme import (
     BG, DARK_BLUE, HEADER_BG, HEADER_TEXT, BTN_BLUE, BTN_TEXT,
     TEXT, W, H, BORDER_INSET, HEADER_H,
@@ -201,13 +203,18 @@ def draw_rep_circles(img: np.ndarray,
                      cx: int, cy: int,
                      total: int,
                      done: int,
-                     radius: int = 38):
+                     radius: int = 38,
+                     current: Optional[int] = None):
     """
     Draw *total* circles horizontally centred on (cx, cy).
     Circles with index < done are filled (✗ completed),
-    the current one is hollow (○ pending), rest filled (●).
-    Matches the PDF design: completed = X inside, pending = hollow ring.
+    the circle at *current* is hollow (○ pending), rest filled (●).
+    If *current* is None, defaults to *done* (first uncompleted rep).
+    If *current* < 0, no hollow ring is drawn (all done or all pending).
     """
+    if current is None:
+        current = done
+
     gap     = radius * 2 + 24
     total_w = total * (radius * 2) + (total - 1) * 24
     start_x = cx - total_w // 2 + radius
@@ -215,14 +222,11 @@ def draw_rep_circles(img: np.ndarray,
     for i in range(total):
         cx_i = start_x + i * gap
         if i < done:
-            # Completed — filled with X
             cv2.circle(img, (cx_i, cy), radius, BTN_BLUE, -1)
             d = int(radius * 0.45)
             cv2.line(img, (cx_i - d, cy - d), (cx_i + d, cy + d), (255, 255, 255), 3)
             cv2.line(img, (cx_i + d, cy - d), (cx_i - d, cy + d), (255, 255, 255), 3)
-        elif i == done:
-            # Current — hollow ring
+        elif i == current:
             cv2.circle(img, (cx_i, cy), radius, BTN_BLUE, 4)
         else:
-            # Pending — filled solid
             cv2.circle(img, (cx_i, cy), radius, BTN_BLUE, -1)

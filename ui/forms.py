@@ -11,34 +11,59 @@ from ui.theme import (
 from utils import win_title
 
 # ---------------------------------------------------------------------------
-# Internal helpers
+# Font cache (evita carregar a fonte do disco em cada chamada)
 # ---------------------------------------------------------------------------
+_FONT_CACHE = {}
 
-def _put_text(img, text, pos, font_size=22, color=(0, 0, 0), is_bold=False):
-    """Draw UTF-8 text onto *img* safely using NFC normalization and return the modified image."""
-    # Corrige problemas de codificação e acentuação (como o 'ç' sumindo no .upper())
-    text = unicodedata.normalize('NFC', str(text))
-    
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    pil_img = Image.fromarray(img_rgb)
-    
+def _get_font(font_size, is_bold=False):
+    key = (font_size, is_bold)
+    if key in _FONT_CACHE:
+        return _FONT_CACHE[key]
     font_path = r"C:\Windows\Fonts\arialbd.ttf" if is_bold else r"C:\Windows\Fonts\arial.ttf"
     try:
         font = ImageFont.truetype(font_path, font_size)
     except Exception:
         font = ImageFont.load_default()
-        
+    _FONT_CACHE[key] = font
+    return font
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+def _put_text(img, text, pos, font_size=22, color=(0, 0, 0), is_bold=False):
+    """Draw UTF-8 text onto *img* safely using NFC normalization and return the modified image."""
+    text = unicodedata.normalize('NFC', str(text))
+    font = _get_font(font_size, is_bold)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    pil_img = Image.fromarray(img_rgb)
     color_rgb = (color[2], color[1], color[0])
     ImageDraw.Draw(pil_img).text(pos, text, font=font, fill=color_rgb)
+    return cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
+
+
+def _put_text_multi(img, items):
+    """Draw multiple texts in a single PIL session for efficiency.
+    
+    *items* is a list of (text, pos, font_size, color, is_bold) tuples.
+    Returns the modified image.
+    """
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    pil_img = Image.fromarray(img_rgb)
+    draw = ImageDraw.Draw(pil_img)
+    for text, pos, font_size, color, is_bold in items:
+        text = unicodedata.normalize('NFC', str(text))
+        font = _get_font(font_size, is_bold)
+        color_rgb = (color[2], color[1], color[0])
+        draw.text(pos, text, font=font, fill=color_rgb)
     return cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
 
 
 def _measure_text(text, font_size=22, is_bold=False):
     """Helper to dynamically calculate text width and height for PIL rendering."""
     text = unicodedata.normalize('NFC', str(text))
-    font_path = r"C:\Windows\Fonts\arialbd.ttf" if is_bold else r"C:\Windows\Fonts\arial.ttf"
+    font = _get_font(font_size, is_bold)
     try:
-        font = ImageFont.truetype(font_path, font_size)
         bbox = font.getmask(text).getbbox()
         if bbox:
             return bbox[2] - bbox[0], bbox[3] - bbox[1]
@@ -77,7 +102,9 @@ def _draw_card(img, x, y, w, h):
 def _draw_card_title(img, title, x, y, w, h=52):
     """Draw filled header inside card (e.g. 'CADASTRO')."""
     cv2.rectangle(img, (x, y), (x + w, y + h), BTN_BLUE, -1)
-    img = _put_text(img, title, (x + 20, y + 12), font_size=28, color=(255, 255, 255), is_bold=True)
+    tw, _ = _measure_text(title, 28, is_bold=True)
+    tx = x + (w - tw) // 2
+    img = _put_text(img, title, (tx, y + 12), font_size=28, color=(255, 255, 255), is_bold=True)
     return img
 
 
@@ -105,10 +132,10 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
         active_field = -1
 
         # Definição das dimensões da Janela e do Card Interno (Alinhado com o Mockup)
-        win_w, win_h = 600, 640
-        card_x, card_y = 35, 35
-        card_w = win_w - (card_x * 2)
-        card_h = win_h - 110  # Deixa margem embaixo para o texto de instrução fora do card
+        win_w, win_h = 530, 570
+        card_x, card_y = 0, 0
+        card_w = win_w
+        card_h = win_h
 
         field_x = card_x + 30
         field_w = card_w - 60
@@ -159,10 +186,6 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
             # Como o BG da janela é azul claro, o card fica destacado no centro sem tocar nas bordas
             img = _draw_card_title(img, _("Register").upper(), card_x, card_y, card_w, title_h)
 
-            # 3. DESENHA A MOLDURA AZUL (DARK_BLUE) POR CIMA DE TUDO
-            # Ao fazer isto no fim, a linha contínua do rectângulo contorna perfeitamente o cabeçalho!
-            cv2.rectangle(img, (card_x, card_y), (card_x + card_w, card_y + card_h), DARK_BLUE, 2)
-
             # Desenho das Labels e Caixas de Texto
             for i, (x1, y1, x2, y2) in enumerate(positions):
                 # Renderização da Label em Negrito
@@ -176,23 +199,29 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
                 # Texto digitado pelo utilizador
                 img = _put_text(img, values[i], (x1 + 12, y1 + 8), font_size=22, color=(0, 0, 0))
 
-            # Instrução inferior posicionada FORA da caixa azul, no rodapé (sobre o fundo azul claro)
+            # Instrução inferior dentro da caixa
             hint_text = _("enter_confirm")
             hint_font_size = 22
-            text_w, _trash = _measure_text(hint_text, hint_font_size)
+            text_w, text_h = _measure_text(hint_text, hint_font_size)
             hint_x = (win_w - text_w) // 2
-            hint_y = win_h - 45
+            hint_y = card_y + card_h - 25 - text_h
             
             img = _put_text(img, hint_text, (hint_x, hint_y), font_size=hint_font_size, color=tuple(DARK_BLUE), is_bold=False)
 
             cv2.imshow(WIN, img)
 
             key = cv2.waitKey(10) & 0xFF
-            if key == 27:
-                cv2.destroyWindow(WIN)
+            if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
+                try: cv2.destroyWindow(WIN)
+                except: pass
+                raise SystemExit(0)
+            elif key == 27:
+                try: cv2.destroyWindow(WIN)
+                except: pass
                 raise SystemExit(0)
             elif key in (13, 10):
-                cv2.destroyWindow(WIN)
+                try: cv2.destroyWindow(WIN)
+                except: pass
                 return tuple(values)
             elif key == 9:
                 active_field = (active_field + 1) % len(fields)
@@ -272,11 +301,17 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
         cv2.imshow(WIN, img)
 
         key = cv2.waitKey(10) & 0xFF
-        if key == 27:
-            cv2.destroyWindow(WIN)
+        if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
+            try: cv2.destroyWindow(WIN)
+            except: pass
+            raise SystemExit(0)
+        elif key == 27:
+            try: cv2.destroyWindow(WIN)
+            except: pass
             raise SystemExit(0)
         elif key in (13, 10) and entered:
-            cv2.destroyWindow(WIN)
+            try: cv2.destroyWindow(WIN)
+            except: pass
             return float(entered.replace(",", "."))
         elif key == 8:
             entered = entered[:-1]
@@ -340,7 +375,7 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
         img = _put_text(img, _("space_esc"), ((win_w - 420) // 2, hint_y), font_size=16, color=tuple(DARK_BLUE))
 
         font_size_bottom = 16
-        _, text_h_bottom = _measure_text("A", font_size_bottom)
+        _tw, text_h_bottom = _measure_text("A", font_size_bottom)
         bottom_y = win_h - text_h_bottom - 12
         
         rep_label = f"{_('repetition_label')} {rep_current}/{rep_total}"
@@ -356,8 +391,13 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
         cv2.imshow(WIN, img)
 
         key = cv2.waitKey(16) & 0xFF
-        if key == ord(" "):
-            cv2.destroyWindow(WIN)
+        if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
+            try: cv2.destroyWindow(WIN)
+            except: pass
+            finish_cb()
+        elif key == ord(" "):
+            try: cv2.destroyWindow(WIN)
+            except: pass
             return
         elif key == 27:
             finish_cb()
@@ -477,6 +517,11 @@ def show_exercise_final(exercise,
 
         cv2.imshow(WIN, img)
         key = cv2.waitKey(16) & 0xFF
-        if key == 27: 
-            cv2.destroyWindow(WIN)
+        if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
+            try: cv2.destroyWindow(WIN)
+            except: pass
+            break
+        elif key == 27: 
+            try: cv2.destroyWindow(WIN)
+            except: pass
             break

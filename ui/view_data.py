@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 
 from locale_setup import _ as _tr
 from ui.draw import blank_canvas
-from ui.theme import W, H, DARK_BLUE, BTN_BLUE
-from ui.forms import _put_text
+from ui.theme import W, H, BORDER_INSET, DARK_BLUE, BTN_BLUE, BG
+from ui.forms import _put_text, _measure_text
 from utils import win_title
 
 # Mapeamento absoluto dos caminhos das tabelas utentes
@@ -108,7 +108,7 @@ def _generate_processed_chart(df):
             ax.plot(df_chart.index + 1, df_chart['Real distance'], marker='o', linewidth=2, color=c_dark_blue, label=_tr('Distância Real'))
             ax.plot(df_chart.index + 1, df_chart['Calculated distance'], marker='s', linewidth=2, color=c_btn_blue, label=_tr('Distância Calculada'))
             
-        ax.set_title(_tr("Evolução das Medições Filtradas (cm)"), fontsize=11, fontweight='bold', color=c_dark_blue, pad=6)
+        ax.set_title(_tr("Medições Filtradas (cm)"), fontsize=11, fontweight='bold', color=c_dark_blue, pad=6)
         ax.set_xlabel(_tr("Sequência Cronológica de Repetições"), fontsize=9, color=c_dark_blue)
         ax.set_ylabel("cm", fontsize=9, color=c_dark_blue)
         
@@ -209,14 +209,21 @@ def show_data_visualization():
 
     while True:
         img = blank_canvas()
-        cv2.rectangle(img, (40, 40), (W - 40, H - 40), DARK_BLUE, 2)
-        
-        # Cabeçalho do Ecrã
-        img = _put_text(img, _tr("Visualização de Dados").upper(), (60, 70), font_size=26, color=tuple(DARK_BLUE))
+        cv2.rectangle(img, (BORDER_INSET, 80), (W - BORDER_INSET, H - BORDER_INSET), DARK_BLUE, 2)
+
+        # Título centrado na linha superior da borda (como o menu)
+        title_text = _tr("Visualize Data")
+        font_size_title = 43
+        tw, th = _measure_text(title_text, font_size_title, is_bold=True)
+        tx = (W - tw) // 2
+        ty = 80 - th // 2
+        pad = 14
+        cv2.rectangle(img, (tx - pad, ty - pad), (tx + tw + pad, ty + th + pad), BG, -1)
+        img = _put_text(img, title_text, (tx, ty), font_size=font_size_title, color=tuple(DARK_BLUE), is_bold=True)
         
         # Faixa de Instrução Principal (Alargada para cobrir o novo layout)
         cv2.rectangle(img, (80, 120), (980, 155), tuple(DARK_BLUE), -1)
-        img = _put_text(img, _tr("Escolha uma ou mais opções estruturais:"), (95, 128), font_size=15, color=(255, 255, 255))
+        img = _put_text(img, _tr("choose"), (95, 128), font_size=15, color=(255, 255, 255))
         
         # Desenho modular das Checkboxes gráficas
         def _draw_chk(canvas, x, y, checked, label):
@@ -235,40 +242,47 @@ def show_data_visualization():
         img = _draw_chk(img, 580, 170, opts["side_esq"], _tr("Esquerdo"))
         img = _draw_chk(img, 580, 220, opts["side_dir"], _tr("Direito"))
         
-        img = _draw_chk(img, 780, 170, opts["age_g60"], _tr("Idade >= 60"))
-        img = _draw_chk(img, 780, 220, opts["age_l60"], _tr("Idade < 60"))
+        img = _draw_chk(img, 780, 170, opts["age_g60"], _tr("+60"))
+        img = _draw_chk(img, 780, 220, opts["age_l60"], _tr("-60"))
         
         # Renderização Estilizada do Botão Calcular
         bc_color = tuple(BTN_BLUE) if hover_calc else (255, 255, 255)
         txt_color = (255, 255, 255) if hover_calc else tuple(DARK_BLUE)
         cv2.rectangle(img, (btn_calc[0], btn_calc[1]), (btn_calc[2], btn_calc[3]), tuple(DARK_BLUE), 1)
         cv2.rectangle(img, (btn_calc[0]+1, btn_calc[1]+1), (btn_calc[2]-1, btn_calc[3]-1), bc_color, -1)
-        img = _put_text(img, _tr("Calcular"), (btn_calc[0] + 18, btn_calc[1] + 8), font_size=14, color=txt_color)
+        img = _put_text(img, _tr("calculate"), (btn_calc[0] + 18, btn_calc[1] + 8), font_size=14, color=txt_color)
 
-        # Zona de Exibição do Gráfico Dinâmico
-        gx, gy = 60, 310
+        # Zona de Exibição do Gráfico Dinâmico (centralizado em x)
+        gy = 310
         if current_chart is not None and not df_current.empty:
             gh, gw, _ = current_chart.shape
-            img[gy:gy+gh, gx:gx+gw] = current_chart
-            cv2.rectangle(img, (gx, gy), (gx + gw, gy + gh), DARK_BLUE, 1)
+            gx = (W - gw) // 2
             
-            # Cálculo instantâneo do Erro Médio baseado nos filtros cruzados ativos
+            # Erro Médio — centrado acima da tabela
             erro_col = next((c for c in ['Erro', 'erro', 'Error'] if c in df_current.columns), None)
             if erro_col:
                 avg_err = df_current[erro_col].mean()
-                err_txt = f"{_tr('Erro Médio da Seleção Atual')}: {avg_err:.2f} cm"
-                img = _put_text(img, err_txt, (65, gy + gh + 15), font_size=14, color=tuple(DARK_BLUE))
+                err_txt = f"{_tr('avarage_error')}: {avg_err:.2f} cm"
+                tw_e, _ = _measure_text(err_txt, 14)
+                img = _put_text(img, err_txt, ((W - tw_e) // 2, gy - 20), font_size=14, color=tuple(DARK_BLUE))
+            
+            img[gy:gy+gh, gx:gx+gw] = current_chart
+            cv2.rectangle(img, (gx, gy), (gx + gw, gy + gh), DARK_BLUE, 1)
         else:
-            cv2.rectangle(img, (gx, gy), (W - 60, H - 120), (255, 255, 255), -1)
-            cv2.rectangle(img, (gx, gy), (W - 60, H - 120), DARK_BLUE, 1)
-            img = _put_text(img, _tr("Nenhum dado encontrado para a combinação selecionada."), (260, gy + 100), font_size=16, color=tuple(DARK_BLUE))
+            gx = BORDER_INSET
+            cv2.rectangle(img, (gx, gy), (W - gx, H - 120), (255, 255, 255), -1)
+            cv2.rectangle(img, (gx, gy), (W - gx, H - 120), DARK_BLUE, 1)
+            tw_e, _ = _measure_text(_tr("no_data"), 16)
+            img = _put_text(img, _tr("no_data"), ((W - tw_e) // 2, gy + 100), font_size=16, color=tuple(DARK_BLUE))
 
         # Rodapé de Saída Uniforme
-        img = _put_text(img, _tr("Pressione ESC para retornar ao Menu Principal"), (W // 2 - 180, H - 65), font_size=14, color=tuple(DARK_BLUE))
+        img = _put_text(img, _tr("esc_return"), (W // 2 - 180, H - 65), font_size=14, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
         key = cv2.waitKey(20) & 0xFF
-        if key == 27:  
+        if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
+            break
+        elif key == 27:  
             break
             
     cv2.destroyWindow(WIN)
