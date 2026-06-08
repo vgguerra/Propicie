@@ -51,16 +51,32 @@ while True:
         # Corre o primeiro
         sit_and_reach.run(kinect, holistic, finish)
         # Assim que o ecrã final do primeiro fechar (pressionando ESC), corre o segundo
+        print("A iniciar o segundo exercício...")
         back_scratch.run(kinect, holistic, finish)
         # Ao acabar o segundo, o loop continua e volta sozinho para o Menu Principal!
         
     elif escolha == "sit_and_reach":
+        print("A iniciar Sit and Reach...")
         sit_and_reach.run(kinect, holistic, finish)
         # Quando fechar a tela final, volta para o menu automaticamente
         
     elif escolha == "back_scratch":
+        print("A iniciar Back Scratch...")
         back_scratch.run(kinect, holistic, finish)
         # Quando fechar a tela final, volta para o menu automaticamente
 
-    # Se sair do loop (escolha == "quit")
+    elif escolha == "view_data":
+        print("[RUNNER] Opção view_data selecionada no menu.", flush=True)
+        try:
+            print("[RUNNER] A importar show_data_visualization...", flush=True)
+            from ui.view_data import show_data_visualization
+            print("[RUNNER] Importação bem-sucedida! A chamar a função...", flush=True)
+            
+            show_data_visualization()
+            
+            print("[RUNNER] Função show_data_visualization terminou com sucesso.", flush=True)
+        except Exception as e:
+            print(f"[RUNNER CRITICAL ERROR] Apanhado no runner: {e}", flush=True)
+        except BaseException as be:
+            print(f"[RUNNER CRITICAL SYSTEM] Erro de sistema detetado: {be}", flush=True)
 finish()
