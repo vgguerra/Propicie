@@ -5,12 +5,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-20 16:52+0100\n"
-"PO-Revision-Date: 2026-04-20 14:35+0100\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en_US\n"
+
 "Language-Team: en_US <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
@@ -213,8 +208,8 @@ msgstr "Repetition Completed"
 msgid "Back Scratch exercise name"
 msgstr "Back Scratch"
 
-msgid "Press Enter to confirm"
-msgstr "Press Enter to confirm"
+msgid "enter_confirm"
+msgstr "Press ENTER to confirm"
 
 msgid "Register"
 msgstr "Register"

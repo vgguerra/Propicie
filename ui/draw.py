@@ -16,21 +16,34 @@ from ui.theme import (
 # Unicode / UTF-8 Text Rendering Helpers (Pillow Wrapper)
 # ---------------------------------------------------------------------------
 
+# Dicionário global para cachear as fontes já carregadas em memória
+_FONT_CACHE = {}
+
 def _get_font(scale):
-    """Maps OpenCV scale to an approximate PIL TrueType font size."""
+    """Maps OpenCV scale to an approximate PIL TrueType font size with caching."""
     font_size = max(12, int(scale * 24))
-    # Tries common system fonts to ensure cross-platform compatibility
+    
+    # Se a fonte com esse tamanho já foi carregada, retorna ela direto da memória
+    if font_size in _FONT_CACHE:
+        return _FONT_CACHE[font_size]
+        
     for font_name in ["arial.ttf", "DejaVuSans.ttf", "calibri.ttf", "LiberationSans-Regular.ttf"]:
         try:
-            return ImageFont.truetype(font_name, font_size)
+            font = ImageFont.truetype(font_name, font_size)
+            _FONT_CACHE[font_size] = font
+            return font
         except IOError:
             continue
-    return ImageFont.load_default()
+            
+    font = ImageFont.load_default()
+    _FONT_CACHE[font_size] = font
+    return font
 
 
 def _get_text_size(text, scale):
     """Alternative to cv2.getTextSize supporting Unicode."""
     font = _get_font(scale)
+    # Usamos uma instância estática leve ou criamos apenas a draw necessária
     canvas = Image.new('RGB', (1, 1))
     draw = ImageDraw.Draw(canvas)
     bbox = draw.textbbox((0, 0), text, font=font)
@@ -42,18 +55,19 @@ def _put_text_utf8(img, text, org, scale, color):
     font = _get_font(scale)
     tw, th = _get_text_size(text, scale)
     x, y = org
-    # Adjusts OpenCV's bottom-left baseline to PIL's top-left coordinate
     y_pil = y - th
     
+    # Conversão eficiente de cores
+    rgb_color = (color[2], color[1], color[0])
+    
+    # Converte o frame atual para PIL
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img_pil = Image.fromarray(img_rgb)
     draw = ImageDraw.Draw(img_pil)
     
-    # Converts BGR (OpenCV) to RGB (PIL)
-    rgb_color = (color[2], color[1], color[0])
     draw.text((x, y_pil), text, font=font, fill=rgb_color)
     
-    # Mutates the original OpenCV image buffer in-place
+    # Atualiza o buffer original do OpenCV de forma direta
     img[:] = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
 
 

@@ -30,12 +30,12 @@ from ui.forms import (
     _make_base,
     _draw_header,
 )
-from ui.theme import  W, H, HEADER_H, DARK_BLUE
+from ui.theme import W, H, HEADER_H, DARK_BLUE
 
 from config import (
     SIT_AND_REACH_PIXEL_TO_CM,
     SAR_CALIB_ELBOW_MIN, SAR_CALIB_ELBOW_MAX,
-    SAR_CALIB_HIP_MIN,   SAR_CALIB_HIP_MAX,
+    SAR_CALIB_HIP_MIN,  SAR_CALIB_HIP_MAX,
     SAR_CALIB_KNEE_MIN,  SAR_CALIB_KNEE_MAX,
     SAR_POSTURE_ELBOW_MIN, SAR_POSTURE_ELBOW_MAX,
     SAR_POSTURE_HIP_MIN,   SAR_POSTURE_HIP_MAX,
@@ -149,7 +149,7 @@ def _calculate_angles(repeats, pose_lm):
 
 def _draw_angle_arcs(repeats, knee, opp_knee, hip, elbow, opp_elbow,
                      pose_lm, image, frame):
-    """Overlay angle arcs and text on *image*."""
+    """Overlay angle arcs and text on *image* using Unicode wrapper."""
     side = _side(repeats)
     idx  = _POSE_INDICES[side]
 
@@ -159,19 +159,23 @@ def _draw_angle_arcs(repeats, knee, opp_knee, hip, elbow, opp_elbow,
             [frame.shape[1], frame.shape[0]]
         ).astype(int))
 
-    sh, el, wr     = to_px(0), to_px(1), to_px(2)
-    hp, kn, an     = to_px(3), to_px(4), to_px(5)
+    sh, el, wr = to_px(0), to_px(1), to_px(2)
+    hp, kn, an = to_px(3), to_px(4), to_px(5)
     o_sh, o_el, o_wr = to_px(9), to_px(10), to_px(11)
 
     draw_angle_arc(image, hp, kn, an, knee)
-    cv2.putText(image, f"{_('Knee Angle')}: {knee:.1f}", kn,    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 230, 0), 2)
+    put_text_utf8(image, f"{_('Knee Angle')}: {knee:.1f}", kn, font_size=24, color=(0, 230, 0))
+    
     draw_angle_arc(image, sh, hp, kn, hip)
-    cv2.putText(image, f"{_('Hip Angle')}: {hip:.1f}",   hp,    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    put_text_utf8(image, f"{_('Hip Angle')}: {hip:.1f}", hp, font_size=24, color=(0, 235, 0))
+    
     draw_angle_arc(image, sh, el, wr, elbow)
-    cv2.putText(image, f"{_('Elbow Angle')}: {elbow:.1f}", el,  cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    put_text_utf8(image, f"{_('Elbow Angle')}: {elbow:.1f}", el, font_size=24, color=(0, 235, 0))
+    
     draw_angle_arc(image, o_sh, o_el, o_wr, opp_elbow)
-    cv2.putText(image, f"{_('Opp Elbow')}: {opp_elbow:.1f}", o_el, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-    cv2.putText(image, f"{_('Opp Knee')}: {opp_knee:.1f}", (1000, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
+    put_text_utf8(image, f"{_('Opp Elbow')}: {opp_elbow:.1f}", o_el, font_size=24, color=(0, 235, 0))
+    
+    put_text_utf8(image, f"{_('Opp Knee')}: {opp_knee:.1f}", (1000, 400), font_size=24, color=(0, 235, 0))
 
 
 def _check_calibration(calib_time, foot, repeats,
@@ -235,33 +239,37 @@ def _check_posture(start_time, knee, opp_knee, hip, elbow, opp_elbow,
 # =============================================================================
 
 def _screen_repetition(distance, real_distance, finish_cb):
+    window_name = win_title(_("Repetition Results"))
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    frame = put_text_utf8(frame, _("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
-    frame = put_text_utf8(frame, f"{_('System Distance')}: {distance} cm", (100, 200), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Real Distance')}: {real_distance} cm", (100, 250), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(win_title(_("Repetition Results")), frame)
+    put_text_utf8(frame, _("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
+    put_text_utf8(frame, f"{_('System Distance')}: {distance} cm", (100, 200), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{_('Real Distance')}: {real_distance} cm", (100, 250), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{_('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    cv2.imshow(window_name, frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
         if key == ord(" "):
-            cv2.destroyWindow(win_title(_("Repetition Results")))
+            cv2.destroyWindow(window_name)
             break
-        elif key == 27:
+        elif key == 27 or cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
+            cv2.destroyWindow(window_name)
             finish_cb()
+            return
 
 
 def screen_final(best_right, best_left, finish_cb):
+    window_name = win_title(_("System Results"))
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    frame = put_text_utf8(frame, _("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
-    frame = put_text_utf8(frame, f"{_('Best Right Side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Best Left Side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('esc_finish')}", (50, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(win_title(_("System Results")), frame)
+    put_text_utf8(frame, _("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
+    put_text_utf8(frame, f"{_('Best Right Side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{_('Best Left Side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{_('esc_finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    cv2.imshow(window_name, frame)
     
     while True:
         key = cv2.waitKey(1) & 0xFF
-        if key == 27:
-            cv2.destroyWindow(win_title(_("System Results")))
+        if key == 27 or cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
+            cv2.destroyWindow(window_name)
             return
 
 
@@ -284,6 +292,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
     pose_start   = None
     distances    = []
     final_dist   = None
+    window_name  = win_title(_("Sit and Reach"))
 
     while True:
         if not kinect.has_new_color_frame():
@@ -331,10 +340,10 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
                         final_dist = -(final_dist + SAR_ERROR)
                     break
 
-                cv2.putText(image, f"{_('Foot')}: {foot[0]}, {foot[1]}",  (1000, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                cv2.putText(image, f"{_('Hand')}: {hand[0]}, {hand[1]}",  (1000, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                cv2.putText(image, f"{_('Dist')}: {distance:.2f} cm",     (50,    50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,   0, 0), 2)
-                cv2.putText(image, f"{_('Pose')}: {pose_correct}",        (50,   250), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
+                put_text_utf8(image, f"{_('Foot')}: {foot[0]}, {foot[1]}", (1000, 100), font_size=24, color=(0, 235, 0))
+                put_text_utf8(image, f"{_('Hand')}: {hand[0]}, {hand[1]}", (1000, 200), font_size=24, color=(0, 235, 0))
+                put_text_utf8(image, f"{_('Dist')}: {distance:.2f} cm", (50, 50), font_size=24, color=(0, 0, 0))
+                put_text_utf8(image, f"{_('Pose')}: {pose_correct}", (50, 250), font_size=24, color=(128, 0, 0))
 
         side_label = _("right_side_label") if repeats in (0, 1) else _("left_side_label")
         rep_num    = (repeats % 2) + 1  
@@ -347,29 +356,20 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         resized = cv2.resize(image, (feed_w, feed_h))
         canvas[HEADER_H + 5 : HEADER_H + 5 + feed_h, feed_x : feed_x + feed_w] = resized
 
-        #cv2.rectangle(canvas,
-        #      (feed_x - 2, HEADER_H + 3),
-        #      (feed_x + feed_w + 2, HEADER_H + 5 + feed_h + 2),
-        #      DARK_BLUE, 2)
-
-        #cv2.putText(canvas, f"{_('Calibration')}: {calibration}", (feed_x + 10, HEADER_H + 40),
-         #           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (128, 0, 0), 2)
-        #cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 10, HEADER_H + 70),
-         #           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (128, 0, 0), 2)
-
         overlay = canvas.copy()
         cv2.rectangle(overlay, (feed_x + 5, HEADER_H + 10), (feed_x + 420, HEADER_H + 80), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
-        cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 38),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
-        cv2.putText(canvas, f"{_('Calibration')}: {calibration}", (feed_x + 12, HEADER_H + 68),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+        
+        put_text_utf8(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 38), font_size=24, color=(255, 255, 255))
+        put_text_utf8(canvas, f"{_('Calibration')}: {calibration}", (feed_x + 12, HEADER_H + 68), font_size=24, color=(255, 255, 255))
 
-        cv2.imshow(win_title(_("Sit and Reach")), canvas)
+        cv2.imshow(window_name, canvas)
 
         key = cv2.waitKey(1) & 0xFF
-        if key == 27:
+        if key == 27 or cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
+            cv2.destroyWindow(window_name)
             finish_cb()
+            return None
 
     return round(final_dist, 2)
 
@@ -395,7 +395,6 @@ def run(kinect, holistic, finish_cb):
     """
     print("[SAR run] início")
     try:
-
         print("[SAR run] a chamar show_register_screen_styled...")
         age, height, weight, gender_raw = show_register_screen_styled(
             _("Sit and Reach"), _("right_side_label"), 1, 2
@@ -424,6 +423,7 @@ def run(kinect, holistic, finish_cb):
             if dist is None:
                 print(_("Exercise not performed correctly."))
                 finish_cb()
+                return
 
             side  = "right" if rep in (0, 1) else "left"
             side_label = _("right_side_label") if rep in (0, 1) else _("left_side_label")
@@ -451,7 +451,6 @@ def run(kinect, holistic, finish_cb):
             else:
                 distances_left.append(dist)
 
-            #_screen_repetition(f"{dist:.2f}", real, finish_cb)
             show_repetition_result(
                 _("Sit and Reach"), side_label, (rep % 2) + 1, 2,
                 f"{dist:.2f}", real, finish_cb
@@ -472,5 +471,3 @@ def run(kinect, holistic, finish_cb):
         traceback.print_exc(file=sys.stdout)
         sys.stdout.flush()
         raise
-
-    

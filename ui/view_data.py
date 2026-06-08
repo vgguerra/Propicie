@@ -96,7 +96,7 @@ def _generate_processed_chart(df):
         if df.empty: return None
         
         # Isola as últimas 25 ocorrências ordenadas para estabilidade visual
-        df_chart = df.tail(25).reset_index()
+        df_chart = df.tail(100).reset_index()
         
         fig = plt.figure(figsize=(9.2, 3.4), dpi=100)
         ax = fig.add_subplot(111)

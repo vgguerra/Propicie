@@ -11,7 +11,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 
-from locale_setup import _
+from locale_setup import _ as trans
 from utils import (
     calculate_distance_2d,
     read_kinect_frame,
@@ -64,7 +64,6 @@ def _draw_landmarks(image, results):
 
 
 def _draw_middle_finger(image, hand_landmarks, color=(0, 255, 0)):
-    """Draw only the middle-finger chain (joints 9-12)."""
     middle_indices = [9, 10, 11, 12]
     h, w, _th = image.shape
 
@@ -99,15 +98,15 @@ def _check_distance_timer(distance, start_time):
 
 def _screen_repetition(distance, real_distance, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    frame = put_text_utf8(frame, _("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
-    frame = put_text_utf8(frame, f"{_('Distance between hands')}: {distance} cm", (50, 200), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Real Distance')}: {real_distance} cm", (50, 250), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(win_title(_("Repetition Results")), frame)
+    put_text_utf8(frame, trans("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
+    put_text_utf8(frame, f"{trans('Distance between hands')}: {distance} cm", (50, 200), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{trans('Real Distance')}: {real_distance} cm", (50, 250), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{trans('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    cv2.imshow(win_title(trans("Repetition Results")), frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
         if key == 32:  # space
-            cv2.destroyWindow(win_title(_("Repetition Results")))
+            cv2.destroyWindow(win_title(trans("Repetition Results")))
             break
         elif key == 27:  # esc
             finish_cb()
@@ -115,16 +114,16 @@ def _screen_repetition(distance, real_distance, finish_cb):
 
 def screen_final(best_right, best_left, finish_cb):
     frame = np.zeros((500, 800, 3), dtype=np.uint8)
-    frame = put_text_utf8(frame, _("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
-    frame = put_text_utf8(frame, f"{_('Best result of the right side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Best result of the left side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
-    frame = put_text_utf8(frame, f"{_('Press ESC to finish')}", (200, 400), font_size=26, color=(255, 255, 0))
-    cv2.imshow(win_title(_("System Results")), frame)
+    put_text_utf8(frame, trans("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
+    put_text_utf8(frame, f"{trans('Best result of the right side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{trans('Best result of the left side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
+    put_text_utf8(frame, f"{trans('Press ESC to finish')}", (200, 400), font_size=26, color=(255, 255, 0))
+    cv2.imshow(win_title(trans("System Results")), frame)
     
     while True:
         key = cv2.waitKey(1) & 0xFF
         if key == 27:
-            cv2.destroyWindow(win_title(_("System Results")))
+            cv2.destroyWindow(win_title(trans("System Results")))
             return
 
 
@@ -133,9 +132,6 @@ def screen_final(best_right, best_left, finish_cb):
 # =============================================================================
 
 def run_repetition(repeats, kinect, holistic, finish_cb):
-    """
-    Run one back-scratch repetition and return the measured distance.
-    """
     print(f"[run_rep] início repeats={repeats}")
 
     start_time    = None
@@ -143,8 +139,8 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
     final_dist    = None
     elapsed       = 0.0
 
-    exercise_title = _("Back Scratch exercise name")
-    side_label     = _("right_side_label") if repeats in (0, 1) else _("left_side_label")
+    exercise_title = trans("Back Scratch exercise name")
+    side_label     = trans("right_side_label") if repeats in (0, 1) else trans("left_side_label")
     rep_num        = (repeats % 2) + 1
 
     while True:
@@ -159,7 +155,6 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
             _draw_landmarks(image, results)
             pose_correct = "Correct"
 
-            # Lógica matemática nativa original do Back Scratch
             lm_left  = results.left_hand_landmarks.landmark[12]
             lm_right = results.right_hand_landmarks.landmark[12]
 
@@ -186,8 +181,6 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         feed_w  = int(image.shape[1] * feed_h / image.shape[0])
         feed_x  = (W - feed_w) // 2
         resized = cv2.resize(image, (feed_w, feed_h))
-        
-        # Aloca o feed redimensionado centralizado no canvas de fundo
         canvas[HEADER_H + 5 : HEADER_H + 5 + feed_h, feed_x : feed_x + feed_w] = resized
 
         # Overlay Translúcido Superior para Caixa de Status
@@ -195,14 +188,11 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         cv2.rectangle(overlay, (feed_x + 5, HEADER_H + 10), (feed_x + 420, HEADER_H + 80), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
         
-        # Inserção de Strings Informativas
-        cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 38),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+        # Inserção de Strings Informativas seguras contra acentos
+        put_text_utf8(canvas, f"{trans('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 38), font_size=24, color=(255, 255, 255))
         
-        # Mostra o progresso do tempo de sustentação no espaço do Calibration
-        status_timer = f"{_('Hold')}: {elapsed:.1f}s / {BS_POSE_HELD_DURATION}s" if elapsed > 0 else f"{_('Hold')}: ---"
-        cv2.putText(canvas, status_timer, (feed_x + 12, HEADER_H + 68),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+        status_timer = f"{trans('Hold')}: {elapsed:.1f}s / {BS_POSE_HELD_DURATION}s" if elapsed > 0 else f"{trans('Hold')}: ---"
+        put_text_utf8(canvas, status_timer, (feed_x + 12, HEADER_H + 68), font_size=24, color=(255, 255, 255))
 
         cv2.imshow(win_title(exercise_title), canvas)
 
@@ -222,14 +212,11 @@ _LOG_PATH   = "./arquivos/logs_utentes/logs_back_scratch_utentes"
 
 
 def run(kinect, holistic, finish_cb):
-    """
-    Run 4 back-scratch repetitions (2 per side).
-    """
     print("[BS run] início")
     try:
         print("[BS run] a chamar show_register_screen_styled...")
         age, height, weight, gender_raw = show_register_screen_styled(
-            _("Back Scratch exercise name"), _("right_side_label"), 1, 2
+            trans("Back Scratch exercise name"), trans("right_side_label"), 1, 2
         )
         participant = {
             "age":    age,
@@ -246,21 +233,21 @@ def run(kinect, holistic, finish_cb):
         for rep in range(4):
             print(f"[BS run] rep={rep} a iniciar")
 
-            show_exercise_intro(_("Back Scratch exercise name"), rep, finish_cb, is_back_scratch=True)
+            show_exercise_intro(trans("Back Scratch exercise name"), rep, finish_cb, is_back_scratch=True)
             print(f"[BS run] rep={rep} intro concluído — a chamar run_repetition")
 
             dist = run_repetition(rep, kinect, holistic, finish_cb)
             print(f"[BS run] rep={rep} dist={dist}")
 
             if dist is None:
-                print(_("Exercise not performed correctly."))
+                print(trans("Exercise not performed correctly."))
                 finish_cb()
 
             side       = "right" if rep in (0, 1) else "left"
-            side_label = _("right_side_label") if rep in (0, 1) else _("left_side_label")
+            side_label = trans("right_side_label") if rep in (0, 1) else trans("left_side_label")
             
             real = show_real_distance_screen_styled(
-                _("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2
+                trans("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2
             )
             if side == "right":
                 reals_right.append(real)
@@ -284,7 +271,7 @@ def run(kinect, holistic, finish_cb):
                 distances_left.append(dist)
 
             show_repetition_result(
-                 _("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2,
+                 trans("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2,
                 f"{dist:.2f}", real, finish_cb
             )
 
@@ -296,9 +283,8 @@ def run(kinect, holistic, finish_cb):
         while len(reals_right) < 2:     reals_right.append(0.0)
         while len(reals_left) < 2:      reals_left.append(0.0)
 
-        # CHAMA A TELA FINAL COMPLETA (Igual à do Sit and Reach)
         show_exercise_final(
-            _("Back Scratch exercise name"),
+            trans("Back Scratch exercise name"),
             f"{distances_right[0]:.2f}", f"{distances_right[1]:.2f}",
             f"{distances_left[0]:.2f}",  f"{distances_left[1]:.2f}",
             reals_right[0], reals_right[1],
