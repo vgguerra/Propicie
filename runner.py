@@ -6,23 +6,15 @@ import cv2
 from pykinect2 import PyKinectRuntime, PyKinectV2
 import mediapipe as mp
 
-print("1 - A importar language_select...")
-from ui.language_select import show_language_select
-print("2 - A importar menu...")
+print("A importar menu...")
 from ui.menu import show_main_menu
-print("3 - A importar locale_setup...")
+print("A importar locale_setup...")
 from locale_setup import set_language
-print("4 - A importar utils...")
+print("A importar utils...")
 from utils import show_register_screen
-print("5 - A importar exercicios...")
+print("A importar exercicios...")
 from exercicios import sit_and_reach, back_scratch
-print("6 - Todos os imports OK")
-
-# ---------------------------------------------------------------------------
-# Language selection (graphical — click on flag)
-# ---------------------------------------------------------------------------
-lang = show_language_select()
-set_language(lang)
+print("Todos os imports OK")
 
 # ---------------------------------------------------------------------------
 # Hardware initialisation
