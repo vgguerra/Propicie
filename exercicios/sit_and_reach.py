@@ -30,6 +30,7 @@ from ui.forms import (
     _draw_header,
     _put_text,
     _put_text_multi,
+    _measure_text,
 )
 from ui.theme import W, H, HEADER_H, DARK_BLUE
 
@@ -245,7 +246,9 @@ def _screen_repetition(distance, real_distance, finish_cb):
     frame = _put_text(frame, _("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
     frame = _put_text(frame, f"{_('System Distance')}: {distance} cm", (100, 200), font_size=32, color=(0, 255, 0))
     frame = _put_text(frame, f"{_('Real Distance')}: {real_distance} cm", (100, 250), font_size=32, color=(0, 255, 0))
-    frame = _put_text(frame, f"{_('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    _txt = f"{_('Press SPACE to continue or ESC to finish')}"
+    _tw, _th = _measure_text(_txt, 26)
+    frame = _put_text(frame, _txt, ((800 - _tw) // 2, 400), font_size=26, color=(255, 255, 0))
     cv2.imshow(window_name, frame)
     while True:
         key = cv2.waitKey(1) & 0xFF
@@ -264,7 +267,9 @@ def screen_final(best_right, best_left, finish_cb):
     frame = _put_text(frame, _("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
     frame = _put_text(frame, f"{_('Best Right Side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
     frame = _put_text(frame, f"{_('Best Left Side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
-    frame = _put_text(frame, f"{_('esc_finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    _txt = _("esc_finish")
+    _tw, _th = _measure_text(_txt, 26)
+    frame = _put_text(frame, _txt, ((800 - _tw) // 2, 400), font_size=26, color=(255, 255, 0))
     cv2.imshow(window_name, frame)
     
     while True:

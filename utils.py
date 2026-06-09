@@ -118,6 +118,11 @@ def _get_font_cached(font_size):
     _FONT_CACHE[font_size] = font
     return font
 
+def _measure_text_utf8_width(text, font_size):
+    font = _get_font_cached(font_size)
+    left, _, right, _ = font.getbbox(text)
+    return right - left
+
 def put_text_utf8(img, text, pos, font_size=28, color=(0, 0, 0)):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     pil_img = Image.fromarray(img_rgb)
@@ -163,8 +168,10 @@ def show_register_screen():
             img = put_text_utf8(img, values[i], (x1 + 10, y2 - 40),
               font_size=26, color=(0, 0, 0))
 
-        img = put_text_utf8(img, _("Press Enter to confirm"), (50, 360),
-            font_size=18, color=(100, 100, 100))
+        _tc = _("Press Enter to confirm")
+        _tw = _measure_text_utf8_width(_tc, 26)
+        img = put_text_utf8(img, _tc, ((600 - _tw) // 2, 360),
+            font_size=26, color=(100, 100, 100))
         cv2.imshow(win, img)
 
         key = cv2.waitKey(10) & 0xFF
@@ -200,8 +207,10 @@ def show_real_distance_screen():
         cv2.rectangle(img, (50, 60), (550, 120), (0, 0, 0), 2)
         img = put_text_utf8(img, _("real_distance_label") + " (cm):", (50, 40),
               font_size=24, color=(0, 0, 0))
-        img = put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
-              font_size=18, color=(100, 100, 100))
+        _tc = _("Press Enter to confirm")
+        _tw = _measure_text_utf8_width(_tc, 26)
+        img = put_text_utf8(img, _tc, ((600 - _tw) // 2, 170),
+              font_size=26, color=(100, 100, 100))
               
         cv2.imshow(win, img)
 

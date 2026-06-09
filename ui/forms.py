@@ -201,7 +201,7 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
 
             # Instrução inferior dentro da caixa
             hint_text = _("enter_confirm")
-            hint_font_size = 22
+            hint_font_size = 26
             text_w, text_h = _measure_text(hint_text, hint_font_size)
             hint_x = (win_w - text_w) // 2
             hint_y = card_y + card_h - 25 - text_h
@@ -220,9 +220,10 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
                 except: pass
                 raise SystemExit(0)
             elif key in (13, 10):
-                try: cv2.destroyWindow(WIN)
-                except: pass
-                return tuple(values)
+                if all(v.strip() for v in values):
+                    try: cv2.destroyWindow(WIN)
+                    except: pass
+                    return tuple(values)
             elif key == 9:
                 active_field = (active_field + 1) % len(fields)
             elif active_field != -1:
@@ -294,9 +295,11 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
                             font_size=28, color=(0, 0, 200), is_bold=True)
 
         # Hint
-        img = _put_text(img, _("enter_confirm"),
-                        (field_x_local, field_y_local + field_h + 14),
-                        font_size=16, color=(100, 100, 100))
+        _tc = _("enter_confirm")
+        _tw, _th = _measure_text(_tc, 26)
+        img = _put_text(img, _tc,
+                        ((win_w - _tw) // 2, field_y_local + field_h + 14),
+                        font_size=26, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
 
@@ -371,8 +374,10 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
         cv2.rectangle(img, (content_x, real_value_y), (content_x + content_w, real_value_y + value_h), DARK_BLUE, 2)
         img = _put_text(img, f"{real_dist:.2f} cm", (content_x + 16, real_value_y + 16), font_size=28, color=tuple(DARK_BLUE), is_bold=True)
 
+        _sc = _("space_esc")
+        _tw, _th = _measure_text(_sc, 26)
         hint_y = card_y + card_h + 12
-        img = _put_text(img, _("space_esc"), ((win_w - 420) // 2, hint_y), font_size=16, color=tuple(DARK_BLUE))
+        img = _put_text(img, _sc, ((win_w - _tw) // 2, hint_y), font_size=26, color=tuple(DARK_BLUE))
 
         font_size_bottom = 16
         _tw, text_h_bottom = _measure_text("A", font_size_bottom)
@@ -447,10 +452,7 @@ def show_exercise_final(exercise,
         title_font_size = 36
         tw, th = _measure_text(title_text, title_font_size, is_bold=True)
         tx = (W - tw) // 2
-        ty = card_y + 12
-        line_y = ty + th // 2 + 5
-        cv2.line(img, (card_x + 20, line_y), (tx - 20, line_y), DARK_BLUE, 2)
-        cv2.line(img, (tx + tw + 20, line_y), (card_x + card_w - 20, line_y), DARK_BLUE, 2)
+        ty = card_y - th // 2
         img = _put_text(img, title_text, (tx, ty), font_size=title_font_size, color=tuple(DARK_BLUE), is_bold=True)
 
         # ── Secção Lado Direito ──
@@ -509,11 +511,11 @@ def show_exercise_final(exercise,
 
         ex_upper = exercise.upper()
         tw, th = _measure_text(ex_upper, 20, is_bold=True)
-        img = _put_text(img, ex_upper, ((W - tw) // 2, card_y + card_h + 15), font_size=20, color=tuple(DARK_BLUE), is_bold=True)
+        img = _put_text(img, ex_upper, ((W - tw) // 2, card_y + card_h - 45), font_size=20, color=tuple(DARK_BLUE), is_bold=True)
 
         hint_exit = _("Press ESC to exit")
-        tw, th = _measure_text(hint_exit, 16)
-        img = _put_text(img, hint_exit, ((W - tw) // 2, card_y + card_h + 45), font_size=16, color=tuple(DARK_BLUE))
+        tw, th = _measure_text(hint_exit, 26)
+        img = _put_text(img, hint_exit, ((W - tw) // 2, card_y + card_h - 22), font_size=26, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
         key = cv2.waitKey(16) & 0xFF

@@ -30,6 +30,7 @@ from ui.forms import (
     _draw_header,
     _put_text,
     _put_text_multi,
+    _measure_text,
 )
 from ui.theme import W, H, HEADER_H, DARK_BLUE
 
@@ -102,7 +103,9 @@ def _screen_repetition(distance, real_distance, finish_cb):
     frame = _put_text(frame, trans("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
     frame = _put_text(frame, f"{trans('Distance between hands')}: {distance} cm", (50, 200), font_size=32, color=(0, 255, 0))
     frame = _put_text(frame, f"{trans('Real Distance')}: {real_distance} cm", (50, 250), font_size=32, color=(0, 255, 0))
-    frame = _put_text(frame, f"{trans('Press SPACE to continue or ESC to finish')}", (50, 400), font_size=26, color=(255, 255, 0))
+    _txt = f"{trans('Press SPACE to continue or ESC to finish')}"
+    _tw, _th = _measure_text(_txt, 26)
+    frame = _put_text(frame, _txt, ((800 - _tw) // 2, 400), font_size=26, color=(255, 255, 0))
     win_name = win_title(trans("Repetition Results"))
     cv2.imshow(win_name, frame)
     while True:
@@ -122,7 +125,9 @@ def screen_final(best_right, best_left, finish_cb):
     frame = _put_text(frame, trans("Exercise Completed"), (200, 100), font_size=48, color=(255, 255, 255))
     frame = _put_text(frame, f"{trans('Best result of the right side')}: {best_right} cm", (40, 200), font_size=32, color=(0, 255, 0))
     frame = _put_text(frame, f"{trans('Best result of the left side')}: {best_left} cm", (40, 270), font_size=32, color=(0, 255, 0))
-    frame = _put_text(frame, f"{trans('Press ESC to finish')}", (200, 400), font_size=26, color=(255, 255, 0))
+    _txt = f"{trans('Press ESC to finish')}"
+    _tw, _th = _measure_text(_txt, 26)
+    frame = _put_text(frame, _txt, ((800 - _tw) // 2, 400), font_size=26, color=(255, 255, 0))
     win_name = win_title(trans("System Results"))
     cv2.imshow(win_name, frame)
     

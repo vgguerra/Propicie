@@ -105,7 +105,7 @@ def _generate_processed_chart(df):
         
         if 'Real distance' in df_chart.columns and 'Calculated distance' in df_chart.columns:
             ax.plot(df_chart.index + 1, df_chart['Real distance'], marker='o', linewidth=2, color=c_dark_blue, label=_tr('Distância Real'))
-            ax.plot(df_chart.index + 1, df_chart['System distance'], marker='s', linewidth=2, color=c_btn_blue, label=_tr('Distância Calculada'))
+            ax.plot(df_chart.index + 1, df_chart['Calculated distance'], marker='s', linewidth=2, color=c_btn_blue, label=_tr('System Distance'))
             
         ax.set_title(_tr("Medições Filtradas (cm)"), fontsize=11, fontweight='bold', color=c_dark_blue, pad=6)
         ax.set_xlabel(_tr("Sequência Cronológica de Repetições"), fontsize=9, color=c_dark_blue)
@@ -204,8 +204,8 @@ def show_data_visualization():
     SLIDER_RIGHT = 600
     SLIDER_H     = 8
     HANDLE_R     = 8
-    SR_SLIDER_Y  = 182
-    BS_SLIDER_Y  = 232
+    SR_SLIDER_Y  = 172
+    BS_SLIDER_Y  = 222
 
     def _sr_idx_to_px(idx):
         if sr_total <= 1:
@@ -239,15 +239,15 @@ def show_data_visualization():
 
     # ── Click zones (colunas deslocadas para a direita) ──
     click_zones = [
-        (100, 170, 125, 195, "exe_sr"),
-        (100, 220, 125, 245, "exe_bs"),
-        (680, 170, 705, 195, "gen_f"),
-        (680, 220, 705, 245, "gen_m"),
-        (840, 170, 865, 195, "side_esq"),
-        (840, 220, 865, 245, "side_dir")
+        (100, 160, 125, 185, "exe_sr"),
+        (100, 210, 125, 235, "exe_bs"),
+        (680, 160, 705, 185, "gen_f"),
+        (680, 210, 705, 235, "gen_m"),
+        (840, 160, 865, 185, "side_esq"),
+        (840, 210, 865, 235, "side_dir")
     ]
 
-    btn_calc = (1075, 188, 1195, 228)
+    btn_calc = (1075, 178, 1195, 218)
     hover_calc = False
 
     # ── Mouse callback ──
@@ -355,14 +355,14 @@ def show_data_visualization():
         font_size_title = 43
         tw, th = _measure_text(title_text, font_size_title, is_bold=True)
         tx = (W - tw) // 2
-        ty = 80 - th // 2
+        ty = 80 - th // 2 - 10
         pad = 14
         cv2.rectangle(img, (tx - pad, ty - pad), (tx + tw + pad, ty + th + pad), BG, -1)
         img = _put_text(img, title_text, (tx, ty), font_size=font_size_title, color=tuple(DARK_BLUE), is_bold=True)
 
         # Faixa de Instrução Principal
-        cv2.rectangle(img, (80, 120), (1070, 155), tuple(DARK_BLUE), -1)
-        img = _put_text(img, _tr("choose"), (95, 128), font_size=15, color=(255, 255, 255))
+        cv2.rectangle(img, (80, 110), (1070, 145), tuple(DARK_BLUE), -1)
+        img = _put_text(img, _tr("choose"), (95, 118), font_size=15, color=(255, 255, 255))
 
         def _draw_chk(canvas, x, y, checked, label):
             cv2.rectangle(canvas, (x, y), (x + 24, y + 24), tuple(DARK_BLUE), 2)
@@ -371,12 +371,12 @@ def show_data_visualization():
             return _put_text(canvas, label, (x + 36, y + 3), font_size=16, color=tuple(DARK_BLUE))
 
         # Checkboxes
-        img = _draw_chk(img, 100, 170, opts["exe_sr"], _tr("Sentar e Alcançar"))
-        img = _draw_chk(img, 100, 220, opts["exe_bs"], _tr("Alcançar atrás das Costas"))
-        img = _draw_chk(img, 680, 170, opts["gen_f"], _tr("Feminino"))
-        img = _draw_chk(img, 680, 220, opts["gen_m"], _tr("Masculino"))
-        img = _draw_chk(img, 840, 170, opts["side_esq"], _tr("Esquerdo"))
-        img = _draw_chk(img, 840, 220, opts["side_dir"], _tr("Direito"))
+        img = _draw_chk(img, 100, 160, opts["exe_sr"], _tr("Sentar e Alcançar"))
+        img = _draw_chk(img, 100, 210, opts["exe_bs"], _tr("Alcançar atrás das Costas"))
+        img = _draw_chk(img, 680, 160, opts["gen_f"], _tr("Feminino"))
+        img = _draw_chk(img, 680, 210, opts["gen_m"], _tr("Masculino"))
+        img = _draw_chk(img, 840, 160, opts["side_esq"], _tr("Esquerdo"))
+        img = _draw_chk(img, 840, 210, opts["side_dir"], _tr("Direito"))
 
         # Botão Calcular
         bc_color = tuple(BTN_BLUE) if hover_calc else (255, 255, 255)
@@ -415,7 +415,7 @@ def show_data_visualization():
         img = _draw_slider(img, _bs_idx_to_px, bs_min, bs_max, bs_total, BS_SLIDER_Y)
 
         # ── Chart area ──
-        gy = 310
+        gy = 300
         if current_chart is not None:
             gh, gw, _ = current_chart.shape
             gx = (W - gw) // 2
@@ -428,16 +428,22 @@ def show_data_visualization():
                     img = _put_text(img, err_txt, ((W - tw_e) // 2, gy - 20), font_size=14, color=tuple(DARK_BLUE))
             img[gy:gy+gh, gx:gx+gw] = current_chart
             cv2.rectangle(img, (gx, gy), (gx + gw, gy + gh), DARK_BLUE, 1)
+            _content_bottom = gy + gh
         else:
             gx = BORDER_INSET
             cv2.rectangle(img, (gx, gy), (W - gx, H - 120), (255, 255, 255), -1)
             cv2.rectangle(img, (gx, gy), (W - gx, H - 120), DARK_BLUE, 1)
             tw_e, _ = _measure_text(_tr("no_data"), 16)
             img = _put_text(img, _tr("no_data"), ((W - tw_e) // 2, gy + 100), font_size=16, color=tuple(DARK_BLUE))
+            _content_bottom = H - 120
 
-        # Rodapé
-        tw_esc, _ = _measure_text(_tr("esc_return"), 14)
-        img = _put_text(img, _tr("esc_return"), ((W - tw_esc) // 2, H - 65), font_size=14, color=tuple(DARK_BLUE))
+        # Rodapé — centrado entre o fim do conteúdo e o fim do retângulo exterior
+        _outer_bottom = H - BORDER_INSET
+        _gap = _outer_bottom - _content_bottom
+        _esc_text = _tr("esc_return")
+        _tw_esc, _th_esc = _measure_text(_esc_text, 26)
+        _esc_y = _content_bottom + _gap // 2 - _th_esc // 2
+        img = _put_text(img, _esc_text, ((W - _tw_esc) // 2, _esc_y), font_size=26, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
         key = cv2.waitKey(20) & 0xFF

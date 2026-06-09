@@ -51,15 +51,31 @@ def _button_rects():
 # ---------------------------------------------------------------------------
 
 def _draw_mini_pt_flag(img, x, y, w, h):
-    """Draws a mini Portuguese flag using OpenCV primitives."""
+    """Draws a minimalist Portuguese flag combining basic geometric primitives."""
+    # 1. Proporção oficial de fundo: 40% Verde, 60% Vermelho
     green_w = int(w * 0.4)
-    cv2.rectangle(img, (x, y), (x + green_w, y + h), (34, 139, 34), -1)
-    cv2.rectangle(img, (x + green_w, y), (x + w, y + h), (0, 0, 205), -1)
+    cv2.rectangle(img, (x, y), (x + green_w, y + h), (0, 102, 0), -1)       # Verde Clássico
+    cv2.rectangle(img, (x + green_w, y), (x + w, y + h), (0, 0, 204), -1)   # Vermelho Clássico
+    
+    # 2. Centro da Esfera Armilar
     cx, cy = x + green_w, y + h // 2
-    r = int(h * 0.28)
-    cv2.circle(img, (cx, cy), r, (0, 215, 255), 1)
-    cv2.circle(img, (cx, cy), int(r * 0.65), (255, 255, 255), -1)
-    cv2.circle(img, (cx, cy), int(r * 0.65), (0, 0, 139),  1)
+    r_esfera = int(h * 0.3)
+    
+    # Esfera Armilar (Círculo Dourado/Oliva -> formato BGR no OpenCV)
+    cv2.circle(img, (cx, cy), r_esfera, (20, 200, 220), -1) 
+    
+    # 3. Brasão em Branco (União de um Quadrado em cima com um Círculo em baixo)
+    w_escudo = int(r_esfera * 1.1)
+    r_escudo = w_escudo // 2
+    
+    y_topo = cy - int(r_esfera * 0.5)
+    y_meio = cy + int(r_esfera * 0.1) # Ponto exato onde o quadrado termina e o círculo começa
+    
+    # Parte superior do brasão (Retângulo/Quadrado Branco)
+    cv2.rectangle(img, (cx - r_escudo, y_topo), (cx + r_escudo, y_meio), (255, 255, 255), -1)
+    
+    # Parte inferior do brasão (Círculo Branco para arredondar a base)
+    cv2.circle(img, (cx, y_meio), r_escudo, (255, 255, 255), -1)
 
 
 def _draw_mini_uk_flag(img, x, y, w, h):

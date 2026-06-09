@@ -260,3 +260,6 @@ msgstr "Visualização de Dados"
 
 msgid "calculate"
 msgstr "Calcular"
+
+msgid "fill_all_fields"
+msgstr "Preencha todos os campos"
