@@ -100,21 +100,21 @@ def _generate_processed_chart(df):
         fig = plt.figure(figsize=(9.2, 3.4), dpi=100)
         ax = fig.add_subplot(111)
         
-        c_dark_blue = '#142E8B'  
-        c_btn_blue  = '#4A72E4'  
+        real_distance_color = "#FF0000"  
+        calculated_distance_color  = '#142E8B'  
         
         if 'Real distance' in df_chart.columns and 'Calculated distance' in df_chart.columns:
-            ax.plot(df_chart.index + 1, df_chart['Real distance'], marker='o', linewidth=2, color=c_dark_blue, label=_tr('Distância Real'))
-            ax.plot(df_chart.index + 1, df_chart['Calculated distance'], marker='s', linewidth=2, color=c_btn_blue, label=_tr('System Distance'))
+            ax.plot(df_chart.index + 1, df_chart['Real distance'], marker='o', linewidth=2, color=real_distance_color, label=_tr('real_distance_label'))
+            ax.plot(df_chart.index + 1, df_chart['Calculated distance'], marker='s', linewidth=2, color=calculated_distance_color, label=_tr('System Distance'))
             
-        ax.set_title(_tr("Medições Filtradas (cm)"), fontsize=11, fontweight='bold', color=c_dark_blue, pad=6)
-        ax.set_xlabel(_tr("Sequência Cronológica de Repetições"), fontsize=9, color=c_dark_blue)
-        ax.set_ylabel("cm", fontsize=9, color=c_dark_blue)
+        ax.set_title(_tr("chart_title"), fontsize=11, fontweight='bold', color=calculated_distance_color, pad=6)
+        ax.set_xlabel(_tr("chart_xlabel"), fontsize=9, color=calculated_distance_color)
+        ax.set_ylabel("cm", fontsize=9, color=calculated_distance_color)
         
         ax.grid(True, linestyle='--', alpha=0.5, color='#CBD5E1')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
-        ax.legend(loc='upper right', frameon=True, facecolor='#F8FAFC', edgecolor=c_dark_blue)
+        ax.legend(loc='upper right', frameon=True, facecolor='#F8FAFC', edgecolor=real_distance_color)
         
         plt.tight_layout()
         
@@ -371,12 +371,12 @@ def show_data_visualization():
             return _put_text(canvas, label, (x + 36, y + 3), font_size=16, color=tuple(DARK_BLUE))
 
         # Checkboxes
-        img = _draw_chk(img, 100, 160, opts["exe_sr"], _tr("Sentar e Alcançar"))
-        img = _draw_chk(img, 100, 210, opts["exe_bs"], _tr("Alcançar atrás das Costas"))
-        img = _draw_chk(img, 680, 160, opts["gen_f"], _tr("Feminino"))
-        img = _draw_chk(img, 680, 210, opts["gen_m"], _tr("Masculino"))
-        img = _draw_chk(img, 840, 160, opts["side_esq"], _tr("Esquerdo"))
-        img = _draw_chk(img, 840, 210, opts["side_dir"], _tr("Direito"))
+        img = _draw_chk(img, 100, 160, opts["exe_sr"], _tr("Sit and Reach"))
+        img = _draw_chk(img, 100, 210, opts["exe_bs"], _tr("Back Scratch exercise name"))
+        img = _draw_chk(img, 680, 160, opts["gen_f"], _tr("Feminine"))
+        img = _draw_chk(img, 680, 210, opts["gen_m"], _tr("Male"))
+        img = _draw_chk(img, 840, 160, opts["side_esq"], _tr("Left"))
+        img = _draw_chk(img, 840, 210, opts["side_dir"], _tr("Right"))
 
         # Botão Calcular
         bc_color = tuple(BTN_BLUE) if hover_calc else (255, 255, 255)

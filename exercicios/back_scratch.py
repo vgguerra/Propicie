@@ -103,7 +103,7 @@ def _screen_repetition(distance, real_distance, finish_cb):
     frame = _put_text(frame, trans("Repetition Completed"), (200, 100), font_size=48, color=(255, 255, 255))
     frame = _put_text(frame, f"{trans('Distance between hands')}: {distance} cm", (50, 200), font_size=32, color=(0, 255, 0))
     frame = _put_text(frame, f"{trans('Real Distance')}: {real_distance} cm", (50, 250), font_size=32, color=(0, 255, 0))
-    _txt = f"{trans('Press SPACE to continue or ESC to finish')}"
+    _txt = trans("enter_esc")
     _tw, _th = _measure_text(_txt, 26)
     frame = _put_text(frame, _txt, ((800 - _tw) // 2, 400), font_size=26, color=(255, 255, 0))
     win_name = win_title(trans("Repetition Results"))
@@ -113,7 +113,7 @@ def _screen_repetition(distance, real_distance, finish_cb):
         if cv2.getWindowProperty(win_name, cv2.WND_PROP_VISIBLE) < 1:
             cv2.destroyWindow(win_name)
             finish_cb()
-        elif key == 32:  # space
+        elif key in (13, 10):
             cv2.destroyWindow(win_name)
             break
         elif key == 27:  # esc
@@ -234,7 +234,7 @@ def run(kinect, holistic, finish_cb):
     try:
         print("[BS run] a chamar show_register_screen_styled...")
         age, height, weight, gender_raw = show_register_screen_styled(
-            trans("Back Scratch exercise name"), trans("right_side_label"), 1, 2
+            trans("Back Scratch exercise name"), trans("right_side_label"), 1, 2, finish_cb
         )
         participant = {
             "age":    age,
@@ -265,7 +265,7 @@ def run(kinect, holistic, finish_cb):
             side_label = trans("right_side_label") if rep in (0, 1) else trans("left_side_label")
             
             real = show_real_distance_screen_styled(
-                trans("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2
+                trans("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2, finish_cb
             )
             if side == "right":
                 reals_right.append(real)
@@ -276,6 +276,7 @@ def run(kinect, holistic, finish_cb):
             append_to_excel(_EXCEL_PATH, {
                 "Age": participant["age"], "Height": participant["height"],
                 "Weight": participant["weight"], "Gender": participant["gender"],
+                "Side": side,
                 "Real distance": real, "Calculated distance": dist, "Erro": error,
             })
             append_to_log(_LOG_PATH,
@@ -288,9 +289,10 @@ def run(kinect, holistic, finish_cb):
             else:
                 distances_left.append(dist)
 
+            error = abs(abs(float(real)) - abs(dist))
             show_repetition_result(
                  trans("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2,
-                f"{dist:.2f}", real, finish_cb
+                f"{dist:.2f}", real, error, finish_cb
             )
 
         best_right = max(distances_right)
@@ -301,12 +303,16 @@ def run(kinect, holistic, finish_cb):
         while len(reals_right) < 2:     reals_right.append(0.0)
         while len(reals_left) < 2:      reals_left.append(0.0)
 
+        errors_right = [abs(abs(float(reals_right[i])) - abs(float(distances_right[i]))) for i in range(2)]
+        errors_left  = [abs(abs(float(reals_left[i])) - abs(float(distances_left[i]))) for i in range(2)]
         show_exercise_final(
             trans("Back Scratch exercise name"),
             f"{distances_right[0]:.2f}", f"{distances_right[1]:.2f}",
             f"{distances_left[0]:.2f}",  f"{distances_left[1]:.2f}",
             reals_right[0], reals_right[1],
             reals_left[0],  reals_left[1],
+            errors_right[0], errors_right[1],
+            errors_left[0],  errors_left[1],
             finish_cb
         )            
         cv2.destroyAllWindows()

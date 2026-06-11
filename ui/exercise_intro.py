@@ -106,7 +106,7 @@ def show_exercise_intro(exercise_name, rep, finish_cb, is_back_scratch=False):
                   total=2, done=left_done, current=left_current)
 
         # Footer hint — Tamanho alterado para o dobro (1.3) e posição ajustada para H - 75
-        hint = trans("Press SPACE to begin") if not is_next else trans("Press SPACE to continue")
+        hint = trans("Press ENTER to begin") if not is_next else trans("Press ENTER to continue")
         tw, th = _get_text_size(hint, 1.3)
         _put_text_utf8(img, hint, ((W - tw) // 2, H - 75), 1.3, DARK_BLUE)
 
@@ -128,7 +128,7 @@ def show_exercise_intro(exercise_name, rep, finish_cb, is_back_scratch=False):
         if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
             cv2.destroyWindow(WIN)
             finish_cb()
-        elif key == ord(" "):
+        elif key in (13, 10):
             cv2.destroyWindow(WIN)
             return
         elif key == 27:

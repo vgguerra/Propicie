@@ -120,7 +120,7 @@ def _make_base(exercise, side, rep_current, rep_total):
 # Register screen
 # ---------------------------------------------------------------------------
 
-def show_register_screen_styled(exercise, side, rep_current, rep_total):
+def show_register_screen_styled(exercise, side, rep_current, rep_total, finish_cb):
     """
     Styled registration form with card centered inside a themed background frame.
     """
@@ -214,11 +214,11 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
             if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
                 try: cv2.destroyWindow(WIN)
                 except: pass
-                raise SystemExit(0)
+                finish_cb()
             elif key == 27:
                 try: cv2.destroyWindow(WIN)
                 except: pass
-                raise SystemExit(0)
+                finish_cb()
             elif key in (13, 10):
                 if all(v.strip() for v in values):
                     try: cv2.destroyWindow(WIN)
@@ -243,18 +243,18 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
 # Real distance screen
 # ---------------------------------------------------------------------------
 
-def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
+def show_real_distance_screen_styled(exercise, side, rep_current, rep_total, finish_cb):
     """Styled real-distance input with header bar and white card."""
     entered = ""
 
     card_w, card_h = 580, 260
     title_h   = 58
 
-    win_h = card_h + 80
-    win_w = card_w + 80
+    win_h = card_h
+    win_w = card_w
 
-    card_x_local = 40
-    card_y_local = 10
+    card_x_local = 0
+    card_y_local = 0
     card_x = (W - card_w) // 2
     card_y = HEADER_H + (H - HEADER_H - card_h) // 2
 
@@ -298,7 +298,7 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
         _tc = _("enter_confirm")
         _tw, _th = _measure_text(_tc, 26)
         img = _put_text(img, _tc,
-                        ((win_w - _tw) // 2, field_y_local + field_h + 14),
+                        ((win_w - _tw) // 2, field_y_local + field_h + 19),
                         font_size=26, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
@@ -307,11 +307,11 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
         if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
             try: cv2.destroyWindow(WIN)
             except: pass
-            raise SystemExit(0)
+            finish_cb()
         elif key == 27:
             try: cv2.destroyWindow(WIN)
             except: pass
-            raise SystemExit(0)
+            finish_cb()
         elif key in (13, 10) and entered:
             try: cv2.destroyWindow(WIN)
             except: pass
@@ -327,18 +327,18 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
 # ---------------------------------------------------------------------------
 
 def show_repetition_result(exercise, side, rep_current, rep_total,
-                           system_dist, real_dist, finish_cb):
-    win_w = 760
-    win_h = 580
+                           system_dist, real_dist, error, finish_cb):
+    win_w = 700
+    win_h = 520
 
-    card_w = win_w - 60
-    card_h = win_h - 100
-    card_x = 30
+    card_w = win_w
+    card_h = win_h - 60
+    card_x = 0
     card_y = 10
 
     title_h   = 58
     block_h   = 48
-    value_h   = 70
+    value_h   = 48
     block_gap = 24
     content_x = card_x + 40
     content_w = card_w - 80
@@ -347,6 +347,7 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
     sys_value_y  = sys_title_y + block_h + 8
     real_title_y = sys_value_y + value_h + block_gap
     real_value_y = real_title_y + block_h + 8
+    error_title_y = real_value_y + value_h + block_gap
 
     WIN = win_title(_("Repetition Completed"))
     cv2.namedWindow(WIN, cv2.WINDOW_AUTOSIZE)
@@ -364,7 +365,8 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
 
         cv2.rectangle(img, (content_x, sys_value_y), (content_x + content_w, sys_value_y + value_h), (255, 255, 255), -1)
         cv2.rectangle(img, (content_x, sys_value_y), (content_x + content_w, sys_value_y + value_h), DARK_BLUE, 2)
-        img = _put_text(img, f"{system_dist} cm", (content_x + 16, sys_value_y + 16), font_size=28, color=tuple(DARK_BLUE), is_bold=True)
+        img = _put_text(img, f"{_('system_distance_label')}: {system_dist} cm",
+                        (content_x + 16, sys_value_y + 10), font_size=26, color=tuple(DARK_BLUE))
 
         # Real distance
         cv2.rectangle(img, (content_x, real_title_y), (content_x + content_w, real_title_y + block_h), BTN_BLUE, -1)
@@ -372,16 +374,23 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
 
         cv2.rectangle(img, (content_x, real_value_y), (content_x + content_w, real_value_y + value_h), (255, 255, 255), -1)
         cv2.rectangle(img, (content_x, real_value_y), (content_x + content_w, real_value_y + value_h), DARK_BLUE, 2)
-        img = _put_text(img, f"{real_dist:.2f} cm", (content_x + 16, real_value_y + 16), font_size=28, color=tuple(DARK_BLUE), is_bold=True)
+        img = _put_text(img, f"{_('real_distance_label')}: {real_dist:.2f} cm",
+                        (content_x + 16, real_value_y + 10), font_size=26, color=tuple(DARK_BLUE))
 
-        _sc = _("space_esc")
+        # Error section (filled header with value)
+        cv2.rectangle(img, (content_x, error_title_y), (content_x + content_w, error_title_y + block_h), BTN_BLUE, -1)
+        img = _put_text(img, f"{_('Erro')}: {error:.2f} cm",
+                        (content_x + 16, error_title_y + 10), font_size=22, color=(255, 255, 255), is_bold=True)
+
+        _sc = _("enter_esc")
         _tw, _th = _measure_text(_sc, 26)
-        hint_y = card_y + card_h + 12
+        hint_y = card_y + card_h - 10 - _th
         img = _put_text(img, _sc, ((win_w - _tw) // 2, hint_y), font_size=26, color=tuple(DARK_BLUE))
 
         font_size_bottom = 16
         _tw, text_h_bottom = _measure_text("A", font_size_bottom)
-        bottom_y = win_h - text_h_bottom - 12
+        _space = win_h - (card_y + card_h)
+        bottom_y = card_y + card_h + (_space - text_h_bottom) // 2
         
         rep_label = f"{_('repetition_label')} {rep_current}/{rep_total}"
         
@@ -400,7 +409,7 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
             try: cv2.destroyWindow(WIN)
             except: pass
             finish_cb()
-        elif key == ord(" "):
+        elif key in (13, 10):
             try: cv2.destroyWindow(WIN)
             except: pass
             return
@@ -417,6 +426,8 @@ def show_exercise_final(exercise,
                         system_left_1,  system_left_2,
                         real_right_1,   real_right_2,
                         real_left_1,    real_left_2,
+                        error_right_1,  error_right_2,
+                        error_left_1,   error_left_2,
                         finish_cb):
 
     WIN = win_title(_("Exercise Completed"))
@@ -453,6 +464,8 @@ def show_exercise_final(exercise,
         tw, th = _measure_text(title_text, title_font_size, is_bold=True)
         tx = (W - tw) // 2
         ty = card_y - th // 2
+        pad = 14
+        cv2.rectangle(img, (tx - pad, ty - pad), (tx + tw + pad, ty + th + pad), BG, -1)
         img = _put_text(img, title_text, (tx, ty), font_size=title_font_size, color=tuple(DARK_BLUE), is_bold=True)
 
         # ── Secção Lado Direito ──
@@ -471,16 +484,18 @@ def show_exercise_final(exercise,
                             font_size=18, color=tuple(DARK_BLUE), is_bold=True)
 
         # Caixas valores direito
-        for ci, (sys_v, real_v) in enumerate([(system_right_1, real_right_1), (system_right_2, real_right_2)]):
+        for ci, (sys_v, real_v, err_v) in enumerate([(system_right_1, real_right_1, error_right_1), (system_right_2, real_right_2, error_right_2)]):
             cx = col1_x if ci == 0 else col2_x
             box_y = right_box_y
             cv2.rectangle(img, (cx, box_y), (cx + col_w, box_y + box_h), (255, 255, 255), -1)
             cv2.rectangle(img, (cx, box_y), (cx + col_w, box_y + box_h), DARK_BLUE, 2)
             
             img = _put_text(img, f"{_('system_distance_label')}: {sys_v} cm",
-                            (cx + 16, box_y + 20), font_size=26, color=tuple(DARK_BLUE))
+                            (cx + 16, box_y + 14), font_size=26, color=tuple(DARK_BLUE))
             img = _put_text(img, f"{_('real_distance_label')}: {real_v:.2f} cm",
-                            (cx + 16, box_y + 80), font_size=26, color=tuple(DARK_BLUE))
+                            (cx + 16, box_y + 48), font_size=26, color=tuple(DARK_BLUE))
+            img = _put_text(img, f"{_('Erro')}: {err_v:.2f} cm",
+                            (cx + 16, box_y + 82), font_size=26, color=tuple(DARK_BLUE))
                                 
         # ── Secção Lado Esquerdo ──
         cv2.rectangle(img, (col1_x, left_sec_y), (col1_x + col_w * 2 + 20, left_sec_y + sec_h), BTN_BLUE, -1)
@@ -498,24 +513,26 @@ def show_exercise_final(exercise,
                             font_size=18, color=tuple(DARK_BLUE), is_bold=True)
 
         # Caixas valores esquerdo
-        for ci, (sys_v, real_v) in enumerate([(system_left_1, real_left_1), (system_left_2, real_left_2)]):
+        for ci, (sys_v, real_v, err_v) in enumerate([(system_left_1, real_left_1, error_left_1), (system_left_2, real_left_2, error_left_2)]):
             cx = col1_x if ci == 0 else col2_x
             box_y = left_box_y
             cv2.rectangle(img, (cx, box_y), (cx + col_w, box_y + box_h), (255, 255, 255), -1)
             cv2.rectangle(img, (cx, box_y), (cx + col_w, box_y + box_h), DARK_BLUE, 2)
             
             img = _put_text(img, f"{_('system_distance_label')}: {sys_v} cm",
-                            (cx + 16, box_y + 20), font_size=26, color=tuple(DARK_BLUE))
+                            (cx + 16, box_y + 14), font_size=26, color=tuple(DARK_BLUE))
             img = _put_text(img, f"{_('real_distance_label')}: {real_v:.2f} cm",
-                            (cx + 16, box_y + 80), font_size=26, color=tuple(DARK_BLUE))
+                            (cx + 16, box_y + 48), font_size=26, color=tuple(DARK_BLUE))
+            img = _put_text(img, f"{_('Erro')}: {err_v:.2f} cm",
+                            (cx + 16, box_y + 82), font_size=26, color=tuple(DARK_BLUE))
 
         ex_upper = exercise.upper()
         tw, th = _measure_text(ex_upper, 20, is_bold=True)
-        img = _put_text(img, ex_upper, ((W - tw) // 2, card_y + card_h - 45), font_size=20, color=tuple(DARK_BLUE), is_bold=True)
+        img = _put_text(img, ex_upper, ((W - tw) // 2, card_y + card_h + 10), font_size=20, color=tuple(DARK_BLUE), is_bold=True)
 
-        hint_exit = _("Press ESC to exit")
+        hint_exit = _("esc_finish")
         tw, th = _measure_text(hint_exit, 26)
-        img = _put_text(img, hint_exit, ((W - tw) // 2, card_y + card_h - 22), font_size=26, color=tuple(DARK_BLUE))
+        img = _put_text(img, hint_exit, ((W - tw) // 2, card_y + card_h - 15 - th), font_size=26, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
         key = cv2.waitKey(16) & 0xFF
