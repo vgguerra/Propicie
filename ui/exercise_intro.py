@@ -30,39 +30,9 @@ from ui.theme import (
 # Row helpers
 # ---------------------------------------------------------------------------
 
-<<<<<<< HEAD
-def _draw_circle_done(img, cx, cy, r):
-    """Filled circle with X — completed repetition."""
-    cv2.circle(img, (cx, cy), r, BTN_BLUE, -1)
-    d = int(r * 0.45)
-    cv2.line(img, (cx - d, cy - d), (cx + d, cy + d), (0, 255, 0), 3)
-    cv2.line(img, (cx + d, cy - d), (cx - d, cy + d), (0, 255, 0), 3)
-
-
-def _draw_circle_current(img, cx, cy, r):
-    """Hollow ring with yellow dot — current repetition."""
-    cv2.circle(img, (cx, cy), r, BTN_BLUE, 4)
-    cv2.circle(img, (cx, cy), int(r * 0.35), (0, 255, 255), -1)
-
-
-def _draw_circle_pending(img, cx, cy, r):
-    """Filled solid circle — pending repetition."""
-    cv2.circle(img, (cx, cy), r, BTN_BLUE, -1)
-
-
-def _draw_row(img, label, cx, cy, total, done, current, radius=42):
-    """
-    Draw label button + circles for one side row.
-    *done* = number of completed reps (show X)
-    *current* = index of current rep (show ○), -1 if none active yet
-    """
-    # Label button
-    btn_w, btn_h = 380, 52
-=======
 def _draw_row(img, label, cx, cy, total, done, current=-1, radius=48):
     """Draw label button + circles for one side row."""
     btn_w, btn_h = 460, 64
->>>>>>> f8b2c914f3a1c9440abf957d857fe4fd103638ae
     bx = cx - btn_w // 2
     by = cy - btn_h // 2
     cv2.rectangle(img, (bx, by), (bx + btn_w, by + btn_h), BTN_BLUE, -1)

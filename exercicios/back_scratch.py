@@ -206,36 +206,20 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         cv2.rectangle(overlay, (bs_box_x, HEADER_H + 10), (bs_box_x + 415, HEADER_H + 80), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
         
-<<<<<<< HEAD
-        # Inserção de Strings Informativas
-        cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (bs_box_x + 7, HEADER_H + 38),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
-        
-        # Mostra o progresso do tempo de sustentação no espaço do Calibration
-        status_timer = f"{_('Hold')}: {elapsed:.1f}s / {BS_POSE_HELD_DURATION}s" if elapsed > 0 else f"{_('Hold')}: ---"
-        cv2.putText(canvas, status_timer, (bs_box_x + 7, HEADER_H + 68),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
-=======
         # Inserção de Strings Informativas seguras contra acentos
         canvas = _put_text(canvas, f"{trans('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 18), font_size=24, color=(255, 255, 255))
         
         status_timer = f"{trans('Hold')}: {elapsed:.1f}s / {BS_POSE_HELD_DURATION}s" if elapsed > 0 else f"{trans('Hold')}: ---"
         canvas = _put_text(canvas, status_timer, (feed_x + 12, HEADER_H + 48), font_size=24, color=(255, 255, 255))
->>>>>>> f8b2c914f3a1c9440abf957d857fe4fd103638ae
 
         cv2.imshow(win_name, canvas)
 
         key = cv2.waitKey(1) & 0xFF
-<<<<<<< HEAD
-        if key == 27:
-            raise ReturnToMenu()
-=======
         if cv2.getWindowProperty(win_name, cv2.WND_PROP_VISIBLE) < 1:
             cv2.destroyWindow(win_name)
             finish_cb()
         elif key == 27:
             finish_cb()
->>>>>>> f8b2c914f3a1c9440abf957d857fe4fd103638ae
 
     return final_dist
 

@@ -211,11 +211,6 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total, finish_c
             cv2.imshow(WIN, img)
 
             key = cv2.waitKey(10) & 0xFF
-<<<<<<< HEAD
-            if key == 27:
-                cv2.destroyWindow(WIN)
-                raise ReturnToMenu()
-=======
             if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
                 try: cv2.destroyWindow(WIN)
                 except: pass
@@ -224,7 +219,6 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total, finish_c
                 try: cv2.destroyWindow(WIN)
                 except: pass
                 finish_cb()
->>>>>>> f8b2c914f3a1c9440abf957d857fe4fd103638ae
             elif key in (13, 10):
                 if all(v.strip() for v in values):
                     try: cv2.destroyWindow(WIN)
@@ -310,11 +304,6 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total, fin
         cv2.imshow(WIN, img)
 
         key = cv2.waitKey(10) & 0xFF
-<<<<<<< HEAD
-        if key == 27:
-            cv2.destroyWindow(WIN)
-            raise ReturnToMenu()
-=======
         if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
             try: cv2.destroyWindow(WIN)
             except: pass
@@ -323,7 +312,6 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total, fin
             try: cv2.destroyWindow(WIN)
             except: pass
             finish_cb()
->>>>>>> f8b2c914f3a1c9440abf957d857fe4fd103638ae
         elif key in (13, 10) and entered:
             try: cv2.destroyWindow(WIN)
             except: pass

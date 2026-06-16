@@ -256,16 +256,10 @@ def _screen_repetition(distance, real_distance, finish_cb):
         if key in (13, 10):
             cv2.destroyWindow(window_name)
             break
-<<<<<<< HEAD
-        elif key == 27:
-            cv2.destroyWindow(win_title(_("Repetition Results")))
-            raise ReturnToMenu()
-=======
         elif key == 27 or cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
             cv2.destroyWindow(window_name)
             finish_cb()
             return
->>>>>>> f8b2c914f3a1c9440abf957d857fe4fd103638ae
 
 
 def screen_final(best_right, best_left, finish_cb):
@@ -354,17 +348,10 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
                         final_dist = -(final_dist + SAR_ERROR)
                     break
 
-<<<<<<< HEAD
-                cv2.putText(image, f"{_('Foot')}: {foot[0]}, {foot[1]}",  (1000, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                cv2.putText(image, f"{_('Hand')}: {hand[0]}, {hand[1]}",  (1000, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                distance_str = f"{_('Dist')}: {distance:.2f} cm"
-                cv2.putText(image, f"{_('Pose')}: {pose_correct}",        (50,   250), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
-=======
                 image = _put_text(image, f"{_('Foot')}: {foot[0]}, {foot[1]}", (1000, 100), font_size=24, color=(0, 235, 0))
                 image = _put_text(image, f"{_('Hand')}: {hand[0]}, {hand[1]}", (1000, 200), font_size=24, color=(0, 235, 0))
                 image = _put_text(image, f"{_('Dist')}: {distance:.2f} cm", (50, 50), font_size=24, color=(0, 0, 0))
 
->>>>>>> f8b2c914f3a1c9440abf957d857fe4fd103638ae
 
         side_label = _("right_side_label") if repeats in (0, 1) else _("left_side_label")
         rep_num    = (repeats % 2) + 1  
@@ -381,38 +368,17 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         sar_box_x = (W - 415) // 2
         cv2.rectangle(overlay, (sar_box_x, HEADER_H + 10), (sar_box_x + 415, HEADER_H + 55), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
-<<<<<<< HEAD
-        if calibration == "Ok":
-            cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (sar_box_x + 7, HEADER_H + 38),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
-        else:
-            cv2.putText(canvas, f"{_('Calibration')}: {calibration}", (sar_box_x + 7, HEADER_H + 38),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
-
-        if distance_str:
-            overlay2 = canvas.copy()
-            cv2.rectangle(overlay2, (feed_x + 5, HEADER_H + 10), (feed_x + 290, HEADER_H + 50), (0, 0, 0), -1)
-            cv2.addWeighted(overlay2, 0.5, canvas, 0.5, 0, canvas)
-            cv2.putText(canvas, distance_str, (feed_x + 12, HEADER_H + 38),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
-=======
         
         canvas = _put_text(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 18), font_size=24, color=(255, 255, 255))
         canvas = _put_text(canvas, f"{_('Calibration')}: {calibration}", (feed_x + 12, HEADER_H + 48), font_size=24, color=(255, 255, 255))
->>>>>>> f8b2c914f3a1c9440abf957d857fe4fd103638ae
 
         cv2.imshow(window_name, canvas)
 
         key = cv2.waitKey(1) & 0xFF
-<<<<<<< HEAD
-        if key == 27:
-            raise ReturnToMenu()
-=======
         if key == 27 or cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
             cv2.destroyWindow(window_name)
             finish_cb()
             return None
->>>>>>> f8b2c914f3a1c9440abf957d857fe4fd103638ae
 
     return round(final_dist, 2)
 
