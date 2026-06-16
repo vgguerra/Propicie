@@ -224,9 +224,10 @@ def draw_rep_circles(img: np.ndarray,
         if i < done:
             cv2.circle(img, (cx_i, cy), radius, BTN_BLUE, -1)
             d = int(radius * 0.45)
-            cv2.line(img, (cx_i - d, cy - d), (cx_i + d, cy + d), (255, 255, 255), 3)
-            cv2.line(img, (cx_i + d, cy - d), (cx_i - d, cy + d), (255, 255, 255), 3)
+            cv2.line(img, (cx_i - d, cy - d), (cx_i + d, cy + d), (0, 255, 0), 3)
+            cv2.line(img, (cx_i + d, cy - d), (cx_i - d, cy + d), (0, 255, 0), 3)
         elif i == current:
             cv2.circle(img, (cx_i, cy), radius, BTN_BLUE, 4)
+            cv2.circle(img, (cx_i, cy), int(radius * 0.35), (0, 255, 255), -1)
         else:
             cv2.circle(img, (cx_i, cy), radius, BTN_BLUE, -1)

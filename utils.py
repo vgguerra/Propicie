@@ -10,6 +10,10 @@ import numpy as np
 import pandas as pd
 from PIL import ImageFont, ImageDraw, Image
 
+class ReturnToMenu(Exception):
+    """Raised when user presses ESC to return to main menu."""
+    pass
+
 # GEOMETRY
 
 def win_title(name):
