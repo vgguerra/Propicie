@@ -46,7 +46,7 @@ from config import (
     SAR_OPP_ELBOW_MIN, SAR_OPP_ELBOW_MAX,
     SAR_OPP_KNEE_MIN,  SAR_OPP_KNEE_MAX,
     SAR_CALIBRATION_DURATION, SAR_POSE_DURATION,
-    SAR_AVERAGE_OVER, SAR_ERROR,
+    SAR_AVERAGE_OVER, SAR_ERROR_RIGHT, SAR_ERROR_LEFT, SAR_SIGN_THRESHOLD,
 )
 from utils import (
     calculate_distance_2d, calculate_angle,
@@ -76,7 +76,8 @@ _POSE_INDICES = {
 _FOOT_INDEX = {"right": 31, "left": 32}
 
 # Hand offset adjustments (pixels) per side to improve tip accuracy
-_HAND_OFFSET = {"right": (+5, +8), "left": (-5, +8)}
+# Original: {"right": (+5, +8), "left": (-5, +8)}
+_HAND_OFFSET = {"right": (0, 0), "left": (0, 0)}
 
 
 # =============================================================================
@@ -316,6 +317,15 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
             angles = _calculate_angles(repeats, pose_lm)
             image = _draw_angle_arcs(repeats, *angles, pose_lm, image, frame)
 
+            # Visual guides: foot and hand measurement points (image coords)
+            side = _side(repeats)
+            ih, iw = image.shape[:2]
+            foot_idx = _FOOT_INDEX[side]
+            foot_pt  = (int(pose_lm[foot_idx].x * iw), int(pose_lm[foot_idx].y * ih))
+            hand_pt  = (int(hand_lm[12].x * iw), int(hand_lm[12].y * ih))
+            cv2.circle(image, foot_pt, 12, (0, 255, 255), -1)
+            cv2.circle(image, hand_pt, 12, (0, 255, 255), -1)
+
             (calibration, calib_prog, calib_time,
              foot, calib_locked) = _check_calibration(
                 calib_time, foot, repeats,
@@ -342,15 +352,14 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
 
                 if final_dist is not None:
                     side = _side(repeats)
-                    if side == "right" and hand[0] < foot[0] and distance > 1.2:
-                        final_dist = -(final_dist + SAR_ERROR)
-                    elif side == "left" and hand[0] > foot[0] and distance > 1.2:
-                        final_dist = -(final_dist + SAR_ERROR)
+                    if side == "right" and hand[0] < foot[0] and distance > SAR_SIGN_THRESHOLD:
+                        final_dist = -(final_dist + SAR_ERROR_RIGHT)
+                    elif side == "left" and hand[0] > foot[0] and distance > SAR_SIGN_THRESHOLD:
+                        final_dist = -(final_dist + SAR_ERROR_LEFT)
                     break
 
                 image = _put_text(image, f"{_('Foot')}: {foot[0]}, {foot[1]}", (1000, 100), font_size=24, color=(0, 235, 0))
                 image = _put_text(image, f"{_('Hand')}: {hand[0]}, {hand[1]}", (1000, 200), font_size=24, color=(0, 235, 0))
-                image = _put_text(image, f"{_('Dist')}: {distance:.2f} cm", (50, 50), font_size=24, color=(0, 0, 0))
 
 
         side_label = _("right_side_label") if repeats in (0, 1) else _("left_side_label")
@@ -366,11 +375,21 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
 
         overlay = canvas.copy()
         sar_box_x = (W - 415) // 2
-        cv2.rectangle(overlay, (sar_box_x, HEADER_H + 10), (sar_box_x + 415, HEADER_H + 55), (0, 0, 0), -1)
+        cv2.rectangle(overlay, (sar_box_x, HEADER_H + 10), (sar_box_x + 415, HEADER_H + 80), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
-        
-        canvas = _put_text(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 18), font_size=24, color=(255, 255, 255))
-        canvas = _put_text(canvas, f"{_('Calibration')}: {calibration}", (feed_x + 12, HEADER_H + 48), font_size=24, color=(255, 255, 255))
+
+        if calibration == "Ok":
+            _l1 = f"{_('Pose')}: {pose_correct}"
+            sign_str = "-" if (_side(repeats) == "right" and hand[0] < foot[0]) or (_side(repeats) == "left" and hand[0] > foot[0]) else "+"
+            _l2 = f"{_('Dist')}: {sign_str}{distance:.2f} cm"
+            _tw1, _th = _measure_text(_l1, 24)
+            canvas = _put_text(canvas, _l1, (sar_box_x + (415 - _tw1) // 2, HEADER_H + 15), font_size=24, color=(255, 255, 255))
+            _tw2, _th = _measure_text(_l2, 24)
+            canvas = _put_text(canvas, _l2, (sar_box_x + (415 - _tw2) // 2, HEADER_H + 43), font_size=24, color=(255, 255, 255))
+        else:
+            _cal = f"{_('Calibration')}: {calibration}"
+            _tw, _th = _measure_text(_cal, 24)
+            canvas = _put_text(canvas, _cal, (sar_box_x + (415 - _tw) // 2, HEADER_H + 10 + (70 - _th) // 2), font_size=24, color=(255, 255, 255))
 
         cv2.imshow(window_name, canvas)
 

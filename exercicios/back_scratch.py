@@ -66,21 +66,28 @@ def _draw_landmarks(image, results):
             landmark_drawing_spec=mp_drawing_styles.get_default_hand_landmarks_style())
 
 
-def _draw_middle_finger(image, hand_landmarks, color=(0, 255, 0)):
+def _draw_middle_finger_both(image, results):
     middle_indices = [9, 10, 11, 12]
-    h, w, _th = image.shape
+    h, w, _ = image.shape
+    color = (0, 255, 255)
 
-    for i in middle_indices:
-        x = int(hand_landmarks.landmark[i].x * w)
-        y = int(hand_landmarks.landmark[i].y * h)
-        cv2.circle(image, (x, y), 5, color, -1)
+    def draw_one(hand_lm):
+        pts = []
+        for i in middle_indices:
+            x = int(hand_lm.landmark[i].x * w)
+            y = int(hand_lm.landmark[i].y * h)
+            pts.append((x, y))
+            cv2.circle(image, (x, y), 6, color, -1)
+            cv2.circle(image, (x, y), 6, (255, 255, 255), 1)
+        for a, b in zip(pts, pts[1:]):
+            cv2.line(image, a, b, color, 2)
+        return pts[-1]  # tip (landmark 12)
 
-    for a, b in zip(middle_indices, middle_indices[1:]):
-        p1 = (int(hand_landmarks.landmark[a].x * w),
-              int(hand_landmarks.landmark[a].y * h))
-        p2 = (int(hand_landmarks.landmark[b].x * w),
-              int(hand_landmarks.landmark[b].y * h))
-        cv2.line(image, p1, p2, color, 2)
+    tip_left  = draw_one(results.left_hand_landmarks)  if results.left_hand_landmarks  else None
+    tip_right = draw_one(results.right_hand_landmarks) if results.right_hand_landmarks else None
+
+    if tip_left and tip_right:
+        cv2.line(image, tip_left, tip_right, (0, 0, 255), 3)
 
 
 def _check_distance_timer(distance, start_time):
@@ -170,13 +177,15 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         if results.left_hand_landmarks and results.right_hand_landmarks:
             last_detected = time.time()
             _draw_landmarks(image, results)
+            _draw_middle_finger_both(image, results)
             pose_correct = "Correct"
 
+            ih, iw = image.shape[:2]
             lm_left  = results.left_hand_landmarks.landmark[12]
             lm_right = results.right_hand_landmarks.landmark[12]
 
-            left_hand  = (int(lm_left.x  * 640), int(lm_left.y  * 480))
-            right_hand = (int(lm_right.x * 640), int(lm_right.y * 480))
+            left_hand  = (int(lm_left.x  * iw), int(lm_left.y  * ih))
+            right_hand = (int(lm_right.x * iw), int(lm_right.y * ih))
 
             dist_px  = calculate_distance_2d(left_hand, right_hand)
             distance = (dist_px * BACK_SCRATCH_PIXEL_TO_CM) - BS_ERROR
@@ -205,12 +214,18 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         bs_box_x = (W - 415) // 2
         cv2.rectangle(overlay, (bs_box_x, HEADER_H + 10), (bs_box_x + 415, HEADER_H + 80), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
-        
-        # Inserção de Strings Informativas seguras contra acentos
-        canvas = _put_text(canvas, f"{trans('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 18), font_size=24, color=(255, 255, 255))
-        
-        status_timer = f"{trans('Hold')}: {elapsed:.1f}s / {BS_POSE_HELD_DURATION}s" if elapsed > 0 else f"{trans('Hold')}: ---"
-        canvas = _put_text(canvas, status_timer, (feed_x + 12, HEADER_H + 48), font_size=24, color=(255, 255, 255))
+
+        if pose_correct == "Correct":
+            _l1 = f"{trans('Pose')}: {pose_correct}"
+            _l2 = f"{trans('Hold')}: {elapsed:.1f}s / {BS_POSE_HELD_DURATION}s" if elapsed > 0 else f"{trans('Hold')}: ---"
+            _tw1, _th = _measure_text(_l1, 24)
+            canvas = _put_text(canvas, _l1, (bs_box_x + (415 - _tw1) // 2, HEADER_H + 15), font_size=24, color=(255, 255, 255))
+            _tw2, _th = _measure_text(_l2, 24)
+            canvas = _put_text(canvas, _l2, (bs_box_x + (415 - _tw2) // 2, HEADER_H + 43), font_size=24, color=(255, 255, 255))
+        else:
+            _cal = f"{trans('Calibration')}: ---"
+            _tw, _th = _measure_text(_cal, 24)
+            canvas = _put_text(canvas, _cal, (bs_box_x + (415 - _tw) // 2, HEADER_H + 10 + (70 - _th) // 2), font_size=24, color=(255, 255, 255))
 
         cv2.imshow(win_name, canvas)
 

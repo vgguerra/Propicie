@@ -12,7 +12,7 @@ from locale_setup import _
 from ui.draw import blank_canvas, draw_button
 from ui.theme import W, H, BG, BORDER_INSET, DARK_BLUE, BTN_BLUE
 from ui.forms import _put_text, _measure_text  
-from utils import win_title
+from utils import win_title, set_app_icon
 
 # Mapeamento absoluto do caminho do logótipo na pasta de arquivos
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -102,6 +102,7 @@ def show_main_menu() -> str:
     WIN = win_title(_("Main Menu"))
     cv2.namedWindow(WIN, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(WIN, W, H)
+    set_app_icon(WIN)
 
     rects    = _button_rects()
     selected = None

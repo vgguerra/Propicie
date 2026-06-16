@@ -235,6 +235,27 @@ def show_real_distance_screen():
 
 # INTERNAL HELPERS
 
+def set_app_icon(window_title=None):
+    """Set the CAPACITA logo as the icon for a specific or all OpenCV windows."""
+    import ctypes, os
+    _base = os.path.dirname(os.path.abspath(__file__))
+    png_path = os.path.join(_base, "arquivos", "icone-Photoroom.png")
+    ico_path = os.path.join(_base, "arquivos", "icone-Photoroom.ico")
+    if not os.path.exists(ico_path):
+        from PIL import Image as PilImage
+        PilImage.open(png_path).save(ico_path, format="ICO", sizes=[(32, 32), (48, 48), (64, 64)])
+    hicon = ctypes.windll.user32.LoadImageW(0, ico_path, 1, 0, 0, 0x00000010)
+    if hicon:
+        if window_title:
+            hwnd = ctypes.windll.user32.FindWindowW(None, window_title)
+        else:
+            hwnd = ctypes.windll.user32.FindWindowW("Main HighGUI class", None)
+        if hwnd:
+            ctypes.windll.user32.SetClassLongW(hwnd, -14, hicon)
+            ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 0, hicon)
+            ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 1, hicon)
+
+
 def _quit():
     """Centralised exit — called by UI helpers that don't own Kinect/cv2."""
     cv2.destroyAllWindows()

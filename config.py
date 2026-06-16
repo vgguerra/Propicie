@@ -4,7 +4,8 @@
 
 # --- Pixel to CM conversion ---
 # Approximate ratio at 1 meter distance
-SIT_AND_REACH_PIXEL_TO_CM = 0.533333
+#SIT_AND_REACH_PIXEL_TO_CM = 0.533333
+SIT_AND_REACH_PIXEL_TO_CM = 0.45
 BACK_SCRATCH_PIXEL_TO_CM  = 0.625
 
 # --- Sit and Reach: angle boundaries ---
@@ -34,7 +35,9 @@ SAR_OPP_KNEE_MAX         = 150
 SAR_CALIBRATION_DURATION = 5    # seconds to hold calibration pose
 SAR_POSE_DURATION        = 5    # seconds to hold measurement pose
 SAR_AVERAGE_OVER         = 6    # rolling window for distance smoothing
-SAR_ERROR                = 1.035  # systematic error correction (cm)
+SAR_ERROR_RIGHT          = 4.9    # systematic error correction (cm) for right side; base SAR_ERROR was 2.9
+SAR_ERROR_LEFT           = 2.9    # systematic error correction (cm) for left side
+SAR_SIGN_THRESHOLD       = 1.0    # min distance (cm) beyond foot to invert sign; avoids noise flipping positive/negative
 
 # --- Back Scratch: thresholds ---
 BS_DISTANCE_THRESHOLD    = 33   # cm — hands must be closer than this
