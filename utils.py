@@ -90,8 +90,14 @@ def read_kinect_frame(kinect, holistic):
 # DATA PERSISTENCE
 
 def append_to_excel(filepath, row_dict):
-    """Append *row_dict* as a new row to an existing Excel workbook."""
-    df = pd.read_excel(filepath, engine="openpyxl")
+    """Append *row_dict* as a new row to an existing Excel workbook.
+    Creates the file with headers if it does not exist."""
+    try:
+        df = pd.read_excel(filepath, engine="openpyxl")
+    except FileNotFoundError:
+        df = pd.DataFrame([row_dict])
+        df.to_excel(filepath, index=False, engine="openpyxl")
+        return
     df = pd.concat([df, pd.DataFrame([row_dict])], ignore_index=True)
     df.to_excel(filepath, index=False, engine="openpyxl")
 
@@ -104,19 +110,30 @@ def append_to_log(filepath, *fields):
 
 # SHARED UI WINDOWS
 
-def put_text_utf8(img, text, pos, font_size=28, color=(0, 0, 0)):
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    pil_img = Image.fromarray(img_rgb)
+_FONT_CACHE = {}
 
+def _get_font_cached(font_size):
+    if font_size in _FONT_CACHE:
+        return _FONT_CACHE[font_size]
     try:
         font = ImageFont.truetype(r"C:\Windows\Fonts\arial.ttf", font_size)
     except Exception:
         font = ImageFont.load_default()
+    _FONT_CACHE[font_size] = font
+    return font
 
+def _measure_text_utf8_width(text, font_size):
+    font = _get_font_cached(font_size)
+    left, _, right, _ = font.getbbox(text)
+    return right - left
+
+def put_text_utf8(img, text, pos, font_size=28, color=(0, 0, 0)):
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    pil_img = Image.fromarray(img_rgb)
+    font = _get_font_cached(font_size)
     color_rgb = (color[2], color[1], color[0])
     draw = ImageDraw.Draw(pil_img)
     draw.text(pos, text, font=font, fill=color_rgb)
-
     return cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
 
 def show_register_screen():
@@ -155,12 +172,16 @@ def show_register_screen():
             img = put_text_utf8(img, values[i], (x1 + 10, y2 - 40),
               font_size=26, color=(0, 0, 0))
 
-        img = put_text_utf8(img, _("Press Enter to confirm"), (50, 360),
-            font_size=18, color=(100, 100, 100))
+        _tc = _("Press Enter to confirm")
+        _tw = _measure_text_utf8_width(_tc, 26)
+        img = put_text_utf8(img, _tc, ((600 - _tw) // 2, 360),
+            font_size=26, color=(100, 100, 100))
         cv2.imshow(win, img)
 
         key = cv2.waitKey(10) & 0xFF
-        if key == 27:
+        if cv2.getWindowProperty(win, cv2.WND_PROP_VISIBLE) < 1:
+            _quit()
+        elif key == 27:
             _quit()
         elif key in (13, 10):
             cv2.destroyAllWindows()
@@ -190,13 +211,18 @@ def show_real_distance_screen():
         cv2.rectangle(img, (50, 60), (550, 120), (0, 0, 0), 2)
         img = put_text_utf8(img, _("real_distance_label") + " (cm):", (50, 40),
               font_size=24, color=(0, 0, 0))
-        img = put_text_utf8(img, _("Press Enter to confirm"), (50, 170),
-              font_size=18, color=(100, 100, 100))
+        _tc = _("Press Enter to confirm")
+        _tw = _measure_text_utf8_width(_tc, 26)
+        img = put_text_utf8(img, _tc, ((600 - _tw) // 2, 170),
+              font_size=26, color=(100, 100, 100))
               
         cv2.imshow(win, img)
 
         key = cv2.waitKey(10) & 0xFF
-        if key == 27:
+        if cv2.getWindowProperty(win, cv2.WND_PROP_VISIBLE) < 1:
+            cv2.destroyAllWindows()
+            _quit()
+        elif key == 27:
             cv2.destroyAllWindows()
             _quit()
         elif key in (13, 10) and entered:

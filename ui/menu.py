@@ -10,8 +10,8 @@ from PIL import ImageFont, ImageDraw, Image
 import locale_setup
 from locale_setup import _
 from ui.draw import blank_canvas, draw_button
-from ui.theme import W, H, BORDER_INSET, DARK_BLUE, BTN_BLUE
-from ui.forms import _put_text  
+from ui.theme import W, H, BG, BORDER_INSET, DARK_BLUE, BTN_BLUE
+from ui.forms import _put_text, _measure_text  
 from utils import win_title
 
 # Mapeamento absoluto do caminho do logótipo na pasta de arquivos
@@ -37,7 +37,6 @@ _BTN_GAP = 22
 def _button_rects():
     """Return (x, y, w, h) for each button, vertically centred in the card."""
     total_h = len(_BUTTONS) * _BTN_H + (len(_BUTTONS) - 1) * _BTN_GAP
-    # Ajustado de + 120 para + 50 para aproximar os botões do cabeçalho (Logo/Título)
     start_y = (H - total_h) // 2 + 50   
     x       = (W - _BTN_W) // 2
     rects   = []
@@ -52,15 +51,31 @@ def _button_rects():
 # ---------------------------------------------------------------------------
 
 def _draw_mini_pt_flag(img, x, y, w, h):
-    """Draws a mini Portuguese flag using OpenCV primitives."""
+    """Draws a minimalist Portuguese flag combining basic geometric primitives."""
+    # 1. Proporção oficial de fundo: 40% Verde, 60% Vermelho
     green_w = int(w * 0.4)
-    cv2.rectangle(img, (x, y), (x + green_w, y + h), (34, 139, 34), -1)
-    cv2.rectangle(img, (x + green_w, y), (x + w, y + h), (0, 0, 205), -1)
+    cv2.rectangle(img, (x, y), (x + green_w, y + h), (0, 102, 0), -1)       # Verde Clássico
+    cv2.rectangle(img, (x + green_w, y), (x + w, y + h), (0, 0, 204), -1)   # Vermelho Clássico
+    
+    # 2. Centro da Esfera Armilar
     cx, cy = x + green_w, y + h // 2
-    r = int(h * 0.28)
-    cv2.circle(img, (cx, cy), r, (0, 215, 255), 1)
-    cv2.circle(img, (cx, cy), int(r * 0.65), (255, 255, 255), -1)
-    cv2.circle(img, (cx, cy), int(r * 0.65), (0, 0, 139),  1)
+    r_esfera = int(h * 0.3)
+    
+    # Esfera Armilar (Círculo Dourado/Oliva -> formato BGR no OpenCV)
+    cv2.circle(img, (cx, cy), r_esfera, (20, 200, 220), -1) 
+    
+    # 3. Brasão em Branco (União de um Quadrado em cima com um Círculo em baixo)
+    w_escudo = int(r_esfera * 1.1)
+    r_escudo = w_escudo // 2
+    
+    y_topo = cy - int(r_esfera * 0.5)
+    y_meio = cy + int(r_esfera * 0.1) # Ponto exato onde o quadrado termina e o círculo começa
+    
+    # Parte superior do brasão (Retângulo/Quadrado Branco)
+    cv2.rectangle(img, (cx - r_escudo, y_topo), (cx + r_escudo, y_meio), (255, 255, 255), -1)
+    
+    # Parte inferior do brasão (Círculo Branco para arredondar a base)
+    cv2.circle(img, (cx, y_meio), r_escudo, (255, 255, 255), -1)
 
 
 def _draw_mini_uk_flag(img, x, y, w, h):
@@ -99,12 +114,9 @@ def show_main_menu() -> str:
     flag_w, flag_h = 60, 40
     hover_flag     = False
 
-    # Carrega fontes TrueType (Alterado para 'arialbd.ttf' para Negrito e tamanho 90)
     try:
-        font_title = ImageFont.truetype(r"C:\Windows\Fonts\arialbd.ttf", 90)
         font_btn = ImageFont.truetype(r"C:\Windows\Fonts\arial.ttf", 22)
     except Exception:
-        font_title = ImageFont.load_default()
         font_btn = ImageFont.load_default()
 
     # Carrega o logótipo em modo UNCHANGED
@@ -139,51 +151,53 @@ def show_main_menu() -> str:
     while selected is None:
         img = blank_canvas()
         
-        # Moldura exterior azul
-        cv2.rectangle(img, (40, 40), (W - 40, H - 40), DARK_BLUE, 2)
-        cv2.putText(img, "IPBeja", (W - 110, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.7, DARK_BLUE, 1, cv2.LINE_AA)
+        top_border_y = 80
+
+        # Simple outer rectangle border (top edge lowered)
+        cv2.rectangle(img, (BORDER_INSET, top_border_y),
+                      (W - BORDER_INSET, H - BORDER_INSET), DARK_BLUE, 2)
+
+        # Institution label — above the top border, right-aligned
+        inst_tw, inst_th = _measure_text("IPBeja", 18)
+        img = _put_text(img, "IPBeja", (W - BORDER_INSET - inst_tw, top_border_y - inst_th - 6),
+                        font_size=18, color=tuple(DARK_BLUE))
 
         # 1. PROCESSAMENTO DE MEDIDAS E CENTRALIZAÇÃO DO BLOCO [LOGO + TEXTO]
         title_text = "CAPACITA"
-        try:
-            bbox = font_title.getmask(title_text).getbbox()
-            text_w = bbox[2] - bbox[0] if bbox else 0
-            text_h = bbox[3] - bbox[1] if bbox else 70
-        except Exception:
-            text_w = len(title_text) * 50
-            text_h = 70
+        font_size = 60
+        text_w, text_h = _measure_text(title_text, font_size, is_bold=True)
 
-        # Alinhamento vertical do topo ajustado ligeiramente para enquadrar o tamanho novo
-        title_y = 95 
-        gap_logo_text = 20  # Reduzido de 40 para 20 para aproximar o logo do título
-        
+        gap_logo_text = 5
+        title_y = top_border_y - text_h // 2
+
         if logo_img is not None:
-            # Mantém o tamanho grande e imponente para o logótipo (altura de 160px)
-            logo_height_target = 160 
+            logo_height_target = 100
 
             h_logo, w_logo = logo_img.shape[:2]
             new_w_logo = int(logo_height_target * (w_logo / h_logo))
             logo_resized = cv2.resize(logo_img, (new_w_logo, logo_height_target))
             
-            # Alinhamento vertical pelos centros exatos do texto e do logo
-            text_mid_y = title_y + text_h // 2
-            logo_draw_y = text_mid_y - logo_height_target // 2
-            logo_draw_y = max(0, logo_draw_y)
+            logo_draw_y = top_border_y - logo_height_target // 2
 
-            # Largura total combinada do bloco centralizado (Horizontal)
-            total_block_w = new_w_logo + gap_logo_text + text_w
-            start_x = (W - total_block_w) // 2
+            start_x = (W - 480) // 2
+
+            pad_box = 14
+            block_top = min(logo_draw_y, title_y)
+            block_h = max(logo_height_target, text_h)
+            cv2.rectangle(img,
+                          (start_x - pad_box, block_top - pad_box),
+                          (start_x + 480 + pad_box, block_top + block_h + pad_box),
+                          BG, -1)
             
-            # Renderização do Logótipo com tratamento de transparência
             try:
                 roi = img[logo_draw_y:logo_draw_y+logo_height_target, start_x:start_x+new_w_logo]
                 
-                if logo_resized.shape[2] == 4: # PNG Alpha Transparente
+                if logo_resized.shape[2] == 4:
                     alpha = logo_resized[:, :, 3] / 255.0
                     alpha = np.expand_dims(alpha, axis=2)
                     blended = logo_resized[:, :, :3] * alpha + roi * (1.0 - alpha)
                     img[logo_draw_y:logo_draw_y+logo_height_target, start_x:start_x+new_w_logo] = blended.astype(np.uint8)
-                else: # Remoção de Fundo Preto
+                else:
                     logo_gray = cv2.cvtColor(logo_resized, cv2.COLOR_BGR2GRAY)
                     thresh_val, mask = cv2.threshold(logo_gray, 15, 255, cv2.THRESH_BINARY)
                     mask_inv = cv2.bitwise_not(mask)
@@ -193,13 +207,12 @@ def show_main_menu() -> str:
             except Exception as e:
                 print(f"Erro ao renderizar logo: {e}")
                 
-            # Define o início horizontal do texto colado ao logótipo
             text_final_x = start_x + new_w_logo + gap_logo_text
         else:
-            text_final_x = (W - text_w) // 2
+            text_final_x = (W - 480) // 2
 
-        # Desenha o texto "CAPACITA" em Negrito com tamanho 90
-        img = _put_text(img, title_text, (text_final_x, title_y - 4), font_size=90, color=tuple(DARK_BLUE))
+        # Desenha o texto "CAPACITA" em Negrito
+        img = _put_text(img, title_text, (text_final_x, title_y), font_size=font_size, color=tuple(DARK_BLUE), is_bold=True)
 
         # 2. RENDERIZAÇÃO DOS BOTÕES DO MENU
         for i, (msgid, _action) in enumerate(_BUTTONS):
@@ -232,7 +245,9 @@ def show_main_menu() -> str:
 
         cv2.imshow(WIN, img)
         key = cv2.waitKey(16) & 0xFF
-        if key == 27:
+        if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
+            selected = "quit"
+        elif key == 27:
             selected = "quit"
 
     cv2.destroyWindow(WIN)

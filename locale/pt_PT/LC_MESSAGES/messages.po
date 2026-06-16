@@ -5,11 +5,6 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-20 16:52+0100\n"
-"PO-Revision-Date: 2026-04-20 16:26+0100\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt_PT\n"
 "Language-Team: pt_PT <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -18,113 +13,50 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:593
-#: Sit-and-Reach/sit_and_reach_julia.py:694 runner_2.py:285 runner_2.py:292
 msgid "Right"
 msgstr "Direito"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:593
-#: Sit-and-Reach/sit_and_reach_julia.py:694 runner_2.py:285 runner_2.py:292
 msgid "Left"
 msgstr "Esquerdo"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:206
-msgid "CALIBRATION STATUS"
-msgstr "ESTADO DA CALIBRAÇÃO"
-
-#: Sit-and-Reach/sit_and_reach_julia.py:213
-msgid "Adjust your posture"
-msgstr "Ajusta a tua postura"
-
-#: Sit-and-Reach/sit_and_reach_julia.py:214
-msgid "Hold still to calibrate"
-msgstr "Calibrando. Não se mova..."
-
-#: Sit-and-Reach/sit_and_reach_julia.py:215
-msgid "Calibrated — start the exercise"
-msgstr "Calibrado — executa o exercício"
-
-#: Sit-and-Reach/sit_and_reach_julia.py:481
 msgid "Exercise Completed"
-msgstr "Exercício completo"
+msgstr "Exercício Concluído"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:482
 msgid "System Results"
 msgstr "Resultados do Sistema"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:497
 msgid "Repetition Completed"
-msgstr "Repetição completa"
+msgstr "Repetição Concluída"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:498
-msgid "System Repetition Results"
-msgstr "Resultados do sistema da repetição"
-
-#: Sit-and-Reach/sit_and_reach_julia.py:511
 msgid "Age"
 msgstr "Idade"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:512
 msgid "Height (cm)"
 msgstr "Altura (cm)"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:513
 msgid "Weight (kg)"
 msgstr "Peso (kg)"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:514
 msgid "Gender (M/F)"
 msgstr "Género (M/F)"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:528
-msgid "Registration"
-msgstr "Registro"
-
-#: Sit-and-Reach/sit_and_reach_julia.py:543
-#: Sit-and-Reach/sit_and_reach_julia.py:572
 msgid "Press Enter to confirm"
 msgstr "Prima Enter para submeter"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:562
 msgid "Real Distance"
 msgstr "Distância da medição manual"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:568
-msgid "Enter the measured distance (cm):"
-msgstr "Registre a distância da medição manual (cm)"
-
-#: Sit-and-Reach/sit_and_reach_julia.py:691
 msgid "Feminine"
 msgstr "Feminino"
 
-#: Sit-and-Reach/sit_and_reach_julia.py:691
 msgid "Male"
 msgstr "Masculino"
-
-#: Sit-and-Reach/sit_and_reach_julia.py:729
-msgid "Exercise not performed correctly"
-msgstr "Exercício não efetuado corretamente"
 
 msgid "Wrong Position"
 msgstr "Posição errada"
 
 msgid "Right Position"
 msgstr "Posição correta"
-
-msgid "Ok"
-msgstr "Ok"
-
-msgid "Side"
-msgstr "Lado"
-
-msgid "Rep"
-msgstr "Rep"
-
-msgid "Opposite Knee Angle"
-msgstr "Ângulo do joelho oposto"
-
-msgid "Opposite Elbow Angle"
-msgstr "Ângulo do cotovelo oposto"
 
 msgid "Knee Angle"
 msgstr "Ângulo do joelho"
@@ -147,15 +79,6 @@ msgstr "Pose"
 msgid "Calibration"
 msgstr "Calibração"
 
-msgid "Not Detected"
-msgstr "Não detetado"
-
-msgid "Detected"
-msgstr "Detetado"
-
-msgid "Distance between both hands"
-msgstr "Distância da medição automática"
-
 msgid "Correct"
 msgstr "Correta"
 
@@ -166,13 +89,10 @@ msgid "Automatic"
 msgstr "Automático"
 
 msgid "Visualize Data"
-msgstr "Visualizar Dados"
+msgstr "Visualização de Dados"
 
 msgid "End Session"
 msgstr "Terminar Sessão"
-
-msgid "institution_label"
-msgstr "IPBeja"
 
 msgid "repetition_label"
 msgstr "Repetição"
@@ -204,32 +124,20 @@ msgstr "Medição do Sistema"
 msgid "Real Measurement Result"
 msgstr "Medição Real"
 
-msgid "Exercise Completed"
-msgstr "Exercício Concluído"
-
-msgid "Repetition Completed"
-msgstr "Repetição Concluída"
-
 msgid "Back Scratch exercise name"
 msgstr "Alcançar atrás das Costas"
 
-msgid "Press Enter to confirm"
-msgstr "Prima Enter para confirmar"
+msgid "enter_confirm"
+msgstr "Prima ENTER para confirmar"
 
 msgid "Register"
 msgstr "Registro"
 
-msgid "Press SPACE to continue"
-msgstr "Prima ESPAÇO para continuar"
+msgid "Press ENTER to continue"
+msgstr "Prima ENTER para continuar"
 
-msgid "Press SPACE to begin"
-msgstr "Prima ESPAÇO para iniciar"
-
-msgid "best_right_side_label"
-msgstr "Melhor Resultado do Lado Direito"
-
-msgid "best_left_side_label"
-msgstr "Melhor Resultado do Lado Esquerdo"
+msgid "Press ENTER to begin"
+msgstr "Prima ENTER para iniciar"
 
 msgid "rep_1_label"
 msgstr "1° Repetição"
@@ -237,11 +145,53 @@ msgstr "1° Repetição"
 msgid "rep_2_label"
 msgstr "2° Repetição"
 
-msgid "space_esc"
-msgstr "Prima ESPAÇO para continuar ou ESC para sair"
+msgid "enter_esc"
+msgstr "Prima ENTER para continuar ou ESC para sair"
 
 msgid "esc_finish"
-msgstr "Press ESC to finish"
+msgstr "Prima ESC para terminar"
+
+msgid "esc_return"
+msgstr "Prima ESC para voltar"
 
 msgid "Sit and Reach"
 msgstr "Sentar e Alcançar"
+
+msgid "avarage_error"
+msgstr "Erro Médio:"
+
+msgid "no_data"
+msgstr "Nenhum dado encontrado para a seleção"
+
+msgid "choose"
+msgstr "Escolha entre as opções e clique em Calcular:"
+
+msgid "calculate"
+msgstr "Calcular"
+
+msgid "Erro"
+msgstr "Erro"
+
+msgid "chart_title"
+msgstr "Medições Filtradas (cm)"
+
+msgid "chart_xlabel"
+msgstr "Sequência Cronológica de Repetições"
+
+msgid "Foot"
+msgstr "Pé"
+
+msgid "Hand"
+msgstr "Mão"
+
+msgid "Hold"
+msgstr "Manter"
+
+msgid "Opp Elbow"
+msgstr "Cotovelo Oposto"
+
+msgid "Opp Knee"
+msgstr "Joelho Oposto"
+
+msgid "Exercise not performed correctly."
+msgstr "Exercício não foi executado corretamente."

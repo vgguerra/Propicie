@@ -13,26 +13,26 @@ SAR_CALIB_ELBOW_MIN      = 20
 SAR_CALIB_ELBOW_MAX      = 120
 SAR_CALIB_HIP_MIN        = 120
 SAR_CALIB_HIP_MAX        = 160
-SAR_CALIB_KNEE_MIN       = 100
+SAR_CALIB_KNEE_MIN       = 140
 SAR_CALIB_KNEE_MAX       = 180
 
 # Posture / measurement phase
 SAR_POSTURE_ELBOW_MIN    = 155
 SAR_POSTURE_ELBOW_MAX    = 180
-SAR_POSTURE_HIP_MIN      = 55
+SAR_POSTURE_HIP_MIN      = 60
 SAR_POSTURE_HIP_MAX      = 150
-SAR_POSTURE_KNEE_MIN     = 100
+SAR_POSTURE_KNEE_MIN     = 140
 SAR_POSTURE_KNEE_MAX     = 180
 
 # Opposite-side limits (shared between phases)
-SAR_OPP_ELBOW_MIN        = 140
+SAR_OPP_ELBOW_MIN        = 155
 SAR_OPP_ELBOW_MAX        = 180
 SAR_OPP_KNEE_MIN         = 80
 SAR_OPP_KNEE_MAX         = 150
 
 # --- Sit and Reach: timing & averaging ---
-SAR_CALIBRATION_DURATION = 3    # seconds to hold calibration pose
-SAR_POSE_DURATION        = 3    # seconds to hold measurement pose
+SAR_CALIBRATION_DURATION = 5    # seconds to hold calibration pose
+SAR_POSE_DURATION        = 5    # seconds to hold measurement pose
 SAR_AVERAGE_OVER         = 6    # rolling window for distance smoothing
 SAR_ERROR                = 1.035  # systematic error correction (cm)
 
