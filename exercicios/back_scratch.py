@@ -13,6 +13,7 @@ import numpy as np
 
 from locale_setup import _
 from utils import (
+    ReturnToMenu,
     calculate_distance_2d,
     read_kinect_frame,
     append_to_excel,
@@ -110,7 +111,8 @@ def _screen_repetition(distance, real_distance, finish_cb):
             cv2.destroyWindow(win_title(_("Repetition Results")))
             break
         elif key == 27:  # esc
-            finish_cb()
+            cv2.destroyWindow(win_title(_("Repetition Results")))
+            raise ReturnToMenu()
 
 
 def screen_final(best_right, best_left, finish_cb):
@@ -190,25 +192,26 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
         # Aloca o feed redimensionado centralizado no canvas de fundo
         canvas[HEADER_H + 5 : HEADER_H + 5 + feed_h, feed_x : feed_x + feed_w] = resized
 
-        # Overlay Translúcido Superior para Caixa de Status
+        # Overlay Translúcido Superior para Caixa de Status (centrado)
         overlay = canvas.copy()
-        cv2.rectangle(overlay, (feed_x + 5, HEADER_H + 10), (feed_x + 420, HEADER_H + 80), (0, 0, 0), -1)
+        bs_box_x = (W - 415) // 2
+        cv2.rectangle(overlay, (bs_box_x, HEADER_H + 10), (bs_box_x + 415, HEADER_H + 80), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
         
         # Inserção de Strings Informativas
-        cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 38),
+        cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (bs_box_x + 7, HEADER_H + 38),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
         
         # Mostra o progresso do tempo de sustentação no espaço do Calibration
         status_timer = f"{_('Hold')}: {elapsed:.1f}s / {BS_POSE_HELD_DURATION}s" if elapsed > 0 else f"{_('Hold')}: ---"
-        cv2.putText(canvas, status_timer, (feed_x + 12, HEADER_H + 68),
+        cv2.putText(canvas, status_timer, (bs_box_x + 7, HEADER_H + 68),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
 
         cv2.imshow(win_title(exercise_title), canvas)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27:
-            finish_cb()
+            raise ReturnToMenu()
 
     return final_dist
 
@@ -307,6 +310,9 @@ def run(kinect, holistic, finish_cb):
         )            
         cv2.destroyAllWindows()
         
+    except ReturnToMenu:
+        cv2.destroyAllWindows()
+        return
     except Exception as e:
         import traceback, sys
         traceback.print_exc(file=sys.stdout)

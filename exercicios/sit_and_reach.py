@@ -13,6 +13,7 @@ import mediapipe as mp
 import numpy as np
 from locale_setup import _
 from utils import (
+    ReturnToMenu,
     calculate_distance_2d,
     read_kinect_frame,
     append_to_excel,
@@ -247,7 +248,8 @@ def _screen_repetition(distance, real_distance, finish_cb):
             cv2.destroyWindow(win_title(_("Repetition Results")))
             break
         elif key == 27:
-            finish_cb()
+            cv2.destroyWindow(win_title(_("Repetition Results")))
+            raise ReturnToMenu()
 
 
 def screen_final(best_right, best_left, finish_cb):
@@ -286,6 +288,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
     final_dist   = None
 
     while True:
+        distance_str = ""
         if not kinect.has_new_color_frame():
             continue
 
@@ -333,7 +336,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
 
                 cv2.putText(image, f"{_('Foot')}: {foot[0]}, {foot[1]}",  (1000, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
                 cv2.putText(image, f"{_('Hand')}: {hand[0]}, {hand[1]}",  (1000, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 235, 0), 2)
-                cv2.putText(image, f"{_('Dist')}: {distance:.2f} cm",     (50,    50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,   0, 0), 2)
+                distance_str = f"{_('Dist')}: {distance:.2f} cm"
                 cv2.putText(image, f"{_('Pose')}: {pose_correct}",        (50,   250), cv2.FONT_HERSHEY_SIMPLEX, 1, (128, 0, 0), 2)
 
         side_label = _("right_side_label") if repeats in (0, 1) else _("left_side_label")
@@ -358,18 +361,28 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
          #           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (128, 0, 0), 2)
 
         overlay = canvas.copy()
-        cv2.rectangle(overlay, (feed_x + 5, HEADER_H + 10), (feed_x + 420, HEADER_H + 80), (0, 0, 0), -1)
+        sar_box_x = (W - 415) // 2
+        cv2.rectangle(overlay, (sar_box_x, HEADER_H + 10), (sar_box_x + 415, HEADER_H + 55), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.5, canvas, 0.5, 0, canvas)
-        cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (feed_x + 12, HEADER_H + 38),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
-        cv2.putText(canvas, f"{_('Calibration')}: {calibration}", (feed_x + 12, HEADER_H + 68),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+        if calibration == "Ok":
+            cv2.putText(canvas, f"{_('Pose')}: {pose_correct}", (sar_box_x + 7, HEADER_H + 38),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+        else:
+            cv2.putText(canvas, f"{_('Calibration')}: {calibration}", (sar_box_x + 7, HEADER_H + 38),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+
+        if distance_str:
+            overlay2 = canvas.copy()
+            cv2.rectangle(overlay2, (feed_x + 5, HEADER_H + 10), (feed_x + 290, HEADER_H + 50), (0, 0, 0), -1)
+            cv2.addWeighted(overlay2, 0.5, canvas, 0.5, 0, canvas)
+            cv2.putText(canvas, distance_str, (feed_x + 12, HEADER_H + 38),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
 
         cv2.imshow(win_title(_("Sit and Reach")), canvas)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27:
-            finish_cb()
+            raise ReturnToMenu()
 
     return round(final_dist, 2)
 
@@ -467,6 +480,9 @@ def run(kinect, holistic, finish_cb):
             reals_left[0],  reals_left[1],
             finish_cb
         )
+    except ReturnToMenu:
+        cv2.destroyAllWindows()
+        return
     except Exception as e:
         import traceback, sys
         traceback.print_exc(file=sys.stdout)

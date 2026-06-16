@@ -7,7 +7,7 @@ from ui.theme import (
     BG, DARK_BLUE, HEADER_BG, HEADER_TEXT, BTN_BLUE, BTN_TEXT,
     W, H, HEADER_H, FONT, FONT_LABEL, THICKNESS_SMALL,
 )
-from utils import win_title
+from utils import win_title, ReturnToMenu
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -194,7 +194,7 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total):
             key = cv2.waitKey(10) & 0xFF
             if key == 27:
                 cv2.destroyWindow(WIN)
-                raise SystemExit(0)
+                raise ReturnToMenu()
             elif key in (13, 10):
                 cv2.destroyWindow(WIN)
                 return tuple(values)
@@ -287,7 +287,7 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total):
         key = cv2.waitKey(10) & 0xFF
         if key == 27:
             cv2.destroyWindow(WIN)
-            raise SystemExit(0)
+            raise ReturnToMenu()
         elif key in (13, 10) and entered:
             cv2.destroyWindow(WIN)
             return float(entered.replace(",", "."))
@@ -389,7 +389,8 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
             cv2.destroyWindow(WIN)
             return
         elif key == 27:
-            finish_cb()
+            cv2.destroyWindow(WIN)
+            raise ReturnToMenu()
 
 
 # ---------------------------------------------------------------------------

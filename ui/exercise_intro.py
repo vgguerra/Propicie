@@ -18,6 +18,7 @@ import numpy as np
 import unicodedata
 from PIL import Image, ImageDraw, ImageFont
 
+from utils import ReturnToMenu
 from locale_setup import _ as trans
 from ui.draw import draw_title_page, draw_button, blank_canvas
 from ui.theme import (  
@@ -83,13 +84,14 @@ def _draw_circle_done(img, cx, cy, r):
     """Filled circle with X — completed repetition."""
     cv2.circle(img, (cx, cy), r, BTN_BLUE, -1)
     d = int(r * 0.45)
-    cv2.line(img, (cx - d, cy - d), (cx + d, cy + d), (255, 255, 255), 3)
-    cv2.line(img, (cx + d, cy - d), (cx - d, cy + d), (255, 255, 255), 3)
+    cv2.line(img, (cx - d, cy - d), (cx + d, cy + d), (0, 255, 0), 3)
+    cv2.line(img, (cx + d, cy - d), (cx - d, cy + d), (0, 255, 0), 3)
 
 
 def _draw_circle_current(img, cx, cy, r):
-    """Hollow ring — current repetition."""
+    """Hollow ring with yellow dot — current repetition."""
     cv2.circle(img, (cx, cy), r, BTN_BLUE, 4)
+    cv2.circle(img, (cx, cy), int(r * 0.35), (0, 255, 255), -1)
 
 
 def _draw_circle_pending(img, cx, cy, r):
@@ -194,4 +196,5 @@ def show_exercise_intro(exercise_name, rep, finish_cb, is_back_scratch=False):
             cv2.destroyWindow(WIN)
             return
         elif key == 27:
-            finish_cb()
+            cv2.destroyWindow(WIN)
+            raise ReturnToMenu()
