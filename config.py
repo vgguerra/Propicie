@@ -5,8 +5,8 @@
 # --- Pixel to CM conversion ---
 # Approximate ratio at 1 meter distance
 #SIT_AND_REACH_PIXEL_TO_CM = 0.533333
-SIT_AND_REACH_PIXEL_TO_CM = 0.45
-BACK_SCRATCH_PIXEL_TO_CM  = 0.625
+SIT_AND_REACH_PIXEL_TO_CM = 0.15
+BACK_SCRATCH_PIXEL_TO_CM  = 0.21
 
 # --- Sit and Reach: angle boundaries ---
 # Calibration phase

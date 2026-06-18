@@ -12,11 +12,17 @@ import matplotlib
 matplotlib.use('Agg')  
 import matplotlib.pyplot as plt
 
-from locale_setup import _ as _tr
-from ui.draw import blank_canvas
+from locale_setup import translate
+from ui.draw import blank_canvas, put_text, measure_text
 from ui.theme import W, H, BORDER_INSET, DARK_BLUE, BTN_BLUE, BG
-from ui.forms import _put_text, _measure_text
 from utils import win_title
+
+# Normalização de cabeçalhos comuns do Excel
+_COL_NORMALIZE = [
+    ('Weigth', 'Weight'), ('Género', 'Gender'), ('Genero', 'Gender'),
+    ('Sexo', 'Gender'), ('lado', 'Side'), ('Lado', 'Side'),
+    ('idade', 'Age'), ('Idade', 'Age'),
+]
 
 # Mapeamento absoluto dos caminhos das tabelas utentes
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -60,7 +66,7 @@ def _load_and_filter_data(opts):
         return df
 
     # Normalização de cabeçalhos comuns do Excel
-    for old_col, new_col in [('Weigth', 'Weight'), ('Género', 'Gender'), ('Genero', 'Gender'), ('Sexo', 'Gender'), ('lado', 'Side'), ('Lado', 'Side'), ('idade', 'Age'), ('Idade', 'Age')]:
+    for old_col, new_col in _COL_NORMALIZE:
         if old_col in df.columns and new_col not in df.columns:
             df.rename(columns={old_col: new_col}, inplace=True)
 
@@ -104,11 +110,11 @@ def _generate_processed_chart(df):
         calculated_distance_color  = '#142E8B'  
         
         if 'Real distance' in df_chart.columns and 'Calculated distance' in df_chart.columns:
-            ax.plot(df_chart.index + 1, df_chart['Real distance'], marker='o', linewidth=2, color=real_distance_color, label=_tr('real_distance_label'))
-            ax.plot(df_chart.index + 1, df_chart['Calculated distance'], marker='s', linewidth=2, color=calculated_distance_color, label=_tr('System Distance'))
+            ax.plot(df_chart.index + 1, df_chart['Real distance'], marker='o', linewidth=2, color=real_distance_color, label=translate('real_distance_label'))
+            ax.plot(df_chart.index + 1, df_chart['Calculated distance'], marker='s', linewidth=2, color=calculated_distance_color, label=translate('System Distance'))
             
-        ax.set_title(_tr("chart_title"), fontsize=11, fontweight='bold', color=calculated_distance_color, pad=6)
-        ax.set_xlabel(_tr("chart_xlabel"), fontsize=9, color=calculated_distance_color)
+        ax.set_title(translate("chart_title"), fontsize=11, fontweight='bold', color=calculated_distance_color, pad=6)
+        ax.set_xlabel(translate("chart_xlabel"), fontsize=9, color=calculated_distance_color)
         ax.set_ylabel("cm", fontsize=9, color=calculated_distance_color)
         
         ax.grid(True, linestyle='--', alpha=0.5, color='#CBD5E1')
@@ -131,7 +137,7 @@ def _generate_processed_chart(df):
 
 
 def show_data_visualization():
-    WIN = win_title(_tr("Visualize Data"))
+    WIN = win_title(translate("Visualize Data"))
     cv2.namedWindow(WIN, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(WIN, W, H)
 
@@ -166,7 +172,7 @@ def show_data_visualization():
     def _apply_filters(df):
         if df.empty:
             return df
-        for old_col, new_col in [('Weigth', 'Weight'), ('Género', 'Gender'), ('Genero', 'Gender'), ('Sexo', 'Gender'), ('lado', 'Side'), ('Lado', 'Side'), ('idade', 'Age'), ('Idade', 'Age')]:
+        for old_col, new_col in _COL_NORMALIZE:
             if old_col in df.columns and new_col not in df.columns:
                 df.rename(columns={old_col: new_col}, inplace=True)
         if 'Gender' in df.columns:
@@ -312,22 +318,8 @@ def show_data_visualization():
         if event != cv2.EVENT_LBUTTONDOWN:
             return
 
-        # Botão Calcular — reload data, apply ranges + filters
+        # Botão Calcular — rebuild chart from current slider/filter state
         if btn_calc[0] <= x <= btn_calc[2] and btn_calc[1] <= y <= btn_calc[3]:
-            sr_full = pd.DataFrame()
-            if os.path.exists(_PATH_SR):
-                try:
-                    sr_full = pd.read_excel(_PATH_SR)
-                except Exception as e: print(f"Erro SR: {e}")
-            bs_full = pd.DataFrame()
-            if os.path.exists(_PATH_BS):
-                try:
-                    bs_full = pd.read_excel(_PATH_BS)
-                except Exception as e: print(f"Erro BS: {e}")
-            sr_total = len(sr_full)
-            bs_total = len(bs_full)
-            sr_min = 0; sr_max = max(0, sr_total - 1)
-            bs_min = 0; bs_max = max(0, bs_total - 1)
             df_current = _build_filtered_data()
             current_chart = _generate_processed_chart(df_current)
             return
@@ -351,43 +343,43 @@ def show_data_visualization():
         cv2.rectangle(img, (BORDER_INSET, 80), (W - BORDER_INSET, H - BORDER_INSET), DARK_BLUE, 2)
 
         # Título
-        title_text = _tr("Visualize Data")
+        title_text = translate("Visualize Data")
         font_size_title = 43
-        tw, th = _measure_text(title_text, font_size_title, is_bold=True)
+        tw, th = measure_text(title_text, font_size_title, is_bold=True)
         tx = (W - tw) // 2
         ty = 80 - th // 2 - 10
         pad = 14
         cv2.rectangle(img, (tx - pad, ty - pad), (tx + tw + pad, ty + th + pad), BG, -1)
-        img = _put_text(img, title_text, (tx, ty), font_size=font_size_title, color=tuple(DARK_BLUE), is_bold=True)
+        img = put_text(img, title_text, (tx, ty), font_size=font_size_title, color=tuple(DARK_BLUE), is_bold=True)
 
         # Faixa de Instrução Principal
         cv2.rectangle(img, (80, 110), (1070, 145), tuple(DARK_BLUE), -1)
-        img = _put_text(img, _tr("choose"), (95, 118), font_size=15, color=(255, 255, 255))
+        img = put_text(img, translate("choose"), (95, 118), font_size=15, color=(255, 255, 255))
 
         def _draw_chk(canvas, x, y, checked, label):
             cv2.rectangle(canvas, (x, y), (x + 24, y + 24), tuple(DARK_BLUE), 2)
             if checked:
                 cv2.rectangle(canvas, (x + 5, y + 5), (x + 19, y + 19), tuple(DARK_BLUE), -1)
-            return _put_text(canvas, label, (x + 36, y + 3), font_size=16, color=tuple(DARK_BLUE))
+            return put_text(canvas, label, (x + 36, y + 3), font_size=16, color=tuple(DARK_BLUE))
 
         # Checkboxes
-        img = _draw_chk(img, 100, 160, opts["exe_sr"], _tr("Sit and Reach"))
-        img = _draw_chk(img, 100, 210, opts["exe_bs"], _tr("Back Scratch exercise name"))
-        img = _draw_chk(img, 680, 160, opts["gen_f"], _tr("Feminine"))
-        img = _draw_chk(img, 680, 210, opts["gen_m"], _tr("Male"))
-        img = _draw_chk(img, 840, 160, opts["side_esq"], _tr("Left"))
-        img = _draw_chk(img, 840, 210, opts["side_dir"], _tr("Right"))
+        img = _draw_chk(img, 100, 160, opts["exe_sr"], translate("Sit and Reach"))
+        img = _draw_chk(img, 100, 210, opts["exe_bs"], translate("Back Scratch exercise name"))
+        img = _draw_chk(img, 680, 160, opts["gen_f"], translate("Feminine"))
+        img = _draw_chk(img, 680, 210, opts["gen_m"], translate("Male"))
+        img = _draw_chk(img, 840, 160, opts["side_esq"], translate("Left"))
+        img = _draw_chk(img, 840, 210, opts["side_dir"], translate("Right"))
 
         # Botão Calcular
         bc_color = tuple(BTN_BLUE) if hover_calc else (255, 255, 255)
         txt_color = (255, 255, 255) if hover_calc else tuple(DARK_BLUE)
         cv2.rectangle(img, (btn_calc[0], btn_calc[1]), (btn_calc[2], btn_calc[3]), tuple(DARK_BLUE), 1)
         cv2.rectangle(img, (btn_calc[0]+1, btn_calc[1]+1), (btn_calc[2]-1, btn_calc[3]-1), bc_color, -1)
-        calc_text = _tr("calculate")
-        tw_calc, th_calc = _measure_text(calc_text, 28)
+        calc_text = translate("calculate")
+        tw_calc, th_calc = measure_text(calc_text, 28)
         cx = btn_calc[0] + (btn_calc[2] - btn_calc[0] - tw_calc) // 2
         cy = btn_calc[1] + (btn_calc[3] - btn_calc[1] - th_calc) // 2
-        img = _put_text(img, calc_text, (cx, cy), font_size=28, color=txt_color)
+        img = put_text(img, calc_text, (cx, cy), font_size=28, color=txt_color)
 
         # ── Two per-exercise range sliders ──
         def _draw_slider(canvas, idx_to_px, cur_min, cur_max, total, slider_y):
@@ -402,13 +394,13 @@ def show_data_visualization():
             cv2.circle(canvas, (max_px, slider_y), HANDLE_R, tuple(DARK_BLUE), -1)
             lbl_min = str(cur_min + 1)
             lbl_max = str(cur_max + 1)
-            tw_min, _ = _measure_text(lbl_min, 14)
-            canvas = _put_text(canvas, lbl_min, (min_px - tw_min//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
-            tw_max, _ = _measure_text(lbl_max, 14)
-            canvas = _put_text(canvas, lbl_max, (max_px - tw_max//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
-            canvas = _put_text(canvas, "1", (SLIDER_LEFT - 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
-            tw_end, _ = _measure_text(str(total), 12)
-            canvas = _put_text(canvas, str(total), (SLIDER_RIGHT - tw_end + 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
+            tw_min, _ = measure_text(lbl_min, 14)
+            canvas = put_text(canvas, lbl_min, (min_px - tw_min//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
+            tw_max, _ = measure_text(lbl_max, 14)
+            canvas = put_text(canvas, lbl_max, (max_px - tw_max//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
+            canvas = put_text(canvas, "1", (SLIDER_LEFT - 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
+            tw_end, _ = measure_text(str(total), 12)
+            canvas = put_text(canvas, str(total), (SLIDER_RIGHT - tw_end + 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
             return canvas
 
         img = _draw_slider(img, _sr_idx_to_px, sr_min, sr_max, sr_total, SR_SLIDER_Y)
@@ -423,9 +415,9 @@ def show_data_visualization():
                 erro_col = next((c for c in ['Erro', 'erro', 'Error'] if c in df_current.columns), None)
                 if erro_col:
                     avg_err = df_current[erro_col].mean()
-                    err_txt = f"{_tr('avarage_error')} {avg_err:.2f} cm"
-                    tw_e, _ = _measure_text(err_txt, 14)
-                    img = _put_text(img, err_txt, ((W - tw_e) // 2, gy - 20), font_size=14, color=tuple(DARK_BLUE))
+                    err_txt = f"{translate('avarage_error')} {avg_err:.2f} cm"
+                    tw_e, _ = measure_text(err_txt, 14)
+                    img = put_text(img, err_txt, ((W - tw_e) // 2, gy - 20), font_size=14, color=tuple(DARK_BLUE))
             img[gy:gy+gh, gx:gx+gw] = current_chart
             cv2.rectangle(img, (gx, gy), (gx + gw, gy + gh), DARK_BLUE, 1)
             _content_bottom = gy + gh
@@ -433,17 +425,17 @@ def show_data_visualization():
             gx = BORDER_INSET
             cv2.rectangle(img, (gx, gy), (W - gx, H - 120), (255, 255, 255), -1)
             cv2.rectangle(img, (gx, gy), (W - gx, H - 120), DARK_BLUE, 1)
-            tw_e, _ = _measure_text(_tr("no_data"), 16)
-            img = _put_text(img, _tr("no_data"), ((W - tw_e) // 2, gy + 100), font_size=16, color=tuple(DARK_BLUE))
+            tw_e, _ = measure_text(translate("no_data"), 16)
+            img = put_text(img, translate("no_data"), ((W - tw_e) // 2, gy + 100), font_size=16, color=tuple(DARK_BLUE))
             _content_bottom = H - 120
 
         # Rodapé — centrado entre o fim do conteúdo e o fim do retângulo exterior
         _outer_bottom = H - BORDER_INSET
         _gap = _outer_bottom - _content_bottom
-        _esc_text = _tr("esc_return")
-        _tw_esc, _th_esc = _measure_text(_esc_text, 26)
+        _esc_text = translate("esc_return")
+        _tw_esc, _th_esc = measure_text(_esc_text, 26)
         _esc_y = _content_bottom + _gap // 2 - _th_esc // 2
-        img = _put_text(img, _esc_text, ((W - _tw_esc) // 2, _esc_y), font_size=26, color=tuple(DARK_BLUE))
+        img = put_text(img, _esc_text, ((W - _tw_esc) // 2, _esc_y), font_size=26, color=tuple(DARK_BLUE))
 
         cv2.imshow(WIN, img)
         key = cv2.waitKey(20) & 0xFF

@@ -8,11 +8,10 @@ import os
 from PIL import ImageFont, ImageDraw, Image
 
 import locale_setup
-from locale_setup import _
-from ui.draw import blank_canvas, draw_button
+from locale_setup import translate
+from ui.draw import blank_canvas, draw_button, put_text, measure_text
 from ui.theme import W, H, BG, BORDER_INSET, DARK_BLUE, BTN_BLUE
-from ui.forms import _put_text, _measure_text  
-from utils import win_title, set_app_icon
+from utils import win_title, set_app_icon, WindowManager
 
 # Mapeamento absoluto do caminho do logótipo na pasta de arquivos
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -99,11 +98,6 @@ def show_main_menu() -> str:
     """
     Display the main menu and return the selected action key.
     """
-    WIN = win_title(_("Main Menu"))
-    cv2.namedWindow(WIN, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(WIN, W, H)
-    set_app_icon(WIN)
-
     rects    = _button_rects()
     selected = None
     hover    = None       
@@ -140,14 +134,10 @@ def show_main_menu() -> str:
             if event == cv2.EVENT_LBUTTONDOWN:
                 current_lang = "en_US" if current_lang == "pt_PT" else "pt_PT"
                 
-                if hasattr(locale_setup, 'set_locale'):
-                    locale_setup.set_locale(current_lang)
-                elif hasattr(locale_setup, 'set_language'):
-                    locale_setup.set_language(current_lang)
-                elif hasattr(locale_setup, 'current_lang'):
-                    locale_setup.current_lang = current_lang
+                locale_setup.set_language(current_lang)
 
-    cv2.setMouseCallback(WIN, _mouse)
+    wm = WindowManager(translate("Main Menu"), size=(W, H), delay=16, on_mouse=_mouse)
+    set_app_icon(wm.winname)
 
     while selected is None:
         img = blank_canvas()
@@ -159,14 +149,14 @@ def show_main_menu() -> str:
                       (W - BORDER_INSET, H - BORDER_INSET), DARK_BLUE, 2)
 
         # Institution label — above the top border, right-aligned
-        inst_tw, inst_th = _measure_text("IPBeja", 18)
-        img = _put_text(img, "IPBeja", (W - BORDER_INSET - inst_tw, top_border_y - inst_th - 6),
+        inst_tw, inst_th = measure_text("IPBeja", 18)
+        img = put_text(img, "IPBeja", (W - BORDER_INSET - inst_tw, top_border_y - inst_th - 6),
                         font_size=18, color=tuple(DARK_BLUE))
 
         # 1. PROCESSAMENTO DE MEDIDAS E CENTRALIZAÇÃO DO BLOCO [LOGO + TEXTO]
         title_text = "CAPACITA"
         font_size = 60
-        text_w, text_h = _measure_text(title_text, font_size, is_bold=True)
+        text_w, text_h = measure_text(title_text, font_size, is_bold=True)
 
         gap_logo_text = 5
         title_y = top_border_y - text_h // 2
@@ -213,14 +203,14 @@ def show_main_menu() -> str:
             text_final_x = (W - 480) // 2
 
         # Desenha o texto "CAPACITA" em Negrito
-        img = _put_text(img, title_text, (text_final_x, title_y), font_size=font_size, color=tuple(DARK_BLUE), is_bold=True)
+        img = put_text(img, title_text, (text_final_x, title_y), font_size=font_size, color=tuple(DARK_BLUE), is_bold=True)
 
         # 2. RENDERIZAÇÃO DOS BOTÕES DO MENU
         for i, (msgid, _action) in enumerate(_BUTTONS):
             bx, by, bw, bh = rects[i]
             draw_button(img, "", bx, by, bw, bh, hovered=(hover == i))
             
-            texto_traduzido = _(msgid)
+            texto_traduzido = translate(msgid)
             try:
                 bbox_btn = font_btn.getmask(texto_traduzido).getbbox()
                 btn_w = bbox_btn[2] if bbox_btn else 0
@@ -231,7 +221,7 @@ def show_main_menu() -> str:
 
             text_x = (W - btn_w) // 2
             text_y = by + (bh - btn_h) // 2 - 2
-            img = _put_text(img, texto_traduzido, (text_x, text_y), font_size=22, color=(255, 255, 255))
+            img = put_text(img, texto_traduzido, (text_x, text_y), font_size=22, color=(255, 255, 255))
 
         # 3. RENDERIZAÇÃO DA BANDEIRA INVERSA (Alternância de Idioma)
         if current_lang == "pt_PT":
@@ -244,12 +234,12 @@ def show_main_menu() -> str:
         else:
             cv2.rectangle(img, (flag_x, flag_y), (flag_x + flag_w, flag_y + flag_h), DARK_BLUE, 1)
 
-        cv2.imshow(WIN, img)
-        key = cv2.waitKey(16) & 0xFF
-        if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
+        wm.show(img)
+        key = wm.poll()
+        if key == "close":
             selected = "quit"
         elif key == 27:
             selected = "quit"
 
-    cv2.destroyWindow(WIN)
+    wm.close()
     return selected

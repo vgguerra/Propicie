@@ -4,7 +4,7 @@
 
 import math
 import datetime as dt
-from locale_setup import _
+from locale_setup import translate
 import cv2
 import numpy as np
 import pandas as pd
@@ -136,104 +136,53 @@ def put_text_utf8(img, text, pos, font_size=28, color=(0, 0, 0)):
     draw.text(pos, text, font=font, fill=color_rgb)
     return cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
 
-def show_register_screen():
-    """
-    OpenCV registration form.
-    Returns (age, height, weight, gender) as strings.
-    """
-    fields = [_("Age"), _("Height (cm)"), _("Weight (kg)"), _("Gender (M/F)")]
-    values      = ["", "", "", ""]
-    active_field = -1
 
-    positions = [(50, 50 + i * 80, 550, 100 + i * 80) for i in range(len(fields))]
-
-    def _mouse_cb(event, x, y, flags, param):
-        nonlocal active_field
-        if event == cv2.EVENT_LBUTTONDOWN:
-            active_field = -1
-            for i, (x1, y1, x2, y2) in enumerate(positions):
-                if x1 <= x <= x2 and y1 <= y <= y2:
-                    active_field = i
-                    break
-
-    win = win_title(_("Register"))
-    cv2.namedWindow(win)
-    cv2.setMouseCallback(win, _mouse_cb)
-
-    while True:
-        img = np.ones((400, 600, 3), dtype=np.uint8) * 255
-
-        for i, (x1, y1, x2, y2) in enumerate(positions):
-            cv2.rectangle(img, (x1, y1), (x2, y2), (230, 230, 230), -1)
-            border = (0, 255, 0) if i == active_field else (0, 0, 0)
-            cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
-            img = put_text_utf8(img, f"{fields[i]}:", (x1 + 10, y1 - 26),
-                font_size=20, color=(0, 0, 0))
-            img = put_text_utf8(img, values[i], (x1 + 10, y2 - 40),
-              font_size=26, color=(0, 0, 0))
-
-        _tc = _("Press Enter to confirm")
-        _tw = _measure_text_utf8_width(_tc, 26)
-        img = put_text_utf8(img, _tc, ((600 - _tw) // 2, 360),
-            font_size=26, color=(100, 100, 100))
-        cv2.imshow(win, img)
-
-        key = cv2.waitKey(10) & 0xFF
-        if cv2.getWindowProperty(win, cv2.WND_PROP_VISIBLE) < 1:
-            _quit()
-        elif key == 27:
-            _quit()
-        elif key in (13, 10):
-            cv2.destroyAllWindows()
-            return tuple(values)
-        elif key == 9:
-            active_field = (active_field + 1) % len(fields)
-        elif active_field != -1:
-            if key == 8:
-                values[active_field] = values[active_field][:-1]
-            elif 32 <= key <= 126:
-                values[active_field] += chr(key)
-
-
-def show_real_distance_screen():
-    """
-    OpenCV numeric-input window.
-    Returns the manually measured distance as a float (cm).
-    """
-    entered = ""
-
-    win = win_title(_("Real Distance"))
-    cv2.namedWindow(win)
-
-    while True:
-        img = np.ones((200, 600, 3), dtype=np.uint8) * 255
-        cv2.rectangle(img, (50, 60), (550, 120), (230, 230, 230), -1)
-        cv2.rectangle(img, (50, 60), (550, 120), (0, 0, 0), 2)
-        img = put_text_utf8(img, _("real_distance_label") + " (cm):", (50, 40),
-              font_size=24, color=(0, 0, 0))
-        _tc = _("Press Enter to confirm")
-        _tw = _measure_text_utf8_width(_tc, 26)
-        img = put_text_utf8(img, _tc, ((600 - _tw) // 2, 170),
-              font_size=26, color=(100, 100, 100))
-              
-        cv2.imshow(win, img)
-
-        key = cv2.waitKey(10) & 0xFF
-        if cv2.getWindowProperty(win, cv2.WND_PROP_VISIBLE) < 1:
-            cv2.destroyAllWindows()
-            _quit()
-        elif key == 27:
-            cv2.destroyAllWindows()
-            _quit()
-        elif key in (13, 10) and entered:
-            cv2.destroyAllWindows()
-            return float(entered.replace(",", "."))
-        elif key == 8:
-            entered = entered[:-1]
-        elif (48 <= key <= 57) or key in (44, 46, 43, 45):
-            entered += chr(key)
 
 # INTERNAL HELPERS
+
+class WindowManager:
+    """Handles OpenCV window lifecycle: create, show, poll key, close on ESC/X."""
+
+    def __init__(self, title, finish_cb=None, delay=1, size=None, on_mouse=None):
+        self.winname = title if title.startswith("CAPACITA") else win_title(title)
+        self.finish_cb = finish_cb
+        self.delay = delay
+        self._closed = False
+
+        cv2.namedWindow(self.winname, cv2.WINDOW_NORMAL)
+        if size:
+            cv2.resizeWindow(self.winname, size[0], size[1])
+        if on_mouse:
+            cv2.setMouseCallback(self.winname, on_mouse)
+
+    @property
+    def should_close(self):
+        return self._closed
+
+    def show(self, canvas):
+        cv2.imshow(self.winname, canvas)
+
+    def poll(self):
+        key = cv2.waitKey(self.delay) & 0xFF
+        if key == 27 or cv2.getWindowProperty(self.winname, cv2.WND_PROP_VISIBLE) < 1:
+            self.close()
+            return "close"
+        return key
+
+    def close(self):
+        if not self._closed:
+            self._closed = True
+            try:
+                cv2.destroyWindow(self.winname)
+            except:
+                pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
 
 def set_app_icon(window_title=None):
     """Set the CAPACITA logo as the icon for a specific or all OpenCV windows."""
@@ -256,7 +205,4 @@ def set_app_icon(window_title=None):
             ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 1, hicon)
 
 
-def _quit():
-    """Centralised exit — called by UI helpers that don't own Kinect/cv2."""
-    cv2.destroyAllWindows()
-    raise SystemExit(0)
+

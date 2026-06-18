@@ -6,12 +6,10 @@
 #
 # Usage
 # -----
-#   from locale_setup import set_language, _
+#   from locale_setup import set_language, translate
 #
 #   set_language("pt_PT")   # or "en_US"
-#   print(_("Sit and Reach"))   # → "Sentar e Alcançar"
-#
-# The underscore function _ is the standard gettext convention.
+#   print(translate("Sit and Reach"))   # → "Sentar e Alcançar"
 # =============================================================================
 
 import gettext
@@ -56,6 +54,8 @@ def set_language(lang: str) -> None:
 def _(msgid: str) -> str:
     """Translate *msgid* using the currently active language."""
     return _translator.gettext(msgid)
+
+translate = _
 
 
 # ---------------------------------------------------------------------------

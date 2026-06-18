@@ -22,9 +22,6 @@ msgstr "Left"
 msgid "Exercise Completed"
 msgstr "Exercise Completed"
 
-msgid "System Results"
-msgstr "System Results"
-
 msgid "Repetition Completed"
 msgstr "Repetition Completed"
 
@@ -39,12 +36,6 @@ msgstr "Weight (kg)"
 
 msgid "Gender (M/F)"
 msgstr "Gender (M/F)"
-
-msgid "Press Enter to confirm"
-msgstr "Press Enter to confirm"
-
-msgid "Real Distance"
-msgstr "Manual measurement distance"
 
 msgid "Feminine"
 msgstr "Female"
@@ -105,9 +96,6 @@ msgstr "Left Side"
 
 msgid "Next"
 msgstr "Next"
-
-msgid "System Distance"
-msgstr "System Distance"
 
 msgid "Real Measurement"
 msgstr "Real Measurement"

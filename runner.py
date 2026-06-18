@@ -6,15 +6,10 @@ import cv2
 from pykinect2 import PyKinectRuntime, PyKinectV2
 import mediapipe as mp
 
-print("A importar menu...")
 from ui.menu import show_main_menu
-print("A importar locale_setup...")
 from locale_setup import set_language
-print("A importar utils...")
-from utils import show_register_screen
-print("A importar exercicios...")
-from exercicios import sit_and_reach, back_scratch
-print("Todos os imports OK")
+from utils import ReturnToMenu
+from exercises import sit_and_reach, back_scratch
 
 # ---------------------------------------------------------------------------
 # Hardware initialisation
@@ -22,9 +17,6 @@ print("Todos os imports OK")
 kinect   = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
 holistic = mp.solutions.holistic.Holistic()
 
-
-class ReturnToMenu(Exception):
-    pass
 
 def finish():
     cv2.destroyAllWindows()
@@ -56,17 +48,11 @@ while True:
             back_scratch.run(kinect, holistic, finish)
 
         elif escolha == "view_data":
-            print("[RUNNER] Opção view_data selecionada no menu.", flush=True)
             try:
-                print("[RUNNER] A importar show_data_visualization...", flush=True)
                 from ui.view_data import show_data_visualization
-                print("[RUNNER] Importação bem-sucedida! A chamar a função...", flush=True)
                 show_data_visualization()
-                print("[RUNNER] Função show_data_visualization terminou com sucesso.", flush=True)
             except Exception as e:
-                print(f"[RUNNER CRITICAL ERROR] Apanhado no runner: {e}", flush=True)
-            except BaseException as be:
-                print(f"[RUNNER CRITICAL SYSTEM] Erro de sistema detetado: {be}", flush=True)
+                print(f"[RUNNER] Erro no view_data: {e}", flush=True)
     except ReturnToMenu:
         continue
 
