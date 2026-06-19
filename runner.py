@@ -7,7 +7,6 @@ from pykinect2 import PyKinectRuntime, PyKinectV2
 import mediapipe as mp
 
 from ui.menu import show_main_menu
-from locale_setup import set_language
 from utils import ReturnToMenu
 from exercises import sit_and_reach, back_scratch
 

@@ -4,11 +4,10 @@
 
 import math
 import datetime as dt
-from locale_setup import translate
 import cv2
 import numpy as np
 import pandas as pd
-from PIL import ImageFont, ImageDraw, Image
+
 
 class ReturnToMenu(Exception):
     """Raised when user presses ESC to return to main menu."""
@@ -64,13 +63,6 @@ def draw_angle_arc(image, p1, p2, p3, angle):
     cv2.ellipse(image, tuple(p2_arr.astype(int)), (radius, radius), 0, 0, angle, (0, 0, 255),  2)
 
 
-def landmark_to_px(landmark, frame_shape):
-    """Convert a normalised MediaPipe landmark to pixel coordinates (x, y)."""
-    return (
-        int(landmark.x * frame_shape[1]),
-        int(landmark.y * frame_shape[0]),
-    )
-
 # KINECT / MEDIAPIPE FRAME PROCESSING
 
 def read_kinect_frame(kinect, holistic):
@@ -107,36 +99,6 @@ def append_to_log(filepath, *fields):
     line = ", ".join(str(f) for f in fields)
     with open(filepath, "a") as fh:
         fh.write(f"{dt.datetime.now()}, {line}\n")
-
-# SHARED UI WINDOWS
-
-_FONT_CACHE = {}
-
-def _get_font_cached(font_size):
-    if font_size in _FONT_CACHE:
-        return _FONT_CACHE[font_size]
-    try:
-        font = ImageFont.truetype(r"C:\Windows\Fonts\arial.ttf", font_size)
-    except Exception:
-        font = ImageFont.load_default()
-    _FONT_CACHE[font_size] = font
-    return font
-
-def _measure_text_utf8_width(text, font_size):
-    font = _get_font_cached(font_size)
-    left, _, right, _ = font.getbbox(text)
-    return right - left
-
-def put_text_utf8(img, text, pos, font_size=28, color=(0, 0, 0)):
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    pil_img = Image.fromarray(img_rgb)
-    font = _get_font_cached(font_size)
-    color_rgb = (color[2], color[1], color[0])
-    draw = ImageDraw.Draw(pil_img)
-    draw.text(pos, text, font=font, fill=color_rgb)
-    return cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
-
-
 
 # INTERNAL HELPERS
 
@@ -176,13 +138,6 @@ class WindowManager:
                 cv2.destroyWindow(self.winname)
             except:
                 pass
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self.close()
-
 
 def set_app_icon(window_title=None):
     """Set the CAPACITA logo as the icon for a specific or all OpenCV windows."""
