@@ -19,10 +19,9 @@ import numpy as np
 from utils import ReturnToMenu, WindowManager
 from locale_setup import translate
 from ui.draw import (draw_button, draw_rep_circles, blank_canvas,
-                     _get_text_size, _put_text_utf8)
+                     put_text, measure_text)
 from ui.theme import (
     W, H, BG, BORDER_INSET, BTN_BLUE, BTN_TEXT, DARK_BLUE, INSTITUTION,
-    FONT_BTN, FONT_TITLE, FONT_SMALL,
 )
 
 
@@ -37,9 +36,8 @@ def _draw_row(img, label, cx, cy, total, done, current=-1, radius=48):
     by = cy - btn_h // 2
     cv2.rectangle(img, (bx, by), (bx + btn_w, by + btn_h), BTN_BLUE, -1)
     
-    label_scale = 1.5
-    tw, th = _get_text_size(label, label_scale)
-    _put_text_utf8(img, label, (bx + (btn_w - tw) // 2, by + (btn_h + th) // 2), label_scale, BTN_TEXT)
+    tw, th = measure_text(label, 36)
+    put_text(img, label, (bx + (btn_w - tw) // 2, by + (btn_h - th) // 2), font_size=36, color=BTN_TEXT)
 
     circle_y = cy + btn_h // 2 + radius + 20
     draw_rep_circles(img, cx, circle_y, total, done, radius, current)
@@ -81,20 +79,20 @@ def show_exercise_intro(exercise_name, rep, finish_cb):
                       DARK_BLUE, 2)
 
         # Institution label — right-aligned with right border
-        inst_tw, _ = _get_text_size(INSTITUTION, FONT_SMALL)
-        _put_text_utf8(img, INSTITUTION, (W - BORDER_INSET - inst_tw, 70),
-                       FONT_SMALL, DARK_BLUE)
+        inst_tw, inst_th = measure_text(INSTITUTION, 15)
+        put_text(img, INSTITUTION, (W - BORDER_INSET - inst_tw, 70 - inst_th),
+                 font_size=15, color=DARK_BLUE)
 
         # Title centered on the top border line (Y=80)
-        tw, th = _get_text_size(title, FONT_TITLE)
+        tw, th = measure_text(title, 43)
         tx = (W - tw) // 2
-        ty = 80 + th // 2
+        ty = 80 - th // 2
         pad = 20
         cv2.rectangle(img,
-                      (tx - pad, ty - th - pad),
-                      (tx + tw + pad, ty + pad),
+                      (tx - pad, ty - pad),
+                      (tx + tw + pad, ty + th + pad),
                       BG, -1)
-        _put_text_utf8(img, title, (tx, ty), FONT_TITLE, DARK_BLUE)
+        put_text(img, title, (tx, ty), font_size=43, color=DARK_BLUE)
 
         # Right side row
         _draw_row(img, right_label, cx, start_y + 50,
@@ -106,20 +104,21 @@ def show_exercise_intro(exercise_name, rep, finish_cb):
 
         # Footer hint
         hint = translate("Press ENTER to begin") if not is_next else translate("Press ENTER to continue")
-        tw, th = _get_text_size(hint, 1.3)
-        _put_text_utf8(img, hint, ((W - tw) // 2, H - 75), 1.3, DARK_BLUE)
+        tw, th = measure_text(hint, 31)
+        put_text(img, hint, ((W - tw) // 2, H - 75 - th), font_size=31, color=DARK_BLUE)
 
         # Bottom bar — exercise name / side / rep counter
         side_label = translate("right_side_label") if rep < 2 else translate("left_side_label")
         rep_label  = f"{translate('repetition_label')} {(rep % 2) + 1}/2"
         
-        _put_text_utf8(img, exercise_name.upper(), (50, H - 20), 0.6, DARK_BLUE)
+        _, ex_th = measure_text(exercise_name.upper(), 14)
+        put_text(img, exercise_name.upper(), (50, H - 20 - ex_th), font_size=14, color=DARK_BLUE)
         
-        tw, th = _get_text_size(side_label, 0.6)
-        _put_text_utf8(img, side_label, ((W - tw) // 2, H - 20), 0.6, DARK_BLUE)
+        tw, th = measure_text(side_label, 14)
+        put_text(img, side_label, ((W - tw) // 2, H - 20 - th), font_size=14, color=DARK_BLUE)
         
-        tw, th = _get_text_size(rep_label, 0.6)
-        _put_text_utf8(img, rep_label, (W - tw - 50, H - 20), 0.6, DARK_BLUE)
+        tw, th = measure_text(rep_label, 14)
+        put_text(img, rep_label, (W - tw - 50, H - 20 - th), font_size=14, color=DARK_BLUE)
 
         wm.show(img)
 

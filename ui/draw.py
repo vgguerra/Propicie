@@ -11,9 +11,7 @@ from typing import Optional
 
 from ui.theme import (
     BG, DARK_BLUE, HEADER_BG, HEADER_TEXT, BTN_BLUE, BTN_TEXT,
-    TEXT, W, H, BORDER_INSET, HEADER_H,
-    FONT, FONT_TITLE, FONT_BTN, FONT_SMALL, FONT_LABEL,
-    THICKNESS_TITLE, THICKNESS_BTN, THICKNESS_SMALL, INSTITUTION,
+    W, H, BORDER_INSET, HEADER_H, INSTITUTION,
 )
 
 # ---------------------------------------------------------------------------
@@ -21,23 +19,6 @@ from ui.theme import (
 # ---------------------------------------------------------------------------
 
 _FONT_CACHE = {}
-
-def _get_font(scale):
-    """Maps OpenCV scale to an approximate PIL TrueType font size with caching."""
-    font_size = max(12, int(scale * 24))
-    if font_size in _FONT_CACHE:
-        return _FONT_CACHE[font_size]
-    for font_name in ["arial.ttf", "DejaVuSans.ttf", "calibri.ttf", "LiberationSans-Regular.ttf"]:
-        try:
-            font = ImageFont.truetype(font_name, font_size)
-            _FONT_CACHE[font_size] = font
-            return font
-        except IOError:
-            continue
-    font = ImageFont.load_default()
-    _FONT_CACHE[font_size] = font
-    return font
-
 
 def _get_font_size(font_size, is_bold=False):
     """Return a PIL font for a given point size, with optional bold."""
@@ -51,29 +32,6 @@ def _get_font_size(font_size, is_bold=False):
         font = ImageFont.load_default()
     _FONT_CACHE[key] = font
     return font
-
-
-def _get_text_size(text, scale):
-    """Alternative to cv2.getTextSize supporting Unicode."""
-    font = _get_font(scale)
-    canvas = Image.new('RGB', (1, 1))
-    draw = ImageDraw.Draw(canvas)
-    bbox = draw.textbbox((0, 0), text, font=font)
-    return bbox[2] - bbox[0], bbox[3] - bbox[1]
-
-
-def _put_text_utf8(img, text, org, scale, color):
-    """Alternative to cv2.putText that correctly renders accents and UTF-8."""
-    font = _get_font(scale)
-    tw, th = _get_text_size(text, scale)
-    x, y = org
-    y_pil = y - th
-    rgb_color = (color[2], color[1], color[0])
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img_pil = Image.fromarray(img_rgb)
-    draw = ImageDraw.Draw(img_pil)
-    draw.text((x, y_pil), text, font=font, fill=rgb_color)
-    img[:] = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
 
 
 def put_text(img, text, pos, font_size=22, color=(0, 0, 0), is_bold=False):
@@ -142,8 +100,8 @@ def draw_institution(img: np.ndarray, extra: str = ""):
     *extra* is appended after a ' / ' separator (e.g. operator name).
     """
     label = f"{INSTITUTION} / {extra}" if extra else INSTITUTION
-    tw, th = _get_text_size(label, FONT_SMALL)
-    _put_text_utf8(img, label, (W - tw - 16, 30), FONT_SMALL, DARK_BLUE)
+    tw, th = measure_text(label, 15)
+    put_text(img, label, (W - tw - 16, 30 - th), font_size=15, color=DARK_BLUE)
 
 
 # ---------------------------------------------------------------------------
@@ -187,11 +145,11 @@ def draw_title_page(img: np.ndarray, title: str, institution_extra: str = ""):
     draw_outer_border(img)
     draw_institution(img, institution_extra)
 
-    tw, th = _get_text_size(title, FONT_TITLE)
+    tw, th = measure_text(title, 43)
     tx = (W - tw) // 2
-    ty = 80
+    ty = 80 - th // 2
 
-    line_y   = ty - th // 2 + 5
+    line_y   = ty + th // 2 + 5
     margin   = 30
     line_x1  = BORDER_INSET + margin
     line_x2r = tx - 30
@@ -201,7 +159,7 @@ def draw_title_page(img: np.ndarray, title: str, institution_extra: str = ""):
     cv2.line(img, (line_x1, line_y), (line_x2r, line_y), DARK_BLUE, 2)
     cv2.line(img, (line_x1r, line_y), (line_x2, line_y), DARK_BLUE, 2)
 
-    _put_text_utf8(img, title, (tx, ty), FONT_TITLE, DARK_BLUE)
+    put_text(img, title, (tx, ty), font_size=43, color=DARK_BLUE)
 
 
 # ---------------------------------------------------------------------------
@@ -216,10 +174,10 @@ def draw_button(img: np.ndarray,
     color = (110, 40, 40) if hovered else BTN_BLUE
     cv2.rectangle(img, (x, y), (x + w, y + h), color, -1)
 
-    tw, th = _get_text_size(label, FONT_BTN)
+    tw, th = measure_text(label, 20)
     tx = x + (w - tw) // 2
-    ty = y + (h + th) // 2
-    _put_text_utf8(img, label, (tx, ty), FONT_BTN, BTN_TEXT)
+    ty = y + (h - th) // 2
+    put_text(img, label, (tx, ty), font_size=20, color=BTN_TEXT)
 
 
 # ---------------------------------------------------------------------------

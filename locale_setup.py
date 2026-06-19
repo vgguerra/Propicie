@@ -3,13 +3,6 @@
 # =============================================================================
 # Supported languages : pt_PT  (Portuguese)
 #                       en_US  (English)
-#
-# Usage
-# -----
-#   from locale_setup import set_language, translate
-#
-#   set_language("pt_PT")   # or "en_US"
-#   print(translate("Sit and Reach"))   # → "Sentar e Alcançar"
 # =============================================================================
 
 import gettext
@@ -51,11 +44,9 @@ def set_language(lang: str) -> None:
         _translator = gettext.NullTranslations()
 
 
-def _(msgid: str) -> str:
+def translate(msgid: str) -> str:
     """Translate *msgid* using the currently active language."""
     return _translator.gettext(msgid)
-
-translate = _
 
 
 # ---------------------------------------------------------------------------

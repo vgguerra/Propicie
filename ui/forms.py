@@ -4,7 +4,7 @@ import numpy as np
 from locale_setup import translate
 from ui.theme import (
     BG, DARK_BLUE, HEADER_BG, HEADER_TEXT, BTN_BLUE, BTN_TEXT,
-    W, H, HEADER_H, FONT, FONT_LABEL, THICKNESS_SMALL,
+    W, H, HEADER_H,
 )
 from ui.draw import (draw_header, draw_card, draw_card_title,
                      put_text, measure_text, put_text_multi)

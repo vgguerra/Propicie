@@ -43,7 +43,6 @@ SAR_SIGN_THRESHOLD       = 1.0    # min distance (cm) beyond foot to invert sign
 BS_DISTANCE_THRESHOLD    = 33   # cm — hands must be closer than this
 BS_POSE_HELD_DURATION    = 3    # seconds to hold final pose
 BS_POSE_NO_HELD_DURATION = 1.5  # seconds before timer resets on lost detection
-BS_AVERAGE_OVER          = 5
 BS_ERROR                 = 1.91  # systematic error correction (cm)
 
 # --- MediaPipe pose landmark indices (for reference) ---

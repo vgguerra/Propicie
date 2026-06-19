@@ -111,7 +111,7 @@ def _generate_processed_chart(df):
         
         if 'Real distance' in df_chart.columns and 'Calculated distance' in df_chart.columns:
             ax.plot(df_chart.index + 1, df_chart['Real distance'], marker='o', linewidth=2, color=real_distance_color, label=translate('real_distance_label'))
-            ax.plot(df_chart.index + 1, df_chart['Calculated distance'], marker='s', linewidth=2, color=calculated_distance_color, label=translate('System Distance'))
+            ax.plot(df_chart.index + 1, df_chart['Calculated distance'], marker='s', linewidth=2, color=calculated_distance_color, label=translate('system_distance_label'))
             
         ax.set_title(translate("chart_title"), fontsize=11, fontweight='bold', color=calculated_distance_color, pad=6)
         ax.set_xlabel(translate("chart_xlabel"), fontsize=9, color=calculated_distance_color)
