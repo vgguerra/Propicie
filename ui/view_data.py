@@ -17,30 +17,14 @@ from ui.draw import blank_canvas, put_text, measure_text
 from ui.theme import W, H, BORDER_INSET, DARK_BLUE, BTN_BLUE, BG
 from utils import WindowManager
 
-# Normalização de cabeçalhos comuns do Excel
-_COL_NORMALIZE = [
-    ('Weigth', 'Weight'), ('Género', 'Gender'), ('Genero', 'Gender'),
-    ('Sexo', 'Gender'), ('lado', 'Side'), ('Lado', 'Side'),
-    ('idade', 'Age'), ('Idade', 'Age'),
-]
-
 # Mapeamento absoluto dos caminhos das tabelas utentes
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _PATH_SR = os.path.join(_BASE_DIR, "arquivos", "tabelas_utentes", "sit_and_reach_2_utentes.xlsx")
 _PATH_BS = os.path.join(_BASE_DIR, "arquivos", "tabelas_utentes", "back_scratch_utentes.xlsx")
 
-# Tolerância adaptativa para extensões alternativas .slsx
-if not os.path.exists(_PATH_SR):
-    _PATH_SR_alt = os.path.join(_BASE_DIR, "arquivos", "tabelas_utentes", "sit_and_reach_2_utentes.slsx")
-    if os.path.exists(_PATH_SR_alt): _PATH_SR = _PATH_SR_alt
-
-if not os.path.exists(_PATH_BS):
-    _PATH_BS_alt = os.path.join(_BASE_DIR, "arquivos", "tabelas_utentes", "back_scratch_utentes.slsx")
-    if os.path.exists(_PATH_BS_alt): _PATH_BS = _PATH_BS_alt
-
 
 def _generate_processed_chart(df):
-    """Gera o Line Chart comparativo das últimas repetições executadas."""
+    """Gera o Line Chart comparativo das repetições."""
     plt.rcdefaults()
     try:
         if df.empty: return None
@@ -121,9 +105,6 @@ def show_data_visualization():
     def _apply_filters(df):
         if df.empty:
             return df
-        for old_col, new_col in _COL_NORMALIZE:
-            if old_col in df.columns and new_col not in df.columns:
-                df.rename(columns={old_col: new_col}, inplace=True)
         if 'Gender' in df.columns:
             if opts["gen_f"] and not opts["gen_m"]:
                 df = df[df['Gender'].astype(str).str.strip().str.upper().str.startswith('F')]
