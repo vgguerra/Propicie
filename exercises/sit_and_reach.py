@@ -32,7 +32,7 @@ from ui.forms import (
     _make_base,
 )
 from ui.draw import put_text, put_text_multi, measure_text
-from ui.theme import W, H, HEADER_H, DARK_BLUE
+from ui.theme import W, H, HEADER_H
 
 from config import (
     SIT_AND_REACH_PIXEL_TO_CM,
@@ -101,7 +101,6 @@ def _process_landmarks(results, repeats):
         return None, None
 
     side    = _side(repeats)
-    indices = _POSE_INDICES[side][:6] + _POSE_INDICES[side][9:]   # exclude opp-hip/knee/ankle for visibility check
     required = [pose_lm[i] for i in _POSE_INDICES[side]]
 
     if all(lm.visibility > 0.0 for lm in required):
@@ -252,9 +251,9 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
     final_dist   = None
     display_dist = 0.0
 
-    wm = WindowManager(translate("Sit and Reach"), finish_cb, delay=1)
+    wm = WindowManager("Sit and Reach", finish_cb, delay=1, size=(W, H))
 
-    while True:
+    while not wm.should_close:
         distance_str = ""
         if not kinect.has_new_color_frame():
             continue
@@ -309,7 +308,6 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
                     display_dist = -(distance + SAR_ERROR_LEFT)
 
                 if final_dist is not None:
-                    side = _side(repeats)
                     if side == "right" and hand[0] < foot[0] and distance > SAR_SIGN_THRESHOLD:
                         final_dist = -(final_dist + SAR_ERROR_RIGHT)
                     elif side == "left" and hand[0] > foot[0] and distance > SAR_SIGN_THRESHOLD:
@@ -400,7 +398,7 @@ def run(kinect, holistic, finish_cb):
         for rep in range(4):
             print(f"[SAR run] rep={rep} a iniciar")
 
-            show_exercise_intro(translate("Sit and Reach"), rep, finish_cb)
+            show_exercise_intro("Sit and Reach", rep, finish_cb)
             print(f"[SAR run] rep={rep} intro concluído — a chamar run_repetition")
 
             dist = run_repetition(rep, kinect, holistic, finish_cb)

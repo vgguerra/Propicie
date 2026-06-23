@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from locale_setup import translate
 from ui.draw import blank_canvas, put_text, measure_text
 from ui.theme import W, H, BORDER_INSET, DARK_BLUE, BTN_BLUE, BG
-from utils import win_title
+from utils import WindowManager
 
 # Normalização de cabeçalhos comuns do Excel
 _COL_NORMALIZE = [
@@ -37,62 +37,6 @@ if not os.path.exists(_PATH_SR):
 if not os.path.exists(_PATH_BS):
     _PATH_BS_alt = os.path.join(_BASE_DIR, "arquivos", "tabelas_utentes", "back_scratch_utentes.slsx")
     if os.path.exists(_PATH_BS_alt): _PATH_BS = _PATH_BS_alt
-
-
-def _load_and_filter_data(opts):
-    """Lê as planilhas selecionadas e aplica a filtragem combinada das Checkboxes."""
-    df_list = []
-    
-    # 1. Carregamento Seletivo por Exercício
-    if opts["exe_sr"] and os.path.exists(_PATH_SR):
-        try:
-            df_sr = pd.read_excel(_PATH_SR)
-            df_sr['Origem_Ex'] = "Sit & Reach"
-            df_list.append(df_sr)
-        except Exception as e: print(f"Erro SR: {e}")
-            
-    if opts["exe_bs"] and os.path.exists(_PATH_BS):
-        try:
-            df_bs = pd.read_excel(_PATH_BS)
-            df_bs['Origem_Ex'] = "Back Scratch"
-            df_list.append(df_bs)
-        except Exception as e: print(f"Erro BS: {e}")
-            
-    if not df_list:
-        return pd.DataFrame()
-        
-    df = pd.concat(df_list, ignore_index=True)
-    if df.empty:
-        return df
-
-    # Normalização de cabeçalhos comuns do Excel
-    for old_col, new_col in _COL_NORMALIZE:
-        if old_col in df.columns and new_col not in df.columns:
-            df.rename(columns={old_col: new_col}, inplace=True)
-
-    # 2. Filtro de Género cruzado
-    if 'Gender' in df.columns:
-        if opts["gen_f"] and not opts["gen_m"]:
-            df = df[df['Gender'].astype(str).str.strip().str.upper().str.startswith('F')]
-        elif opts["gen_m"] and not opts["gen_f"]:
-            df = df[df['Gender'].astype(str).str.strip().str.upper().str.startswith('M')]
-
-    # 3. Filtro de Lado Corporal
-    if 'Side' in df.columns:
-        if opts["side_dir"] and not opts["side_esq"]:
-            df = df[df['Side'].astype(str).str.lower() == 'right']
-        elif opts["side_esq"] and not opts["side_dir"]:
-            df = df[df['Side'].astype(str).str.lower() == 'left']
-
-    # 4. Filtro de Faixa Etária (Idade)
-    if 'Age' in df.columns:
-        df['Age'] = pd.to_numeric(df['Age'], errors='coerce')
-        if opts["age_g60"] and not opts["age_l60"]:
-            df = df[df['Age'] >= 60]
-        elif opts["age_l60"] and not opts["age_g60"]:
-            df = df[df['Age'] < 60]
-
-    return df
 
 
 def _generate_processed_chart(df):
@@ -136,10 +80,15 @@ def _generate_processed_chart(df):
         return None
 
 
+def _draw_chk(canvas, x, y, checked, label):
+    cv2.rectangle(canvas, (x, y), (x + 24, y + 24), tuple(DARK_BLUE), 2)
+    if checked:
+        cv2.rectangle(canvas, (x + 5, y + 5), (x + 19, y + 19), tuple(DARK_BLUE), -1)
+    return put_text(canvas, label, (x + 36, y + 3), font_size=16, color=tuple(DARK_BLUE))
+
+
 def show_data_visualization():
-    WIN = win_title(translate("Visualize Data"))
-    cv2.namedWindow(WIN, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(WIN, W, H)
+    wm = WindowManager("Visualize Data", size=(W, H), delay=20, on_mouse=_mouse_callback)
 
     # Dicionário de Estados das Checkboxes
     opts = {
@@ -212,6 +161,28 @@ def show_data_visualization():
     HANDLE_R     = 8
     SR_SLIDER_Y  = 172
     BS_SLIDER_Y  = 222
+
+    def _draw_slider(canvas, idx_to_px, cur_min, cur_max, total, slider_y):
+        if total <= 1:
+            return canvas
+        min_px = idx_to_px(cur_min)
+        max_px = idx_to_px(cur_max)
+        cv2.rectangle(canvas, (SLIDER_LEFT, slider_y - SLIDER_H//2), (min_px, slider_y + SLIDER_H//2), tuple(DARK_BLUE), -1)
+        cv2.rectangle(canvas, (min_px, slider_y - SLIDER_H//2), (max_px, slider_y + SLIDER_H//2), tuple(BTN_BLUE), -1)
+        cv2.rectangle(canvas, (max_px, slider_y - SLIDER_H//2), (SLIDER_RIGHT, slider_y + SLIDER_H//2), tuple(DARK_BLUE), -1)
+        cv2.rectangle(canvas, (SLIDER_LEFT, slider_y - SLIDER_H//2), (SLIDER_RIGHT, slider_y + SLIDER_H//2), (100, 100, 100), 1)
+        cv2.circle(canvas, (min_px, slider_y), HANDLE_R, tuple(DARK_BLUE), -1)
+        cv2.circle(canvas, (max_px, slider_y), HANDLE_R, tuple(DARK_BLUE), -1)
+        lbl_min = str(cur_min + 1)
+        lbl_max = str(cur_max + 1)
+        tw_min, _ = measure_text(lbl_min, 14)
+        canvas = put_text(canvas, lbl_min, (min_px - tw_min//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
+        tw_max, _ = measure_text(lbl_max, 14)
+        canvas = put_text(canvas, lbl_max, (max_px - tw_max//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
+        canvas = put_text(canvas, "1", (SLIDER_LEFT - 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
+        tw_end, _ = measure_text(str(total), 12)
+        canvas = put_text(canvas, str(total), (SLIDER_RIGHT - tw_end + 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
+        return canvas
 
     def _sr_idx_to_px(idx):
         if sr_total <= 1:
@@ -336,9 +307,7 @@ def show_data_visualization():
                 opts[key] = not opts[key]
                 break
 
-    cv2.setMouseCallback(WIN, _mouse_callback)
-
-    while True:
+    while not wm.should_close:
         img = blank_canvas()
         cv2.rectangle(img, (BORDER_INSET, 80), (W - BORDER_INSET, H - BORDER_INSET), DARK_BLUE, 2)
 
@@ -355,12 +324,6 @@ def show_data_visualization():
         # Faixa de Instrução Principal
         cv2.rectangle(img, (80, 110), (1070, 145), tuple(DARK_BLUE), -1)
         img = put_text(img, translate("choose"), (95, 118), font_size=15, color=(255, 255, 255))
-
-        def _draw_chk(canvas, x, y, checked, label):
-            cv2.rectangle(canvas, (x, y), (x + 24, y + 24), tuple(DARK_BLUE), 2)
-            if checked:
-                cv2.rectangle(canvas, (x + 5, y + 5), (x + 19, y + 19), tuple(DARK_BLUE), -1)
-            return put_text(canvas, label, (x + 36, y + 3), font_size=16, color=tuple(DARK_BLUE))
 
         # Checkboxes
         img = _draw_chk(img, 100, 160, opts["exe_sr"], translate("Sit and Reach"))
@@ -380,28 +343,6 @@ def show_data_visualization():
         cx = btn_calc[0] + (btn_calc[2] - btn_calc[0] - tw_calc) // 2
         cy = btn_calc[1] + (btn_calc[3] - btn_calc[1] - th_calc) // 2
         img = put_text(img, calc_text, (cx, cy), font_size=28, color=txt_color)
-
-        # ── Two per-exercise range sliders ──
-        def _draw_slider(canvas, idx_to_px, cur_min, cur_max, total, slider_y):
-            if total <= 1:
-                return canvas
-            min_px = idx_to_px(cur_min)
-            max_px = idx_to_px(cur_max)
-            cv2.rectangle(canvas, (SLIDER_LEFT, slider_y - SLIDER_H//2), (min_px, slider_y + SLIDER_H//2), tuple(DARK_BLUE), -1)
-            cv2.rectangle(canvas, (min_px, slider_y - SLIDER_H//2), (max_px, slider_y + SLIDER_H//2), tuple(BTN_BLUE), -1)
-            cv2.rectangle(canvas, (max_px, slider_y - SLIDER_H//2), (SLIDER_RIGHT, slider_y + SLIDER_H//2), tuple(DARK_BLUE), -1)
-            cv2.circle(canvas, (min_px, slider_y), HANDLE_R, tuple(DARK_BLUE), -1)
-            cv2.circle(canvas, (max_px, slider_y), HANDLE_R, tuple(DARK_BLUE), -1)
-            lbl_min = str(cur_min + 1)
-            lbl_max = str(cur_max + 1)
-            tw_min, _ = measure_text(lbl_min, 14)
-            canvas = put_text(canvas, lbl_min, (min_px - tw_min//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
-            tw_max, _ = measure_text(lbl_max, 14)
-            canvas = put_text(canvas, lbl_max, (max_px - tw_max//2, slider_y - 22), font_size=14, color=tuple(DARK_BLUE))
-            canvas = put_text(canvas, "1", (SLIDER_LEFT - 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
-            tw_end, _ = measure_text(str(total), 12)
-            canvas = put_text(canvas, str(total), (SLIDER_RIGHT - tw_end + 10, slider_y - 6), font_size=12, color=tuple(DARK_BLUE))
-            return canvas
 
         img = _draw_slider(img, _sr_idx_to_px, sr_min, sr_max, sr_total, SR_SLIDER_Y)
         img = _draw_slider(img, _bs_idx_to_px, bs_min, bs_max, bs_total, BS_SLIDER_Y)
@@ -437,11 +378,9 @@ def show_data_visualization():
         _esc_y = _content_bottom + _gap // 2 - _th_esc // 2
         img = put_text(img, _esc_text, ((W - _tw_esc) // 2, _esc_y), font_size=26, color=tuple(DARK_BLUE))
 
-        cv2.imshow(WIN, img)
-        key = cv2.waitKey(20) & 0xFF
-        if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1:
-            break
-        elif key == 27:
+        wm.show(img)
+        key = wm.poll()
+        if key == "close":
             break
 
-    cv2.destroyWindow(WIN)
+    wm.close()

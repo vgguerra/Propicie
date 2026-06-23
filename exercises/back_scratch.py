@@ -9,7 +9,6 @@
 import time
 import cv2
 import mediapipe as mp
-import numpy as np
 
 from locale_setup import translate
 from utils import (
@@ -29,7 +28,7 @@ from ui.forms import (
     _make_base,
 )
 from ui.draw import put_text, measure_text
-from ui.theme import W, H, HEADER_H, DARK_BLUE
+from ui.theme import W, H, HEADER_H
 
 from config import (
     BACK_SCRATCH_PIXEL_TO_CM,
@@ -110,17 +109,16 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
     final_dist    = None
     elapsed       = 0.0
 
-    exercise_title = translate("Back Scratch exercise name")
     side_label     = translate("right_side_label") if repeats in (0, 1) else translate("left_side_label")
     rep_num        = (repeats % 2) + 1
 
-    wm = WindowManager(exercise_title, finish_cb, delay=1)
+    wm = WindowManager("Back Scratch", finish_cb, delay=1, size=(W, H))
 
-    while True:
+    while not wm.should_close:
         if not kinect.has_new_color_frame():
             continue
 
-        image, results, frame = read_kinect_frame(kinect, holistic)
+        image, results, _ = read_kinect_frame(kinect, holistic)
         pose_correct = translate("Incorrect")
 
         if results.left_hand_landmarks and results.right_hand_landmarks:
@@ -149,7 +147,7 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
                 start_time = None
 
         # --- Infraestrutura Visual Espelhada do Sit and Reach ---
-        canvas = _make_base(exercise_title, side_label, rep_num, 2)
+        canvas = _make_base(translate("Back Scratch exercise name"), side_label, rep_num, 2)
 
         # Dimensionamento Proporcional da Imagem da Câmera
         feed_h  = H - HEADER_H - 10
@@ -216,7 +214,7 @@ def run(kinect, holistic, finish_cb):
         for rep in range(4):
             print(f"[BS run] rep={rep} a iniciar")
 
-            show_exercise_intro(translate("Back Scratch exercise name"), rep, finish_cb)
+            show_exercise_intro("Back Scratch", rep, finish_cb)
             print(f"[BS run] rep={rep} intro concluído — a chamar run_repetition")
 
             dist = run_repetition(rep, kinect, holistic, finish_cb)
@@ -225,6 +223,7 @@ def run(kinect, holistic, finish_cb):
             if dist is None:
                 print(translate("Exercise not performed correctly."))
                 finish_cb()
+                return
 
             side       = "right" if rep in (0, 1) else "left"
             side_label = translate("right_side_label") if rep in (0, 1) else translate("left_side_label")
@@ -258,9 +257,6 @@ def run(kinect, holistic, finish_cb):
                  translate("Back Scratch exercise name"), side_label, (rep % 2) + 1, 2,
                 f"{dist:.2f}", real, error, finish_cb
             )
-
-        best_right = max(distances_right)
-        best_left  = max(distances_left)
 
         while len(distances_right) < 2: distances_right.append(0.0)
         while len(distances_left) < 2:  distances_left.append(0.0)

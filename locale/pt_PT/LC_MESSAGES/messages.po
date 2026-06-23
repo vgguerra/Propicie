@@ -119,7 +119,7 @@ msgid "enter_confirm"
 msgstr "Prima ENTER para confirmar"
 
 msgid "Register"
-msgstr "Registro"
+msgstr "Registo"
 
 msgid "Press ENTER to continue"
 msgstr "Prima ENTER para continuar"

@@ -14,11 +14,9 @@
 # =============================================================================
 
 import cv2
-import numpy as np
-
-from utils import ReturnToMenu, WindowManager
+from utils import WindowManager
 from locale_setup import translate
-from ui.draw import (draw_button, draw_rep_circles, blank_canvas,
+from ui.draw import (draw_rep_circles, blank_canvas,
                      put_text, measure_text)
 from ui.theme import (
     W, H, BG, BORDER_INSET, BTN_BLUE, BTN_TEXT, DARK_BLUE, INSTITUTION,
@@ -48,15 +46,12 @@ def _draw_row(img, label, cx, cy, total, done, current=-1, radius=48):
 # ---------------------------------------------------------------------------
 
 def show_exercise_intro(exercise_name, rep, finish_cb):
-    print("[intro] início")
-    
     right_done    = min(rep, 2)
     left_done     = max(rep - 2, 0)
     right_current = rep if rep < 2 else -1
     left_current  = (rep - 2) if rep >= 2 else -1
     is_next = rep > 0
     title   = translate("Next") if is_next else exercise_name
-    print(f"[intro] title={title}")
 
     row_gap  = 180
     start_y  = (H - row_gap * 2) // 2 - 20
@@ -64,11 +59,8 @@ def show_exercise_intro(exercise_name, rep, finish_cb):
 
     right_label = f"{translate('right_side_label')} x2"
     left_label  = f"{translate('left_side_label')} x2"
-        
-    print("[intro] importado")
-    print("[intro] canvas criado")
 
-    wm = WindowManager(exercise_name, finish_cb, delay=16)
+    wm = WindowManager(exercise_name, finish_cb, delay=16, size=(W, H))
     while not wm.should_close:
         img = blank_canvas()
 
@@ -129,6 +121,3 @@ def show_exercise_intro(exercise_name, rep, finish_cb):
         elif key in (13, 10):
             wm.close()
             return
-        elif key == 27:
-            wm.close()
-            raise ReturnToMenu()

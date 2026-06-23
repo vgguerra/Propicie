@@ -1,14 +1,12 @@
 import cv2
 import numpy as np
-
 from locale_setup import translate
 from ui.theme import (
-    BG, DARK_BLUE, HEADER_BG, HEADER_TEXT, BTN_BLUE, BTN_TEXT,
-    W, H, HEADER_H,
+    BG, DARK_BLUE, BTN_BLUE, BTN_TEXT, W, H,
 )
 from ui.draw import (draw_header, draw_card, draw_card_title,
-                     put_text, measure_text, put_text_multi)
-from utils import win_title, ReturnToMenu, WindowManager
+                     put_text, measure_text)
+from utils import WindowManager
 
 # ---------------------------------------------------------------------------
 # Canvas builder
@@ -31,10 +29,8 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total, finish_c
     """
     Styled registration form with card centered inside a themed background frame.
     """
-    print("[register] início")
     try:
         fields = [translate("Age"), translate("Height (cm)"), translate("Weight (kg)"), translate("Gender (M/F)")]
-        print("[register] fields criados")
         values = ["", "", "", ""]
         active_field = -1
 
@@ -65,9 +61,6 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total, finish_c
             y2 = y1 + field_h
             positions.append((x1, y1, x2, y2))
 
-        WIN = win_title(translate("Register"))
-        print(f"[register] WIN={WIN}")
-
         def _mouse_cb(event, x, y, flags, param):
             nonlocal active_field
             if event == cv2.EVENT_LBUTTONDOWN:
@@ -77,7 +70,7 @@ def show_register_screen_styled(exercise, side, rep_current, rep_total, finish_c
                         active_field = i
                         break
 
-        wm = WindowManager(translate("Register"), finish_cb, delay=10, size=(win_w, win_h), on_mouse=_mouse_cb)
+        wm = WindowManager("Register", finish_cb, delay=10, size=(win_w, win_h), on_mouse=_mouse_cb)
         while not wm.should_close:
             # Fundo principal com a cor do Tema (O azul claro que emoldura o ecrã)
             img = np.zeros((win_h, win_w, 3), dtype=np.uint8)
@@ -153,18 +146,13 @@ def show_real_distance_screen_styled(exercise, side, rep_current, rep_total, fin
 
     card_x_local = 0
     card_y_local = 0
-    card_x = (W - card_w) // 2
-    card_y = HEADER_H + (H - HEADER_H - card_h) // 2
-
     field_x_local = card_x_local + 30
     field_w_local = card_w - 60
     field_y_local = card_y_local + title_h + 50
 
     field_h   = 60
 
-    WIN = win_title(translate("Real Measurement"))
-
-    wm = WindowManager(translate("Real Measurement"), finish_cb, delay=10, size=(win_w, win_h))
+    wm = WindowManager("Real Measurement", finish_cb, delay=10, size=(win_w, win_h))
     while not wm.should_close:
         img = np.zeros((win_h, win_w, 3), dtype=np.uint8)
         img[:] = BG
@@ -241,11 +229,9 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
     real_value_y = real_title_y + block_h + 8
     error_title_y = real_value_y + value_h + block_gap
 
-    WIN = win_title(translate("Repetition Completed"))
-
-    wm = WindowManager(translate("Repetition Completed"), finish_cb, delay=16, size=(win_w, win_h))
+    wm = WindowManager("Repetition Completed", finish_cb, delay=16, size=(win_w, win_h))
     while not wm.should_close:
-        img = np.zeros((win_w, win_h, 3), dtype=np.uint8) if win_h > win_w else np.zeros((win_h, win_w, 3), dtype=np.uint8)
+        img = np.zeros((win_h, win_w, 3), dtype=np.uint8)
         img[:] = BG
 
         draw_card(img, card_x, card_y, card_w, card_h)
@@ -303,9 +289,6 @@ def show_repetition_result(exercise, side, rep_current, rep_total,
         elif key in (13, 10):
             wm.close()
             return
-        elif key == 27:
-            wm.close()
-            raise ReturnToMenu()
 
 
 # ---------------------------------------------------------------------------
@@ -321,7 +304,7 @@ def show_exercise_final(exercise,
                         error_left_1,   error_left_2,
                         finish_cb):
 
-    wm = WindowManager(translate("Exercise Completed"), finish_cb, delay=16, size=(W, H))
+    wm = WindowManager("Exercise Completed", finish_cb, delay=16, size=(W, H))
 
     card_x, card_y = 40, 40
     card_w, card_h = W - 80, H - 120
@@ -426,9 +409,6 @@ def show_exercise_final(exercise,
 
         key = wm.poll()
         if key == "close":
-            finish_cb()
-            break
-        elif key == 27:
             finish_cb()
             break
 

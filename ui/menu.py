@@ -5,13 +5,12 @@
 import cv2
 import numpy as np
 import os
-from PIL import ImageFont, ImageDraw, Image
 
 import locale_setup
 from locale_setup import translate
 from ui.draw import blank_canvas, draw_button, put_text, measure_text
 from ui.theme import W, H, BG, BORDER_INSET, DARK_BLUE, BTN_BLUE
-from utils import win_title, set_app_icon, WindowManager
+from utils import set_app_icon, WindowManager
 
 # Mapeamento absoluto do caminho do logótipo na pasta de arquivos
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -109,11 +108,6 @@ def show_main_menu() -> str:
     flag_w, flag_h = 60, 40
     hover_flag     = False
 
-    try:
-        font_btn = ImageFont.truetype(r"C:\Windows\Fonts\arial.ttf", 22)
-    except Exception:
-        font_btn = ImageFont.load_default()
-
     # Carrega o logótipo em modo UNCHANGED
     logo_img = cv2.imread(_LOGO_PATH, cv2.IMREAD_UNCHANGED)
 
@@ -136,7 +130,7 @@ def show_main_menu() -> str:
                 
                 locale_setup.set_language(current_lang)
 
-    wm = WindowManager(translate("Main Menu"), size=(W, H), delay=16, on_mouse=_mouse)
+    wm = WindowManager("Main Menu", size=(W, H), delay=16, on_mouse=_mouse)
     set_app_icon(wm.winname)
 
     while selected is None:
@@ -211,16 +205,9 @@ def show_main_menu() -> str:
             draw_button(img, "", bx, by, bw, bh, hovered=(hover == i))
             
             texto_traduzido = translate(msgid)
-            try:
-                bbox_btn = font_btn.getmask(texto_traduzido).getbbox()
-                btn_w = bbox_btn[2] if bbox_btn else 0
-                btn_h = bbox_btn[3] if bbox_btn else 20
-            except Exception:
-                btn_w = len(texto_traduzido) * 11  
-                btn_h = 20
-
-            text_x = (W - btn_w) // 2
-            text_y = by + (bh - btn_h) // 2 - 2
+            tw, th = measure_text(texto_traduzido, 22)
+            text_x = (W - tw) // 2
+            text_y = by + (bh - th) // 2
             img = put_text(img, texto_traduzido, (text_x, text_y), font_size=22, color=(255, 255, 255))
 
         # 3. RENDERIZAÇÃO DA BANDEIRA INVERSA (Alternância de Idioma)
@@ -237,8 +224,6 @@ def show_main_menu() -> str:
         wm.show(img)
         key = wm.poll()
         if key == "close":
-            selected = "quit"
-        elif key == 27:
             selected = "quit"
 
     wm.close()

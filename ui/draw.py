@@ -3,7 +3,6 @@
 # =============================================================================
 
 import unicodedata
-
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -35,14 +34,15 @@ def _get_font_size(font_size, is_bold=False):
 
 
 def put_text(img, text, pos, font_size=22, color=(0, 0, 0), is_bold=False):
-    """Draw UTF-8 text onto *img* safely using NFC normalization and return the modified image."""
+    """Draw UTF-8 text onto *img* in-place and return the modified image."""
     text = unicodedata.normalize('NFC', str(text))
     font = _get_font_size(font_size, is_bold)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     pil_img = Image.fromarray(img_rgb)
     color_rgb = (color[2], color[1], color[0])
     ImageDraw.Draw(pil_img).text(pos, text, font=font, fill=color_rgb)
-    return cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
+    img[:] = cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
+    return img
 
 
 def measure_text(text, font_size=22, is_bold=False):
