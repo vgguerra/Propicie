@@ -187,9 +187,9 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
 # =============================================================================
 # Public entry point
 # =============================================================================
-_EXCEL_PATH = "./arquivos/tabelas_testes/back_scratch_test_julia.xlsx"
+_EXCEL_PATH = "./arquivos/tabelas_testes/back_scratch_test_orbbec.xlsx"
 #_EXCEL_PATH = "./arquivos/tabelas_utentes/back_scratch_utentes.xlsx"
-_LOG_PATH   = "./arquivos/logs_utentes/logs_back_scratch_utentes"
+_LOG_PATH   = "./arquivos/logs_utentes/logs_back_scratch_orbbec"
 
 
 def run(kinect, holistic, finish_cb):

@@ -36,9 +36,9 @@ def _frame_to_bgra(frame):
     elif fmt == OBFormat.BGR:
         bgr = data.reshape((height, width, 3))
     elif fmt == OBFormat.BGRA:
-        return data.reshape((height, width, 4))
+        bgra = data.reshape((height, width, 4))
     elif fmt == OBFormat.RGBA:
-        return cv2.cvtColor(data.reshape((height, width, 4)), cv2.COLOR_RGBA2BGRA)
+        bgra = cv2.cvtColor(data.reshape((height, width, 4)), cv2.COLOR_RGBA2BGRA)
     elif fmt == OBFormat.YUYV:
         bgr = cv2.cvtColor(data.reshape((height, width, 2)), cv2.COLOR_YUV2BGR_YUYV)
     elif fmt == OBFormat.MJPG:
@@ -54,7 +54,9 @@ def _frame_to_bgra(frame):
     else:
         raise ValueError(f"Unsupported color format: {fmt}")
 
-    return cv2.cvtColor(bgr, cv2.COLOR_BGR2BGRA)
+    if 'bgra' not in dir():
+        bgra = cv2.cvtColor(bgr, cv2.COLOR_BGR2BGRA)
+    return cv2.flip(bgra, 1)
 
 
 class OrbbecCamera:

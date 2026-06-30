@@ -362,8 +362,8 @@ def run_repetition(repeats, kinect, holistic, finish_cb):
 # =============================================================================
 
 #_EXCEL_PATH = "./arquivos/tabelas_utentes/sit_and_reach_2_utentes.xlsx"
-_EXCEL_PATH = "./arquivos/tabelas_testes/sit_and_reach_test_julia.xlsx"
-_LOG_PATH   = "./arquivos/logs_utentes/logs_sit_and_reach_utentes"
+_EXCEL_PATH = "./arquivos/tabelas_testes/sit_and_reach_test_orbbec.xlsx"
+_LOG_PATH   = "./arquivos/logs_utentes/logs_sit_and_reach_orbbec"
 
 
 def run(kinect, holistic, finish_cb):
