@@ -3,7 +3,7 @@
 # =============================================================================
 
 import cv2
-from pykinect2 import PyKinectRuntime, PyKinectV2
+from camera import OrbbecCamera
 import mediapipe as mp
 
 from ui.menu import show_main_menu
@@ -13,7 +13,7 @@ from exercises import sit_and_reach, back_scratch
 # ---------------------------------------------------------------------------
 # Hardware initialisation
 # ---------------------------------------------------------------------------
-kinect   = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
+kinect   = OrbbecCamera()
 holistic = mp.solutions.holistic.Holistic()
 
 

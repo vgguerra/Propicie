@@ -67,17 +67,16 @@ def draw_angle_arc(image, p1, p2, p3, angle):
 
 def read_kinect_frame(kinect, holistic):
     """
-    GRAB THE LATEST KINECT COLOUR FRAME, RUN MEDIAPIPE HOLISTIC,
+    GRAB THE LATEST COLOUR FRAME, RUN MEDIAPIPE HOLISTIC,
     AND RETURN (BGR_IMAGE, HOLISTIC_RESULTS, RAW_FRAME).
     """
-    raw = kinect.get_last_color_frame()
-    raw = raw.reshape((1080, 1920, 4))          # BGRA
-    bgr = cv2.cvtColor(raw, cv2.COLOR_BGRA2BGR)
+    bgra = kinect.get_last_color_frame()             # (H, W, 4) BGRA
+    bgr = cv2.cvtColor(bgra, cv2.COLOR_BGRA2BGR)
     rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
     rgb.flags.writeable = False
     results = holistic.process(rgb)
     rgb.flags.writeable = True
-    return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), results, raw
+    return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), results, bgra
 
 # DATA PERSISTENCE
 

@@ -1,0 +1,68 @@
+[06/30 14:27:37.488916][info][8556][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:27:37.488982][info][8556][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:27:38.515013][info][8556][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:27:38.515056][warning][8556][ObException.cpp:32] A unrecoverable_exception has occurred!
+ - where: Pipeline.cpp(22)
+ - msg: No device found
+ - type: CAMERA_DISCONNECTED
+ - status: 112
+[06/30 14:30:58.933604][info][14060][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:30:58.933636][info][14060][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:30:59.956349][info][14060][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:30:59.956459][warning][14060][ObException.cpp:32] A unrecoverable_exception has occurred!
+ - where: Pipeline.cpp(22)
+ - msg: No device found
+ - type: CAMERA_DISCONNECTED
+ - status: 112
+[06/30 14:31:59.114163][info][3896][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:31:59.114191][info][3896][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:32:00.139147][info][3896][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:32:00.139251][warning][3896][ObException.cpp:32] A unrecoverable_exception has occurred!
+ - where: Pipeline.cpp(22)
+ - msg: No device found
+ - type: CAMERA_DISCONNECTED
+ - status: 112
+[06/30 14:33:08.079862][info][17008][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:33:08.079889][info][17008][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:33:09.104839][info][17008][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:33:09.104948][warning][17008][ObException.cpp:32] A unrecoverable_exception has occurred!
+ - where: Pipeline.cpp(22)
+ - msg: No device found
+ - type: CAMERA_DISCONNECTED
+ - status: 112
+[06/30 14:36:05.951115][info][16240][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:36:05.951222][info][16240][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:36:06.995258][info][16240][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:36:06.995346][warning][16240][ObException.cpp:32] A unrecoverable_exception has occurred!
+ - where: Pipeline.cpp(22)
+ - msg: No device found
+ - type: CAMERA_DISCONNECTED
+ - status: 112
+[06/30 14:37:45.855721][info][6996][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:37:45.855826][info][6996][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:37:46.879775][info][6996][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:37:46.879879][warning][6996][ObException.cpp:32] A unrecoverable_exception has occurred!
+ - where: Pipeline.cpp(22)
+ - msg: No device found
+ - type: CAMERA_DISCONNECTED
+ - status: 112
+[06/30 14:38:01.037353][info][16212][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:38:01.037453][info][16212][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:38:02.056892][info][16212][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:38:02.056994][warning][16212][ObException.cpp:32] A unrecoverable_exception has occurred!
+ - where: Pipeline.cpp(22)
+ - msg: No device found
+ - type: CAMERA_DISCONNECTED
+ - status: 112
+[06/30 14:39:24.977991][info][16456][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:39:24.978020][info][16456][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:39:26.004168][info][16456][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:55:12.338262][info][12988][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:55:12.338290][info][12988][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:55:13.368101][info][12988][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:55:21.412501][info][10020][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:55:21.412529][info][10020][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:55:22.444756][info][10020][DeviceManager.cpp:25] Current device(s) list: (0)
+[06/30 14:55:29.986094][info][14792][DeviceManager.cpp:25] Current found device(s): (0)
+[06/30 14:55:29.986127][info][14792][DeviceManager.cpp:405] Enable net device enumeration: true
+[06/30 14:55:31.018352][info][14792][DeviceManager.cpp:25] Current device(s) list: (0)
