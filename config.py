@@ -35,7 +35,7 @@ SAR_OPP_KNEE_MAX         = 150
 SAR_CALIBRATION_DURATION = 5    # seconds to hold calibration pose
 SAR_POSE_DURATION        = 5    # seconds to hold measurement pose
 SAR_AVERAGE_OVER         = 6    # rolling window for distance smoothing
-SAR_ERROR_RIGHT          = 4.9    # systematic error correction (cm) for right side; base SAR_ERROR was 2.9
+SAR_ERROR_RIGHT          = 2.5    # systematic error correction (cm) for right side; base SAR_ERROR was 2.9, 4.9 for Kinect V2
 SAR_ERROR_LEFT           = 2.9    # systematic error correction (cm) for left side
 SAR_SIGN_THRESHOLD       = 1.0    # min distance (cm) beyond foot to invert sign; avoids noise flipping positive/negative
 
