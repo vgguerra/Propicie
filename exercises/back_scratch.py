@@ -211,6 +211,10 @@ def run(kinect, holistic, finish_cb):
         distances_right, distances_left = [], []
         reals_right, reals_left = [], []
 
+        prev_dist = None
+        prev_real = None
+        prev_side = None
+
         for rep in range(4):
             print(f"[BS run] rep={rep} a iniciar")
 
@@ -237,16 +241,20 @@ def run(kinect, holistic, finish_cb):
                 reals_left.append(real)
             error = abs(abs(float(real)) - abs(dist))
 
-            append_to_excel(_EXCEL_PATH, {
-                "Age": participant["age"], "Height": participant["height"],
-                "Weight": participant["weight"], "Gender": participant["gender"],
-                "Side": side,
-                "Real distance": real, "Calculated distance": dist, "Erro": error,
-            })
-            append_to_log(_LOG_PATH,
-                          participant["age"], participant["height"],
-                          participant["weight"], participant["gender"],
-                          real, dist, side)
+            if rep % 2 == 1:
+                for r, d, s in [(prev_real, prev_dist, prev_side), (real, dist, side)]:
+                    append_to_excel(_EXCEL_PATH, {
+                        "Age": participant["age"], "Height": participant["height"],
+                        "Weight": participant["weight"], "Gender": participant["gender"],
+                        "Side": s,
+                        "Real distance": r, "Calculated distance": d, "Erro": abs(abs(float(r)) - abs(d)),
+                    })
+                    append_to_log(_LOG_PATH, participant["age"], participant["height"],
+                                  participant["weight"], participant["gender"], r, d, s)
+            else:
+                prev_dist = dist
+                prev_real = real
+                prev_side = side
 
             if side == "right":
                 distances_right.append(dist)
