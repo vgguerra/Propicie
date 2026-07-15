@@ -20,7 +20,7 @@ O núcleo do projeto é uma aplicação em Python que utiliza um sensor Kinect V
 Posteriormente foi utilizado a camera Orbbec Femto Mega, para comparar os resultados entre as duas cameras.
 
 ### Principais Descobertas
-A pesquisa conduzida por Artem Bukhantsev e aprofundada por <a href="https://github.com/vgguerra"> Victor Guerra <a/> e cotinuada por <a href="https://github.com/JuliaKoene"> Julia Koene </a> concluiu que:
+A pesquisa conduzida por Artem Bukhantsev e aprofundada por <a href="https://github.com/vgguerra"> Victor Guerra <a/> e continuada por <a href="https://github.com/JuliaKoene"> Julia Koene </a> concluiu que:
 * A implementação com **MediaPipe** demonstrou uma precisão superior para o teste de Sentar e Alcançar, com um Erro Médio Absoluto (MAE) de aproximadamente **2.25 cm**.
 * Esta abordagem foi significativamente mais precisa do que uma implementação nativa com PyKinect, que apresentou um MAE de 8.65 cm, devido a desafios como a instabilidade do esqueleto virtual ("jittering").
 * A camera Orbbec pode se provar mais precisa que o Kinect por sua maior qualidade.
