@@ -242,6 +242,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Orbbec SDK log
+Log/
+
 # End of https://www.toptal.com/developers/gitignore/api/python,windows,linux,visualstudiocode,opencv
 
 # Created by https://www.toptal.com/developers/gitignore/api/dotnetcore,rider
