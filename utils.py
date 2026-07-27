@@ -71,6 +71,7 @@ def read_kinect_frame(kinect, holistic):
     AND RETURN (BGR_IMAGE, HOLISTIC_RESULTS, RAW_FRAME).
     """
     bgra = kinect.get_last_color_frame()             # (H, W, 4) BGRA
+    bgra = cv2.flip(bgra, 1)                         # espelho horizontal (Kinect V2 behaviour)
     bgr = cv2.cvtColor(bgra, cv2.COLOR_BGRA2BGR)
     rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
     rgb.flags.writeable = False
